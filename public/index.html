@@ -1,1 +1,294 @@
-<html><head><title>test</title></head><body><h1>works</h1></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Legendary Strawberrh Man Empire — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    :root { --red:#e63022; --cream:#f5ede0; --dark:#0e0a06; --mid:#1c1409; --gold:#d4a017; --muted:#6b5c43; }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--dark);color:var(--cream);font-family:'Space Mono',monospace;min-height:100vh;overflow-x:hidden}
+    header{border-bottom:2px solid var(--red);padding:1.5rem 2.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--dark);z-index:100}
+    .logo{font-family:'Bebas Neue',sans-serif;font-size:1.9rem;letter-spacing:.08em;line-height:1}
+    .logo span{color:var(--red)}
+    .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#22c55e;margin-right:6px;box-shadow:0 0 6px #22c55e;animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{box-shadow:0 0 4px #22c55e}50%{box-shadow:0 0 16px #22c55e}}
+    .hr{font-size:.7rem;color:var(--muted);text-align:right}
+    .live{color:#22c55e;font-weight:700}
+    main{padding:2.5rem;max-width:1400px;margin:0 auto}
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5px;margin-bottom:2.5rem;border:1.5px solid #2a1f10}
+    .sc{background:var(--mid);padding:1.4rem 1.6rem;position:relative;overflow:hidden;transition:background .2s}
+    .sc:hover{background:#231a0c}
+    .sc::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--red);transform:scaleX(0);transform-origin:left;transition:transform .3s}
+    .sc:hover::after{transform:scaleX(1)}
+    .sl{font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem}
+    .sv{font-family:'Bebas Neue',sans-serif;font-size:2.6rem;line-height:1}
+    .sv.loading{color:var(--muted);font-size:1.8rem;animation:blink 1.2s infinite}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+    .two{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+    @media(max-width:900px){.two{grid-template-columns:1fr}}
+    .panel{background:var(--mid);border:1.5px solid #2a1f10;padding:1.5rem}
+    .pt{font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:1.2rem}
+    table{width:100%;border-collapse:collapse}
+    th{font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-align:left;padding:0 0 .7rem;border-bottom:1px solid #2a1f10}
+    td{padding:.65rem 0;font-size:.72rem;border-bottom:1px solid #1a1208;vertical-align:middle}
+    tr:last-child td{border-bottom:none}
+    .badge{display:inline-block;padding:.18rem .45rem;font-size:.56rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700}
+    .paid{background:rgba(34,197,94,.15);color:#22c55e}
+    .pending{background:rgba(212,160,23,.15);color:var(--gold)}
+    .refunded{background:rgba(230,48,34,.15);color:var(--red)}
+    .fulfilled{background:rgba(99,102,241,.15);color:#a5b4fc}
+    .unfulfilled{background:rgba(107,92,67,.2);color:var(--muted)}
+    .pr{display:flex;align-items:center;gap:1rem;padding:.7rem 0;border-bottom:1px solid #1a1208}
+    .pr:last-child{border-bottom:none}
+    .pi{width:42px;height:42px;object-fit:cover;border:1px solid #2a1f10;flex-shrink:0;background:#1c1409}
+    .pn{font-size:.75rem;font-weight:700;line-height:1.3}
+    .pm{font-size:.6rem;color:var(--muted);margin-top:.15rem}
+    .pp{margin-left:auto;font-family:'Bebas Neue',sans-serif;font-size:1.25rem;color:var(--gold);white-space:nowrap}
+    .cw{position:relative;height:155px;margin-top:.5rem}
+    .ir{margin-bottom:1rem}
+    .ih{display:flex;justify-content:space-between;font-size:.65rem;margin-bottom:.3rem}
+    .ib{height:5px;background:#2a1f10}
+    .if{height:100%;background:var(--red);transition:width 1s}
+    .if.ok{background:var(--gold)}
+    .if.good{background:#22c55e}
+    .rbtn{background:var(--red);color:var(--cream);border:none;padding:.55rem 1.3rem;font-family:'Space Mono',monospace;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;margin-bottom:2rem;transition:background .2s}
+    .rbtn:hover{background:#c4271d}
+    .rbtn:disabled{background:var(--muted);cursor:not-allowed}
+    .err{background:rgba(230,48,34,.1);border:1px solid var(--red);color:var(--red);padding:.7rem 1.2rem;font-size:.7rem;margin-bottom:1.5rem;display:none}
+    footer{border-top:1px solid #2a1f10;margin-top:4rem;padding:1.5rem 2.5rem;font-size:.6rem;color:var(--muted);display:flex;justify-content:space-between}
+  </style>
+</head>
+<body>
+<header>
+  <div class="logo">Legendary<br><span>Strawberrh Man</span><br>Empire</div>
+  <div class="hr">
+    <div><span class="dot"></span><span class="live">LIVE</span> Shopify</div>
+    <div id="ts" style="margin-top:4px">loading...</div>
+  </div>
+</header>
+<main>
+  <div class="err" id="err"></div>
+  <button class="rbtn" id="rbtn" onclick="loadAll()">Refresh</button>
+  <div class="stats">
+    <div class="sc"><div class="sl">Orders (30d)</div><div class="sv loading" id="s1">...</div></div>
+    <div class="sc"><div class="sl">Revenue (30d)</div><div class="sv loading" id="s2">...</div></div>
+    <div class="sc"><div class="sl">Avg Order Value</div><div class="sv loading" id="s3">...</div></div>
+    <div class="sc"><div class="sl">Active Products</div><div class="sv loading" id="s4">...</div></div>
+    <div class="sc"><div class="sl">Customers</div><div class="sv loading" id="s5">...</div></div>
+    <div class="sc"><div class="sl">Unfulfilled</div><div class="sv loading" id="s6">...</div></div>
+  </div>
+  <div class="two">
+    <div class="panel">
+      <div class="pt">Recent Orders</div>
+      <table>
+        <thead><tr><th>Order</th><th>Customer</th><th>Total</th><th>Pay</th><th>Ship</th></tr></thead>
+        <tbody id="ob"><tr><td colspan="5" style="color:var(--muted);padding:.8rem 0">Loading...</td></tr></tbody>
+      </table>
+    </div>
+    <div class="panel">
+      <div class="pt">Products</div>
+      <div id="pl"><p style="color:var(--muted);font-size:.7rem">Loading...</p></div>
+    </div>
+  </div>
+  <div class="two" style="margin-top:1.5rem">
+    <div class="panel">
+      <div class="pt">Revenue Last 7 Days</div>
+      <div class="cw"><canvas id="rc"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="pt">Inventory</div>
+      <div id="il"><p style="color:var(--muted);font-size:.7rem">Loading...</p></div>
+    </div>
+  </div>
+</main>
+<footer>
+  <span>LEGENDARY STRAWBERRH MAN EMPIRE 2025</span>
+  <span>pkxkyy-p3.myshopify.com</span>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+var SHOP  = 'pkxkyy-p3.myshopify.com';
+var TOKEN = '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';
+var CI = null;
+
+var PROXIES = [
+  function(u){ return 'https://corsproxy.io/?' + encodeURIComponent(u); },
+  function(u){ return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u); },
+  function(u){ return 'https://thingproxy.freeboard.io/fetch/' + u; }
+];
+
+async function api(path) {
+  var url = 'https://' + SHOP + '/admin/api/2024-01' + path;
+  var lastErr;
+  for (var i = 0; i < PROXIES.length; i++) {
+    try {
+      var proxyUrl = PROXIES[i](url);
+      var res = await fetch(proxyUrl, {
+        headers: { 'X-Shopify-Access-Token': TOKEN, 'Content-Type': 'application/json' }
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      var data = await res.json();
+      return data;
+    } catch(e) {
+      lastErr = e;
+    }
+  }
+  throw new Error('All proxies failed for ' + path + ': ' + lastErr.message);
+}
+
+function money(v) {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(v);
+}
+
+function setv(id, v) {
+  var el = document.getElementById(id);
+  el.textContent = v;
+  el.classList.remove('loading');
+}
+
+function showerr(m) {
+  var el = document.getElementById('err');
+  el.innerHTML = '<b>Error:</b> ' + m + '<br><small>Open DevTools console (F12) for details.</small>';
+  el.style.display = 'block';
+}
+
+async function loadAll() {
+  var btn = document.getElementById('rbtn');
+  btn.disabled = true;
+  btn.textContent = 'Loading...';
+  try {
+    var now = new Date();
+    var d30 = new Date(now);
+    d30.setDate(d30.getDate() - 30);
+
+    var results = await Promise.all([
+      api('/orders.json?limit=50&created_at_min=' + d30.toISOString() + '&status=any'),
+      api('/products.json?limit=20'),
+      api('/customers/count.json')
+    ]);
+
+    var orders = results[0].orders || [];
+    var prods  = results[1].products || [];
+    var cc     = results[2].count || 0;
+
+    var rev  = orders.reduce(function(s, o) { return s + parseFloat(o.total_price || 0); }, 0);
+    var aov  = orders.length ? rev / orders.length : 0;
+    var pend = orders.filter(function(o) { return !o.fulfillment_status || o.fulfillment_status === 'partial'; }).length;
+    var act  = prods.filter(function(p) { return p.status === 'active'; }).length;
+
+    setv('s1', orders.length);
+    setv('s2', money(rev));
+    setv('s3', money(aov));
+    setv('s4', act);
+    setv('s5', cc);
+    setv('s6', pend);
+
+    var tb = document.getElementById('ob');
+    if (!orders.length) {
+      tb.innerHTML = '<tr><td colspan="5" style="color:var(--muted);padding:.8rem 0">No orders in last 30 days.</td></tr>';
+    } else {
+      tb.innerHTML = orders.slice(0, 12).map(function(o) {
+        var nm = o.billing_address
+          ? ((o.billing_address.first_name || '') + ' ' + (o.billing_address.last_name || '')).trim()
+          : (o.email || 'Guest');
+        var pb = o.financial_status === 'paid' ? 'paid' : o.financial_status === 'refunded' ? 'refunded' : 'pending';
+        var fb = o.fulfillment_status === 'fulfilled' ? 'fulfilled' : 'unfulfilled';
+        return '<tr><td>#' + o.order_number + '</td>'
+          + '<td style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + nm + '</td>'
+          + '<td>' + money(o.total_price) + '</td>'
+          + '<td><span class="badge ' + pb + '">' + pb + '</span></td>'
+          + '<td><span class="badge ' + fb + '">' + fb + '</span></td></tr>';
+      }).join('');
+    }
+
+    document.getElementById('pl').innerHTML = prods.slice(0, 8).map(function(p) {
+      var img   = p.image ? p.image.src : null;
+      var price = p.variants && p.variants[0] ? parseFloat(p.variants[0].price) : 0;
+      var vars  = p.variants ? p.variants.length : 1;
+      return '<div class="pr">'
+        + (img ? '<img class="pi" src="' + img + '" alt="">' : '<div class="pi"></div>')
+        + '<div><div class="pn">' + p.title + '</div>'
+        + '<div class="pm">' + vars + ' variant' + (vars !== 1 ? 's' : '') + ' &middot; ' + p.status + '</div></div>'
+        + '<div class="pp">' + money(price) + '</div></div>';
+    }).join('');
+
+    var days = [], rbd = {};
+    for (var i = 6; i >= 0; i--) {
+      var d = new Date(now);
+      d.setDate(d.getDate() - i);
+      var k = d.toISOString().slice(0, 10);
+      days.push(k);
+      rbd[k] = 0;
+    }
+    orders.forEach(function(o) {
+      var k = o.created_at && o.created_at.slice(0, 10);
+      if (k && Object.prototype.hasOwnProperty.call(rbd, k)) rbd[k] += parseFloat(o.total_price || 0);
+    });
+
+    var lbls = days.map(function(d) {
+      var dt = new Date(d);
+      return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    });
+    var vals = days.map(function(d) { return rbd[d]; });
+
+    if (CI) CI.destroy();
+    CI = new Chart(document.getElementById('rc').getContext('2d'), {
+      type: 'bar',
+      data: { labels: lbls, datasets: [{ data: vals, backgroundColor: 'rgba(230,48,34,.5)', borderColor: '#e63022', borderWidth: 1, borderRadius: 0 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { color: '#1a1208' }, ticks: { color: '#6b5c43', font: { family: 'Space Mono', size: 9 } } },
+          y: { grid: { color: '#1a1208' }, ticks: { color: '#6b5c43', font: { family: 'Space Mono', size: 9 },
+            callback: function(v) { return '$' + (v >= 1000 ? (v / 1000).toFixed(1) + 'k' : v); } } }
+        }
+      }
+    });
+
+    var items = [];
+    prods.forEach(function(p) {
+      if (p.variants) p.variants.forEach(function(v) {
+        if (v.inventory_management) {
+          items.push({ name: p.title + (p.variants.length > 1 ? ' / ' + v.title : ''), qty: v.inventory_quantity || 0 });
+        }
+      });
+    });
+
+    var il = document.getElementById('il');
+    if (!items.length) {
+      il.innerHTML = '<p style="color:var(--muted);font-size:.7rem">No tracked inventory.</p>';
+    } else {
+      var mx = Math.max.apply(null, items.map(function(i) { return i.qty; }).concat([1]));
+      il.innerHTML = items.slice(0, 8).map(function(it) {
+        var pct = Math.max(0, Math.round(it.qty / mx * 100));
+        var cls = it.qty > 20 ? 'good' : it.qty > 5 ? 'ok' : '';
+        return '<div class="ir">'
+          + '<div class="ih">'
+          + '<span style="max-width:72%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + it.name + '</span>'
+          + '<span style="color:var(--gold);font-family:\'Bebas Neue\',sans-serif">' + it.qty + '</span>'
+          + '</div>'
+          + '<div class="ib"><div class="if ' + cls + '" style="width:' + pct + '%"></div></div>'
+          + '</div>';
+      }).join('');
+    }
+
+    document.getElementById('ts').textContent = 'Updated ' + new Date().toLocaleTimeString();
+
+  } catch (e) {
+    console.error(e);
+    showerr(e.message);
+  }
+  btn.disabled = false;
+  btn.textContent = 'Refresh';
+}
+
+loadAll();
+setInterval(loadAll, 180000);
+</script>
+</body>
+</html>
