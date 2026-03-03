@@ -216,10 +216,18 @@ tr.clickable{cursor:pointer}
     <div class="alert-banner" id="alertBanner"><div class="alert-dot"></div><span id="alertText">Content runway critical</span></div>
   </div>
   <div class="topbar-right">
+    <div id="undoBar" style="display:none;align-items:center;gap:.5rem;background:rgba(212,168,67,.1);border:1px solid rgba(212,168,67,.3);padding:.28rem .75rem;font-size:.62rem;color:var(--gold2)">
+      <span id="undoText"></span>
+      <span id="undoCount" style="background:var(--gold);color:#000;padding:.05rem .35rem;font-size:.55rem;font-weight:700;border-radius:2px">0</span>
+      <button onclick="doUndo()" style="background:var(--gold);border:none;color:#000;font-family:'Syne',sans-serif;font-size:.6rem;font-weight:700;padding:.2rem .55rem;cursor:pointer;margin-left:.2rem">↩ UNDO</button>
+    </div>
     <span style="font-size:.62rem;color:var(--text3)" id="todayDate"></span>
     <button class="btn btn-gold btn-sm" onclick="showModal('modal-48h')">+ 48h Data</button>
   </div>
 </div>
+
+<!-- TOAST -->
+<div id="toast" style="position:fixed;bottom:1.5rem;right:1.5rem;background:var(--s2);border:1px solid var(--gold);padding:.55rem 1rem;font-size:.68rem;color:var(--gold2);z-index:999;opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none"></div>
 
 <!-- SIDEBAR -->
 <div class="sidebar">
@@ -243,6 +251,10 @@ tr.clickable{cursor:pointer}
   <div class="sidebar-section">
     <div class="sidebar-label">Carl</div>
     <div class="nav-item" onclick="nav('editing')" data-page="editing"><span class="ni-icon">✂️</span>Edit Queue</div>
+  </div>
+  <div style="padding:1rem 1.2rem;margin-top:auto">
+    <button onclick="resetAllDecisions()" style="width:100%;background:transparent;border:1px solid rgba(224,69,69,.3);color:var(--red);font-family:'Syne',sans-serif;font-size:.6rem;font-weight:600;padding:.35rem;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;transition:all .15s" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='rgba(224,69,69,.3)'">⚠ Reset All Decisions</button>
+    <a href="/yt-dashboard.html" style="display:block;text-align:center;margin-top:.5rem;font-size:.58rem;color:var(--text3);text-decoration:none" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text3)'">← Old YT Dashboard</a>
   </div>
 </div>
 
@@ -628,6 +640,51 @@ var INSTRUMENTS = [
 var saved = JSON.parse(localStorage.getItem('lsm_os_v1')||'{}');
 VIDEOS.forEach(function(v){if(saved[v.id])Object.assign(v,saved[v.id]);});
 
+// ── UNDO SYSTEM ──────────────────────────────────────────────────────────
+var UNDO_STACK = []; // [{id, field, oldVal, newVal, label}]
+var MAX_UNDO = 30;
+
+function pushUndo(id, field, oldVal, newVal, label){
+  UNDO_STACK.push({id:id,field:field,oldVal:oldVal,newVal:newVal,label:label,ts:Date.now()});
+  if(UNDO_STACK.length>MAX_UNDO) UNDO_STACK.shift();
+  renderUndoBar();
+}
+
+function undoLast(){
+  if(!UNDO_STACK.length) return;
+  var action = UNDO_STACK.pop();
+  var v = VIDEOS.find(function(x){return x.id===action.id;});
+  if(v){
+    v[action.field] = action.oldVal;
+    persist(v);
+    renderHome();
+    if(document.getElementById('page-tracker').classList.contains('active')) renderTracker();
+    if(document.getElementById('page-repost').classList.contains('active')) renderRepost();
+    showToast('↩ Undone: ' + action.label);
+  }
+  renderUndoBar();
+}
+
+function renderUndoBar(){
+  var bar = document.getElementById('undoBar');
+  if(!bar) return;
+  if(!UNDO_STACK.length){
+    bar.style.display='none'; return;
+  }
+  bar.style.display='flex';
+  var last = UNDO_STACK[UNDO_STACK.length-1];
+  bar.querySelector('#undoText').textContent = 'Last: ' + last.label;
+  bar.querySelector('#undoCount').textContent = UNDO_STACK.length;
+}
+
+function showToast(msg){
+  var t = document.getElementById('toast');
+  if(!t) return;
+  t.textContent = msg;
+  t.style.opacity='1'; t.style.transform='translateY(0)';
+  setTimeout(function(){t.style.opacity='0';t.style.transform='translateY(8px)';},2500);
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════════════════════════
@@ -635,6 +692,59 @@ var baselineDays = 30;
 var rcat = 'all';
 var tcat = 'all';
 var tlcat = 'all';
+
+// ═══════════════════════════════════════════════════════════════════════════
+// UNDO SYSTEM
+// ═══════════════════════════════════════════════════════════════════════════
+var UNDO_STACK = []; // [{id, field, oldVal, newVal, label}]
+var MAX_UNDO = 30;
+
+function pushUndo(id, field, oldVal, newVal, label){
+  UNDO_STACK.push({id:id, field:field, oldVal:oldVal, newVal:newVal, label:label, ts:Date.now()});
+  if(UNDO_STACK.length > MAX_UNDO) UNDO_STACK.shift();
+  renderUndoBar();
+}
+
+function doUndo(){
+  if(!UNDO_STACK.length) return;
+  var action = UNDO_STACK.pop();
+  var v = VIDEOS.find(function(x){return x.id===action.id;});
+  if(v){
+    v[action.field] = action.oldVal;
+    persist(v);
+  }
+  renderUndoBar();
+  // Re-render active page
+  var activePage = document.querySelector('.page.active');
+  if(activePage){
+    var pid = activePage.id.replace('page-','');
+    var renders = {home:renderHome,repost:renderRepost,tracker:renderTracker,titles:renderTitles,queue:renderQueue,filming:renderFilming,editing:renderEditing,instruments:renderInstruments};
+    if(renders[pid]) renders[pid]();
+  }
+  showToast('↩ Undone: ' + action.label);
+}
+
+function renderUndoBar(){
+  var bar = document.getElementById('undoBar');
+  if(!bar) return;
+  if(UNDO_STACK.length > 0){
+    var last = UNDO_STACK[UNDO_STACK.length-1];
+    bar.style.display = 'flex';
+    bar.querySelector('#undoText').textContent = 'Last action: ' + last.label;
+    bar.querySelector('#undoCount').textContent = UNDO_STACK.length;
+  } else {
+    bar.style.display = 'none';
+  }
+}
+
+function showToast(msg){
+  var t = document.getElementById('toast');
+  if(!t) return;
+  t.textContent = msg;
+  t.style.opacity = '1';
+  t.style.transform = 'translateY(0)';
+  setTimeout(function(){ t.style.opacity='0'; t.style.transform='translateY(8px)'; }, 2500);
+}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // SCORING
@@ -848,7 +958,7 @@ function renderRepost(){
     html+='</div>';
     html+='<div style="display:flex;flex-direction:column;gap:.3rem">';
     html+='<a class="btn btn-gold btn-sm" href="https://youtube.com/watch?v='+v.id+'" target="_blank">▶ Watch</a>';
-    html+='<button class="btn btn-outline btn-sm" onclick="setDec(\''+v.id+'\',\'Reposted\')">✓ Reposted</button>';
+    html+='<button class="btn btn-outline btn-sm" onclick="event.stopPropagation();var v=VIDEOS.find(function(x){return x.id===\''+v.id+'\';});if(v){pushUndo(\''+v.id+'\',\'decision\',v.decision,\'Reposted\',\'Marked reposted: '+v.title.substring(0,25).replace(/'/g,'')+'…\');v.decision=\'Reposted\';persist(v);renderRepost();renderHome();}">✓ Reposted</button>';
     html+='</div>';
     html+='</div>';
   });
@@ -982,7 +1092,9 @@ function toggleExp(id){
 function setDec(id,dec){
   var v=VIDEOS.find(function(x){return x.id===id;});
   if(!v)return;
+  var oldDec = v.decision;
   v.decision=dec;persist(v);
+  pushUndo(id,'decision',oldDec,dec,'"'+v.title.substring(0,30)+'…" → '+dec);
   var btns=document.getElementById('db-'+id);
   if(btns)btns.querySelectorAll('.dec-btn').forEach(function(b){b.classList.toggle('sel',b.textContent.trim().startsWith(dec.substring(0,5)));});
   renderHome();
@@ -1247,10 +1359,33 @@ function save48h(){
   if(document.getElementById('page-tracker').classList.contains('active'))renderTracker();
 }
 
+function resetAllDecisions(){
+  if(!confirm('Reset ALL video decisions back to "Repost Candidate"? This cannot be undone.')) return;
+  VIDEOS.forEach(function(v){
+    v.decision = 'Repost Candidate';
+    persist(v);
+  });
+  UNDO_STACK.length = 0;
+  renderUndoBar();
+  renderHome();
+  if(document.getElementById('page-tracker').classList.contains('active')) renderTracker();
+  if(document.getElementById('page-repost').classList.contains('active')) renderRepost();
+  showToast('✓ All decisions reset to Repost Candidate');
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════════════════════
 document.getElementById('todayDate').textContent = TODAY.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+
+// Keyboard undo: Cmd+Z / Ctrl+Z
+document.addEventListener('keydown',function(e){
+  if((e.metaKey||e.ctrlKey)&&e.key==='z'&&!e.shiftKey){
+    e.preventDefault();
+    doUndo();
+  }
+});
+
 renderHome();
 setTimeout(function(){renderTitleSuggestions();renderTitleGrid();},100);
 </script>
