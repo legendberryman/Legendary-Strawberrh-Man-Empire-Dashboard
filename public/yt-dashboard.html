@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>LSM — YouTube Command Center</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0a0a08;--surface:#111110;--border:#222220;--gold:#c9a84c;--gold2:#e8c87a;
+  --green:#3ecf8e;--red:#e05252;--blue:#5b8dee;--orange:#e8834a;
+  --text:#e8e4dc;--muted:#6b6860;--heal:#7bc4a0;--energy:#e8834a;--hour:#5b8dee;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px}
+body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh;overflow-x:hidden}
+
+/* HEADER */
+header{padding:1.5rem 2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg);z-index:200}
+.brand{display:flex;align-items:baseline;gap:.75rem}
+.brand-name{font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--gold2);letter-spacing:.02em}
+.brand-sub{font-size:.65rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase}
+.header-right{display:flex;gap:1.5rem;align-items:center;font-size:.65rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+.pill{display:inline-flex;align-items:center;gap:.4rem;padding:.25rem .7rem;border-radius:2px;font-size:.6rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase}
+.pill-heal{background:rgba(123,196,160,.12);color:var(--heal);border:1px solid rgba(123,196,160,.2)}
+.pill-energy{background:rgba(232,131,74,.12);color:var(--energy);border:1px solid rgba(232,131,74,.2)}
+.pill-hour{background:rgba(91,141,238,.12);color:var(--hour);border:1px solid rgba(91,141,238,.2)}
+
+/* REPOST HERO */
+.repost-hero{background:var(--surface);border-bottom:1px solid var(--border);padding:1.5rem 2rem}
+.repost-label{font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:.75rem}
+.repost-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.repost-card{background:var(--bg);border:1px solid var(--border);padding:1rem 1.2rem;position:relative;cursor:pointer;transition:border-color .2s}
+.repost-card:hover{border-color:var(--gold)}
+.repost-rank{position:absolute;top:.75rem;right:.75rem;font-family:'DM Serif Display',serif;font-size:2rem;color:var(--border);line-height:1}
+.repost-type{margin-bottom:.4rem}
+.repost-title{font-size:.78rem;line-height:1.4;color:var(--text);margin-bottom:.6rem;padding-right:2rem}
+.repost-score{display:flex;align-items:center;gap:1.5rem}
+.score-big{font-family:'DM Serif Display',serif;font-size:2rem;color:var(--gold2);line-height:1}
+.score-label{font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
+.repost-why{font-size:.62rem;color:var(--muted);margin-top:.5rem;line-height:1.5}
+.repost-action{margin-top:.75rem;display:flex;gap:.5rem}
+.btn{border:none;cursor:pointer;font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;padding:.35rem .8rem;transition:all .15s}
+.btn-gold{background:var(--gold);color:#0a0a08}
+.btn-gold:hover{background:var(--gold2)}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+
+/* TABS */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);padding:0 2rem;background:var(--surface)}
+.tab{padding:.75rem 1.5rem;font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;display:flex;align-items:center;gap:.5rem}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--text);border-bottom-color:var(--gold)}
+.tab-count{background:var(--border);padding:.1rem .4rem;border-radius:2px;font-size:.58rem}
+.tab.active .tab-count{background:var(--gold);color:#0a0a08}
+
+/* MAIN */
+main{padding:1.5rem 2rem;max-width:1600px;margin:0 auto}
+
+/* FILTER BAR */
+.filter-bar{display:flex;gap:.75rem;align-items:center;margin-bottom:1.25rem;flex-wrap:wrap}
+.filter-btn{background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;padding:.3rem .8rem;cursor:pointer;transition:all .15s}
+.filter-btn:hover,.filter-btn.active{border-color:var(--gold);color:var(--gold)}
+.search-input{background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;font-size:.72rem;padding:.35rem .8rem;outline:none;flex:1;max-width:300px}
+.search-input:focus{border-color:var(--gold)}
+.search-input::placeholder{color:var(--muted)}
+.sort-select{background:var(--surface);border:1px solid var(--border);color:var(--muted);font-family:'DM Mono',monospace;font-size:.62rem;padding:.3rem .6rem;outline:none;cursor:pointer}
+
+/* VIDEO TABLE */
+.video-table{width:100%;border-collapse:collapse}
+.video-table thead tr{border-bottom:1px solid var(--border)}
+.video-table th{font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-align:left;padding:.6rem .75rem;white-space:nowrap;cursor:pointer;user-select:none}
+.video-table th:hover{color:var(--text)}
+.video-table tbody tr{border-bottom:1px solid rgba(34,34,32,.6);transition:background .15s;cursor:pointer}
+.video-table tbody tr:hover{background:rgba(201,168,76,.04)}
+.video-table tbody tr.expanded{background:rgba(201,168,76,.06)}
+.video-table td{padding:.65rem .75rem;vertical-align:middle;font-size:.72rem}
+
+/* SCORE BAR */
+.score-bar-wrap{display:flex;align-items:center;gap:.5rem}
+.score-num{font-family:'DM Serif Display',serif;font-size:1.1rem;min-width:2.2rem;text-align:right}
+.score-bar{height:4px;background:var(--border);flex:1;max-width:60px}
+.score-fill{height:100%;transition:width .6s ease}
+
+/* EXPAND ROW */
+.expand-row{display:none}
+.expand-row.open{display:table-row}
+.expand-content{padding:1rem 1.5rem 1.5rem;background:var(--surface);border-bottom:2px solid var(--gold)}
+.expand-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5rem}
+.expand-section-title{font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:.75rem}
+.data-row{display:flex;justify-content:space-between;padding:.3rem 0;border-bottom:1px solid var(--border);font-size:.68rem}
+.data-label{color:var(--muted)}
+.data-val{color:var(--text);font-weight:500}
+.data-val.good{color:var(--green)}
+.data-val.bad{color:var(--red)}
+.data-val.warn{color:var(--orange)}
+
+/* DECISION PANEL */
+.decision-panel{background:var(--bg);border:1px solid var(--border);padding:1rem}
+.decision-title{font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:.75rem}
+.decision-btns{display:flex;flex-direction:column;gap:.4rem}
+.dec-btn{background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'DM Mono',monospace;font-size:.62rem;padding:.4rem .75rem;cursor:pointer;text-align:left;transition:all .15s;display:flex;align-items:center;gap:.5rem}
+.dec-btn:hover{border-color:var(--gold);color:var(--gold)}
+.dec-btn.selected{background:rgba(201,168,76,.1);border-color:var(--gold);color:var(--gold2)}
+.dec-icon{font-size:.85rem}
+
+/* THUMBNAIL */
+.thumb-link{color:var(--blue);font-size:.62rem;text-decoration:none;display:inline-flex;align-items:center;gap:.3rem}
+.thumb-link:hover{color:var(--gold)}
+
+/* STATS STRIP */
+.stats-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);margin-bottom:1.5rem}
+.stat-box{background:var(--surface);padding:.85rem 1rem}
+.stat-box-label{font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.3rem}
+.stat-box-val{font-family:'DM Serif Display',serif;font-size:1.6rem;color:var(--text);line-height:1}
+.stat-box-sub{font-size:.6rem;color:var(--muted);margin-top:.2rem}
+
+/* ENTRY MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;display:none;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);width:560px;max-width:95vw;max-height:90vh;overflow-y:auto}
+.modal-header{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.modal-title{font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--gold2)}
+.modal-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.2rem}
+.modal-body{padding:1.5rem}
+.form-row{margin-bottom:1rem}
+.form-label{font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.35rem;display:block}
+.form-input{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;font-size:.78rem;padding:.5rem .75rem;outline:none}
+.form-input:focus{border-color:var(--gold)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+.modal-footer{padding:1rem 1.5rem;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:.75rem}
+
+/* EMPTY */
+.empty{padding:3rem;text-align:center;color:var(--muted);font-size:.75rem}
+
+/* TOOLTIP */
+.tooltip{position:relative}
+.tooltip::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#1a1a18;border:1px solid var(--border);color:var(--text);font-size:.6rem;padding:.3rem .6rem;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .2s;z-index:100}
+.tooltip:hover::after{opacity:1}
+
+/* CHANNEL AVG LINE */
+.avg-line{font-size:.6rem;color:var(--muted);padding:.4rem .75rem;background:rgba(201,168,76,.05);border-bottom:1px solid var(--border)}
+
+/* BADGE */
+.badge{display:inline-block;padding:.1rem .45rem;font-size:.56rem;letter-spacing:.06em;border-radius:1px}
+.badge-edited{background:rgba(91,141,238,.12);color:var(--blue)}
+.badge-static{background:rgba(107,104,96,.15);color:var(--muted)}
+
+/* RESPONSIVE */
+@media(max-width:1100px){.expand-grid{grid-template-columns:1fr 1fr}.repost-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){.repost-grid{grid-template-columns:1fr}.stats-strip{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span class="brand-name">LSM Command</span>
+    <span class="brand-sub">YouTube Operations</span>
+  </div>
+  <div class="header-right">
+    <span id="lastUpdated">—</span>
+    <button class="btn btn-gold" onclick="openAddModal()">+ Enter 48h Data</button>
+  </div>
+</header>
+
+<!-- REPOST NEXT -->
+<div class="repost-hero">
+  <div class="repost-label">▶ Repost Queue — What to Post Next</div>
+  <div class="repost-grid" id="repostGrid"><!-- filled by JS --></div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" data-tab="all" onclick="switchTab('all')">All Videos <span class="tab-count" id="cnt-all">0</span></div>
+  <div class="tab" data-tab="High-Energy" onclick="switchTab('High-Energy')">⚡ High Energy <span class="tab-count" id="cnt-High-Energy">0</span></div>
+  <div class="tab" data-tab="Healing" onclick="switchTab('Healing')">🌿 Healing <span class="tab-count" id="cnt-Healing">0</span></div>
+  <div class="tab" data-tab="Healing 1 Hour" onclick="switchTab('Healing 1 Hour')">🧘 1-Hour <span class="tab-count" id="cnt-Healing 1 Hour">0</span></div>
+</div>
+
+<main>
+  <!-- STATS STRIP -->
+  <div class="stats-strip" id="statsStrip"></div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <input class="search-input" placeholder="Search titles..." oninput="applyFilter()" id="searchBox"/>
+    <button class="filter-btn active" data-filter="all" onclick="setDecisionFilter('all',this)">All</button>
+    <button class="filter-btn" data-filter="Repost Candidate" onclick="setDecisionFilter('Repost Candidate',this)">✅ Repost Candidates</button>
+    <button class="filter-btn" data-filter="Change Thumbnail" onclick="setDecisionFilter('Change Thumbnail',this)">🖼 Change Thumb</button>
+    <button class="filter-btn" data-filter="needs-data" onclick="setDecisionFilter('needs-data',this)">⏳ Needs 48h Data</button>
+    <select class="sort-select" id="sortSelect" onchange="applyFilter()">
+      <option value="score-desc">Sort: Score ↓</option>
+      <option value="score-asc">Sort: Score ↑</option>
+      <option value="avd-desc">Sort: AVD ↓</option>
+      <option value="ctr-desc">Sort: CTR ↓</option>
+      <option value="days-asc">Sort: Newest First</option>
+      <option value="days-desc">Sort: Oldest First</option>
+    </select>
+  </div>
+
+  <!-- TABLE -->
+  <table class="video-table" id="videoTable">
+    <thead>
+      <tr>
+        <th style="width:32px"></th>
+        <th>Title</th>
+        <th>Type</th>
+        <th class="tooltip" data-tip="Performance Score: AVD% × CTR weight × retention">Score</th>
+        <th>CTR%</th>
+        <th>AVD</th>
+        <th>Avg%</th>
+        <th>Views</th>
+        <th>Days</th>
+        <th>Format</th>
+        <th>Decision</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+  <div class="empty" id="emptyMsg" style="display:none">No videos match the current filter.</div>
+</main>
+
+<!-- ADD DATA MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Enter 48-Hour Data</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label class="form-label">YouTube Video ID</label>
+        <input class="form-input" id="inp-ytid" placeholder="e.g. dQw4w9WgXcQ"/>
+      </div>
+      <div class="form-grid">
+        <div class="form-row">
+          <label class="form-label">Impressions (48h)</label>
+          <input class="form-input" id="inp-imp48" placeholder="e.g. 1200"/>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Views (48h)</label>
+          <input class="form-input" id="inp-views48" placeholder="e.g. 95"/>
+        </div>
+        <div class="form-row">
+          <label class="form-label">CTR % (48h)</label>
+          <input class="form-input" id="inp-ctr48" placeholder="e.g. 4.8"/>
+        </div>
+        <div class="form-row">
+          <label class="form-label">AVD in seconds (48h)</label>
+          <input class="form-input" id="inp-avd48" placeholder="e.g. 72"/>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Avg % Viewed (48h)</label>
+          <input class="form-input" id="inp-avgpct48" placeholder="e.g. 38.5"/>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Browse % (48h)</label>
+          <input class="form-input" id="inp-browse48" placeholder="e.g. 0.55"/>
+        </div>
+        <div class="form-row">
+          <label class="form-label">CTR vs Channel Avg</label>
+          <input class="form-input" id="inp-ctrvsavg" placeholder="e.g. 1.05"/>
+        </div>
+        <div class="form-row">
+          <label class="form-label">AVD vs Channel Avg</label>
+          <input class="form-input" id="inp-avdvsavg" placeholder="e.g. 0.92"/>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Subs Gained (48h)</label>
+          <input class="form-input" id="inp-subs48" placeholder="e.g. 3"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="form-label">Notes</label>
+        <input class="form-input" id="inp-notes" placeholder="Thumbnail test, title change, etc."/>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-gold" onclick="saveData()">Save & Score</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── RAW DATA FROM EXCEL ───────────────────────────────────────────────────
+var CHANNEL_AVG_CTR = 5.47;
+var CHANNEL_AVG_AVD_SEC = 84; // ~1:24
+
+var VIDEOS = [
+  // HIGH ENERGY
+  {id:'F_mxavVq_90',title:'This Didgeridoo Sound Gives You Instant Goosebumps',cat:'High-Energy',days:13,imp:1199,ctr:4.92,views:98,avd_str:'1:58',avd_sec:118,avgpct:40.48,dur:292,format:'Edited',decision:'Repost Candidate',subs48:null,notes:''},
+  {id:'etJLfkbkkVQ',title:'This Didgeridoo Sound Makes Your Brain Glitch',cat:'High-Energy',days:15,imp:7435,ctr:5.55,views:641,avd_str:'1:26',avd_sec:86,avgpct:30.29,dur:284,format:'Edited',decision:'Repost Candidate',subs48:null,notes:''},
+  {id:'yqGOfn5O9iQ',title:'This Didgeridoo Sound Should NOT Be Possible',cat:'High-Energy',days:17,imp:3438,ctr:4.04,views:264,avd_str:'1:56',avd_sec:116,avgpct:41.39,dur:281,format:'Static',decision:'Change Thumbnail',subs48:null,notes:''},
+  {id:'lSMJQthFetc',title:'This Didgeridoo Performance Is Pure Adrenaline Rush',cat:'High-Energy',days:23,imp:5021,ctr:3.21,views:323,avd_str:'1:36',avd_sec:96,avgpct:41.07,dur:236,format:'Edited',decision:'Change Thumbnail',subs48:null,notes:''},
+  {id:'7h88uzZf6VE',title:"This Didgeridoo Sounds Like It's Possessed",cat:'High-Energy',days:29,imp:5461,ctr:3.68,views:403,avd_str:'1:14',avd_sec:74,avgpct:48.80,dur:152,format:'Static',decision:'Change Thumbnail',subs48:null,notes:''},
+  {id:'iBPAPuB9qmY',title:"Is This the Most EPIC Didgeridoo Performance You've Ever Heard?",cat:'High-Energy',days:31,imp:12188,ctr:5.01,views:1010,avd_str:'1:31',avd_sec:91,avgpct:41.83,dur:219,format:'Static',decision:'Repost Candidate',subs48:null,notes:''},
+  {id:'6UTtTDnSQVQ',title:'BEATBOXING INSIDE DIDGERIDOO - "Funkedelic"',cat:'High-Energy',days:39,imp:5427,ctr:4.46,views:373,avd_str:'1:15',avd_sec:75,avgpct:33.63,dur:224,format:'Edited',decision:'Repost Candidate',subs48:null,notes:''},
+  {id:'p3JUJCftjRc',title:'Didgeridoo Effects That Sound Unreal - "Ear Candy"',cat:'High-Energy',days:41,imp:6704,ctr:4.85,views:519,avd_str:'1:21',avd_sec:81,avgpct:39.07,dur:208,format:'Static',decision:'Repost Candidate',subs48:null,notes:''},
+  {id:'GJnCe6lx_3c',title:'The Sounds Coming Out Of This Didgeridoo Will Give You GOOSEBUMPS',cat:'High-Energy',days:46,imp:5856,ctr:4.68,views:401,avd_str:'0:52',avd_sec:52,avgpct:45.90,dur:114,format:'Edited',decision:'Repost Candidate',subs48:null,notes:''},
+  {id:'kwdCP4HYLRw',title:'This Didgeridoo Sound Should NOT Be Possible (viral)',cat:'High-Energy',days:53,imp:115178,ctr:7.62,views:11208,avd_str:'1:06',avd_sec:66,avgpct:30.81,dur:215,format:'Edited',decision:'Repost Candidate',subs48:null,notes:''},
+  {id:'68SyXKsWOvk',title:'This Didgeridoo Vibration Is Way Too Powerful',cat:'High-Energy',days:58,imp:27292,ctr:7.42,views:2715,avd_str:'1:05',avd_sec:65,avgpct:38.08,dur:173,format:'Edited',decision:'Repost Candidate',subs48:null,notes:''},
+  {id:'fslVf6Ndu7Q',title:'The Sounds Coming Out Of This Didgeridoo Will Give You GOOSEBUMPS (2)',cat:'High-Energy',days:96,imp:510012,ctr:6.63,views:49272,avd_str:'1:44',avd_sec:104,avgpct:36.84,dur:285,format:'Edited',decision:'Repost Candidate',subs48:null,notes:'Top performer'},
+  {id:'941zhOxiViU',title:'This Didgeridoo Sound Will BREAK Your Brain',cat:'High-Energy',days:66,imp:276434,ctr:6.06,views:26227,avd_str:'0:41',avd_sec:41,avgpct:46.06,dur:91,format:'Edited',decision:'Repost Candidate',subs48:null,notes:''},
+  {id:'auUUg7jO9BA',title:'Didgeridoo Effects That Sound Unreal - "Ear Candy" (2)',cat:'High-Energy',days:113,imp:41146,ctr:7.70,views:4476,avd_str:'1:20',avd_sec:80,avgpct:37.37,dur:216,format:'Edited',decision:'Repost Candidate',subs48:null,notes:''},
+  // HEALING
+  {id:'evUXopPSZG8',title:'This Didgeridoo Sound Will Put Your Brain to SLEEP',cat:'Healing',days:9,imp:1479,ctr:4.67,views:108,avd_str:'2:40',avd_sec:160,avgpct:40.82,dur:392,format:'Edited',decision:'Repost Candidate',subs48:null,notes:''},
+  {id:'ItAJz3RZqD4',title:'The #1 Sound For INSTANT CALM - 69Hz Didgeridoo Tone',cat:'Healing',days:21,imp:6911,ctr:4.77,views:553,avd_str:'1:20',avd_sec:80,avgpct:36.52,dur:220,format:'Static',decision:'Repost Candidate',subs48:null,notes:''},
+  {id:'aJNm1qZ2Tgs',title:'This Didgeridoo Sounds Makes Your Brain Stop',cat:'Healing',days:27,imp:306999,ctr:5.60,views:26149,avd_str:'1:44',avd_sec:104,avgpct:28.28,dur:370,format:'Static',decision:'Repost Candidate',subs48:null,notes:'VIRAL — 307k impressions'},
+  {id:'N3AX0Cjx4JE',title:'The #1 Sound for INSTANT CALM - 73 Hz Didgeridoo Tone',cat:'Healing',days:35,imp:3660,ctr:6.83,views:428,avd_str:'1:05',avd_sec:65,avgpct:57.43,dur:114,format:'Static',decision:'Repost Candidate',subs48:null,notes:'High avg%'},
+  {id:'tKExIduceHw',title:'These 69Hz Didgeridoo Frequencies HIT DEEP',cat:'Healing',days:89,imp:24319,ctr:7.80,views:2637,avd_str:'1:06',avd_sec:66,avgpct:35.80,dur:187,format:'Edited',decision:'Repost Candidate',subs48:null,notes:''},
+  {id:'xIfW_7W5mKw',title:'The #1 Sound for INSTANT CALM - 73 Hz (repost)',cat:'Healing',days:120,imp:19666,ctr:9.81,views:2355,avd_str:'0:54',avd_sec:54,avgpct:45.34,dur:120,format:'Edited',decision:'Repost Candidate',subs48:null,notes:'High CTR repost'},
+  {id:'vA8NDWS2azY',title:'The Hidden Power of Didgeridoo Music For Healing',cat:'Healing',days:111,imp:20649,ctr:6.26,views:1735,avd_str:'1:52',avd_sec:112,avgpct:24.33,dur:463,format:'Edited',decision:'Repost Candidate',subs48:null,notes:''},
+  // 1 HOUR
+  {id:'HcyzeHscz38',title:'This Didgeridoo Sound Feels Like a SEDATIVE | 1 Hour',cat:'Healing 1 Hour',days:19,imp:11453,ctr:7.30,views:1213,avd_str:'3:23',avd_sec:203,avgpct:5.57,dur:3644,format:'Static',decision:'Repost Candidate',subs48:null,notes:'Best 1hr CTR'},
+  {id:'Xmx24mN9qKo',title:'This Didgeridoo Sound Removes ALL Tension | 1 Hour',cat:'Healing 1 Hour',days:25,imp:5277,ctr:5.10,views:510,avd_str:'10:02',avd_sec:602,avgpct:15.46,dur:3897,format:'Static',decision:'Repost Candidate',subs48:null,notes:''},
+  {id:'HcaujUinjTg',title:'This Sound Deletes Stress From Your Body | 1 Hour',cat:'Healing 1 Hour',days:43,imp:6555,ctr:5.10,views:514,avd_str:'7:59',avd_sec:479,avgpct:13.17,dur:3644,format:'Edited',decision:'Repost Candidate',subs48:null,notes:''},
+  {id:'7nhuUgUXc2c',title:'This Didgeridoo Sound Feels Like a SEDATIVE | 1 Hour (2)',cat:'Healing 1 Hour',days:54,imp:27103,ctr:6.49,views:2535,avd_str:'6:25',avd_sec:385,avgpct:10.50,dur:3666,format:'Edited',decision:'Repost Candidate',subs48:null,notes:''},
+  {id:'4qIPQ9Fuz-M',title:'This Sound Deletes Stress From Your Body | 1 Hour (2)',cat:'Healing 1 Hour',days:60,imp:35952,ctr:5.30,views:3048,avd_str:'5:22',avd_sec:322,avgpct:8.79,dur:3666,format:'Edited',decision:'Repost Candidate',subs48:null,notes:''},
+  {id:'EJohVnzCm_g',title:'The #1 Sound for INSTANT CALM - 1 Hour 73 Hz',cat:'Healing 1 Hour',days:116,imp:13883,ctr:7.45,views:1479,avd_str:'12:21',avd_sec:741,avgpct:19.67,dur:3771,format:'Edited',decision:'Repost Candidate',subs48:null,notes:'Highest AVD in 1hr'},
+];
+
+// Load saved data overlay
+var savedData = JSON.parse(localStorage.getItem('lsm_data') || '{}');
+VIDEOS.forEach(function(v){
+  if(savedData[v.id]){
+    Object.assign(v, savedData[v.id]);
+  }
+});
+
+// ─── SCORE ALGORITHM ──────────────────────────────────────────────────────
+function calcScore(v){
+  // AVD% of video (how much of the video they watch)
+  var avdPct = v.dur > 0 ? (v.avd_sec / v.dur) * 100 : v.avgpct;
+  // For 1-hour vids, AVD% is naturally low, normalise differently
+  var isLong = v.dur > 1800;
+  var avdScore = isLong ? Math.min(avdPct * 4, 100) : Math.min(avdPct * 1.2, 100);
+  // CTR score vs channel avg
+  var ctrScore = Math.min((v.ctr / CHANNEL_AVG_CTR) * 50, 100);
+  // Avg% viewed bonus
+  var retScore = Math.min(v.avgpct * 1.5, 100);
+  // Views momentum (log scale)
+  var viewScore = Math.min(Math.log10(v.views + 1) * 20, 100);
+  // Weighted
+  var score = avdScore*0.35 + ctrScore*0.25 + retScore*0.25 + viewScore*0.15;
+  return Math.round(score);
+}
+
+function scoreColor(s){
+  if(s>=75) return 'var(--green)';
+  if(s>=55) return 'var(--gold)';
+  if(s>=35) return 'var(--orange)';
+  return 'var(--red)';
+}
+
+function typeClass(cat){
+  if(cat==='High-Energy') return 'energy';
+  if(cat==='Healing') return 'heal';
+  return 'hour';
+}
+function typeLabel(cat){
+  if(cat==='High-Energy') return '⚡';
+  if(cat==='Healing') return '🌿';
+  return '🧘';
+}
+
+// ─── STATE ────────────────────────────────────────────────────────────────
+var currentTab = 'all';
+var decisionFilter = 'all';
+
+function switchTab(t){
+  currentTab = t;
+  document.querySelectorAll('.tab').forEach(function(el){
+    el.classList.toggle('active', el.dataset.tab===t);
+  });
+  applyFilter();
+}
+
+function setDecisionFilter(f, btn){
+  decisionFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  applyFilter();
+}
+
+function getFiltered(){
+  var search = document.getElementById('searchBox').value.toLowerCase();
+  var sort = document.getElementById('sortSelect').value;
+  var list = VIDEOS.filter(function(v){
+    if(currentTab!=='all' && v.cat!==currentTab) return false;
+    if(decisionFilter==='needs-data' && v.imp>0) return false;
+    if(decisionFilter!=='all' && decisionFilter!=='needs-data' && v.decision!==decisionFilter) return false;
+    if(search && !v.title.toLowerCase().includes(search)) return false;
+    return true;
+  });
+  list.sort(function(a,b){
+    var sa=calcScore(a), sb=calcScore(b);
+    if(sort==='score-desc') return sb-sa;
+    if(sort==='score-asc') return sa-sb;
+    if(sort==='avd-desc') return b.avd_sec-a.avd_sec;
+    if(sort==='ctr-desc') return b.ctr-a.ctr;
+    if(sort==='days-asc') return a.days-b.days;
+    if(sort==='days-desc') return b.days-a.days;
+    return sb-sa;
+  });
+  return list;
+}
+
+// ─── RENDER ───────────────────────────────────────────────────────────────
+function render(){
+  updateCounts();
+  renderStats();
+  renderRepostQueue();
+  renderTable();
+}
+
+function updateCounts(){
+  var tabs = ['all','High-Energy','Healing','Healing 1 Hour'];
+  tabs.forEach(function(t){
+    var n = t==='all' ? VIDEOS.length : VIDEOS.filter(function(v){return v.cat===t;}).length;
+    var el = document.getElementById('cnt-'+t);
+    if(el) el.textContent = n;
+  });
+}
+
+function renderStats(){
+  var vids = currentTab==='all' ? VIDEOS : VIDEOS.filter(function(v){return v.cat===currentTab;});
+  var avgCTR = (vids.reduce(function(s,v){return s+v.ctr;},0)/vids.length).toFixed(2);
+  var avgAVD = Math.round(vids.reduce(function(s,v){return s+v.avd_sec;},0)/vids.length);
+  var avgAvgPct = (vids.reduce(function(s,v){return s+v.avgpct;},0)/vids.length).toFixed(1);
+  var totalViews = vids.reduce(function(s,v){return s+v.views;},0);
+  var repostReady = vids.filter(function(v){return v.decision==='Repost Candidate';}).length;
+  var avgM = Math.floor(avgAVD/60), avgS = avgAVD%60;
+  document.getElementById('statsStrip').innerHTML =
+    statBox('Avg CTR%', avgCTR+'%', 'Channel avg: '+CHANNEL_AVG_CTR+'%') +
+    statBox('Avg AVD', avgM+':'+String(avgS).padStart(2,'0'), 'Average view duration') +
+    statBox('Avg Retention', avgAvgPct+'%', 'Avg % of video watched') +
+    statBox('Total Views', fmtNum(totalViews), 'Across '+vids.length+' videos') +
+    statBox('Repost Ready', repostReady, 'Videos scored as candidates');
+}
+
+function statBox(label, val, sub){
+  return '<div class="stat-box"><div class="stat-box-label">'+label+'</div><div class="stat-box-val">'+val+'</div><div class="stat-box-sub">'+sub+'</div></div>';
+}
+
+function renderRepostQueue(){
+  // Best 1 from each category by score, that are "Repost Candidate"
+  var cats = ['High-Energy','Healing','Healing 1 Hour'];
+  var html = '';
+  cats.forEach(function(cat, i){
+    var best = VIDEOS.filter(function(v){return v.cat===cat && v.decision==='Repost Candidate';})
+      .sort(function(a,b){return calcScore(b)-calcScore(a);})[0];
+    if(!best) return;
+    var score = calcScore(best);
+    var tc = typeClass(cat);
+    var avdPct = best.dur > 0 ? ((best.avd_sec/best.dur)*100).toFixed(0) : best.avgpct;
+    html += '<div class="repost-card" onclick="openVideoDetail(\''+best.id+'\')">';
+    html += '<div class="repost-rank">'+(i+1)+'</div>';
+    html += '<div class="repost-type"><span class="pill pill-'+tc+'">'+typeLabel(cat)+' '+cat+'</span></div>';
+    html += '<div class="repost-title">'+best.title+'</div>';
+    html += '<div class="repost-score"><div><div class="score-big" style="color:'+scoreColor(score)+'">'+score+'</div><div class="score-label">Score</div></div>';
+    html += '<div><div class="score-big" style="font-size:1.3rem">'+best.ctr+'%</div><div class="score-label">CTR</div></div>';
+    html += '<div><div class="score-big" style="font-size:1.3rem">'+best.avd_str+'</div><div class="score-label">AVD</div></div>';
+    html += '<div><div class="score-big" style="font-size:1.3rem">'+avdPct+'%</div><div class="score-label">AVD%</div></div></div>';
+    html += '<div class="repost-why">'+best.avgpct+'% avg viewed · '+fmtNum(best.views)+' views · '+best.days+' days old</div>';
+    if(best.notes) html += '<div class="repost-why" style="color:var(--gold)">'+best.notes+'</div>';
+    html += '<div class="repost-action"><button class="btn btn-gold" onclick="event.stopPropagation();markAction(\''+best.id+'\',\'Reposted\')">✓ Mark Reposted</button><a class="btn btn-outline" href="https://youtube.com/watch?v='+best.id+'" target="_blank" onclick="event.stopPropagation()">▶ Watch</a></div>';
+    html += '</div>';
+  });
+  document.getElementById('repostGrid').innerHTML = html;
+}
+
+function renderTable(){
+  var list = getFiltered();
+  var tbody = document.getElementById('tableBody');
+  var empty = document.getElementById('emptyMsg');
+  if(!list.length){ tbody.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+  // Channel avgs for this tab
+  var avgCTR = (VIDEOS.reduce(function(s,v){return s+v.ctr;},0)/VIDEOS.length);
+  var avgAVD = (VIDEOS.reduce(function(s,v){return s+v.avd_sec;},0)/VIDEOS.length);
+  var html = '';
+  list.forEach(function(v){
+    var score = calcScore(v);
+    var tc = typeClass(v.cat);
+    var ctrClass = v.ctr >= avgCTR*1.1 ? 'good' : v.ctr < avgCTR*0.8 ? 'bad' : '';
+    var avdClass = v.avd_sec >= avgAVD*1.1 ? 'good' : v.avd_sec < avgAVD*0.8 ? 'bad' : '';
+    var decClass = v.decision==='Repost Candidate' ? 'good' : v.decision==='Change Thumbnail' ? 'warn' : '';
+    var needsData = !v.imp || v.imp===0;
+    html += '<tr onclick="toggleExpand(\''+v.id+'\')" id="row-'+v.id+'">';
+    html += '<td style="color:var(--muted);font-size:.65rem">'+typeLabel(v.cat)+'</td>';
+    html += '<td style="max-width:280px"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px" title="'+v.title+'">'+v.title+'</div></td>';
+    html += '<td><span class="pill pill-'+tc+'" style="font-size:.52rem">'+v.cat+'</span></td>';
+    html += '<td><div class="score-bar-wrap"><span class="score-num" style="color:'+scoreColor(score)+'">'+score+'</span><div class="score-bar"><div class="score-fill" style="width:'+score+'%;background:'+scoreColor(score)+'"></div></div></div></td>';
+    html += '<td class="data-val '+ctrClass+'">'+(needsData?'<span style="color:var(--muted)">—</span>':v.ctr+'%')+'</td>';
+    html += '<td class="data-val '+avdClass+'">'+(needsData?'<span style="color:var(--muted)">—</span>':v.avd_str)+'</td>';
+    html += '<td>'+(needsData?'<span style="color:var(--muted)">—</span>':v.avgpct+'%')+'</td>';
+    html += '<td>'+fmtNum(v.views)+'</td>';
+    html += '<td style="color:var(--muted)">'+v.days+'d</td>';
+    html += '<td><span class="badge badge-'+(v.format||'edited').toLowerCase()+'">'+( v.format||'—')+'</span></td>';
+    html += '<td class="data-val '+decClass+'">'+(v.decision||'<span style="color:var(--muted)">No data</span>')+'</td>';
+    html += '<td><a href="https://youtube.com/watch?v='+v.id+'" target="_blank" onclick="event.stopPropagation()" style="color:var(--muted);font-size:.65rem;text-decoration:none">▶</a></td>';
+    html += '</tr>';
+    // Expand row
+    html += '<tr class="expand-row" id="expand-'+v.id+'"><td colspan="12"><div class="expand-content">'+buildExpandContent(v)+'</div></td></tr>';
+  });
+  tbody.innerHTML = html;
+}
+
+function buildExpandContent(v){
+  var score = calcScore(v);
+  var avdPct = v.dur>0 ? ((v.avd_sec/v.dur)*100).toFixed(1) : '—';
+  var html = '<div class="expand-grid">';
+  // Performance data
+  html += '<div><div class="expand-section-title">48h Performance</div>';
+  html += dataRow('Impressions', fmtNum(v.imp)||'—');
+  html += dataRow('Views', fmtNum(v.views));
+  html += dataRow('CTR %', v.ctr+'%', v.ctr>=CHANNEL_AVG_CTR?'good':'bad');
+  html += dataRow('AVD', v.avd_str, v.avd_sec>=CHANNEL_AVG_AVD_SEC?'good':'bad');
+  html += dataRow('Avg % Viewed', v.avgpct+'%');
+  html += dataRow('AVD % of video', avdPct+'%');
+  html += dataRow('Format', v.format||'—');
+  html += dataRow('Subs gained (48h)', v.subs48||'—');
+  html += '</div>';
+  // Score breakdown
+  html += '<div><div class="expand-section-title">Score Breakdown</div>';
+  var avdScore = v.dur>0 ? Math.min((v.avd_sec/v.dur)*100*(v.dur>1800?4:1.2),100) : v.avgpct;
+  var ctrScore = Math.min((v.ctr/CHANNEL_AVG_CTR)*50,100);
+  var retScore = Math.min(v.avgpct*1.5,100);
+  html += dataRow('Overall Score', score+' / 100');
+  html += dataRow('AVD component (35%)', Math.round(avdScore));
+  html += dataRow('CTR component (25%)', Math.round(ctrScore));
+  html += dataRow('Retention component (25%)', Math.round(retScore));
+  html += dataRow('Days since upload', v.days+'d');
+  html += dataRow('Repost recommendation', v.decision||'—');
+  if(v.notes) html += dataRow('Notes', v.notes);
+  html += '</div>';
+  // Decision
+  html += '<div><div class="expand-section-title">Make a Decision</div>';
+  html += '<div class="decision-btns" id="decbtns-'+v.id+'">';
+  var decisions = [
+    {val:'Repost Candidate', icon:'✅', label:'Repost as-is'},
+    {val:'Change Thumbnail', icon:'🖼', label:'Change Thumbnail First'},
+    {val:'Change Title', icon:'✏️', label:'Change Title First'},
+    {val:'Re-edit', icon:'✂️', label:'Re-edit Before Repost'},
+    {val:'Monitor', icon:'👁', label:'Monitor — Not Ready Yet'},
+  ];
+  decisions.forEach(function(d){
+    html += '<button class="dec-btn'+(v.decision===d.val?' selected':'')+'" onclick="setDecision(\''+v.id+'\',\''+d.val+'\')">';
+    html += '<span class="dec-icon">'+d.icon+'</span>'+d.label+'</button>';
+  });
+  html += '</div>';
+  // Thumbnail link
+  html += '<div style="margin-top:1rem">';
+  html += '<div class="expand-section-title">Links</div>';
+  html += '<a class="thumb-link" href="https://youtube.com/watch?v='+v.id+'" target="_blank">▶ Watch on YouTube</a><br/>';
+  html += '<a class="thumb-link" href="https://studio.youtube.com/video/'+v.id+'/edit" target="_blank" style="margin-top:.3rem;display:inline-flex">⚙ Edit in Studio</a>';
+  html += '</div>';
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
+function dataRow(label, val, cls){
+  return '<div class="data-row"><span class="data-label">'+label+'</span><span class="data-val'+(cls?' '+cls:'')+'">'+(val||'—')+'</span></div>';
+}
+
+function toggleExpand(id){
+  var row = document.getElementById('expand-'+id);
+  var tr = document.getElementById('row-'+id);
+  if(!row) return;
+  var isOpen = row.classList.contains('open');
+  // close all
+  document.querySelectorAll('.expand-row.open').forEach(function(r){ r.classList.remove('open'); });
+  document.querySelectorAll('.video-table tbody tr.expanded').forEach(function(r){ r.classList.remove('expanded'); });
+  if(!isOpen){
+    row.classList.add('open');
+    if(tr) tr.classList.add('expanded');
+  }
+}
+
+function openVideoDetail(id){
+  var v = VIDEOS.find(function(x){return x.id===id;});
+  if(!v) return;
+  toggleExpand(id);
+  var row = document.getElementById('row-'+id);
+  if(row) row.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function setDecision(id, decision){
+  var v = VIDEOS.find(function(x){return x.id===id;});
+  if(!v) return;
+  v.decision = decision;
+  persistVideo(v);
+  // update buttons
+  var btns = document.getElementById('decbtns-'+id);
+  if(btns){
+    btns.querySelectorAll('.dec-btn').forEach(function(b){ b.classList.remove('selected'); });
+    btns.querySelectorAll('.dec-btn').forEach(function(b){
+      if(b.textContent.includes(decision.replace(/-/g,' '))) b.classList.add('selected');
+    });
+  }
+  renderRepostQueue();
+  renderStats();
+}
+
+function markAction(id, action){
+  var v = VIDEOS.find(function(x){return x.id===id;});
+  if(!v) return;
+  v.decision = action;
+  persistVideo(v);
+  render();
+}
+
+function persistVideo(v){
+  var d = JSON.parse(localStorage.getItem('lsm_data')||'{}');
+  d[v.id] = {decision:v.decision, subs48:v.subs48, imp:v.imp, ctr:v.ctr, avd_sec:v.avd_sec,
+              avd_str:v.avd_str, avgpct:v.avgpct, views:v.views, notes:v.notes};
+  localStorage.setItem('lsm_data', JSON.stringify(d));
+}
+
+// ─── ADD DATA MODAL ───────────────────────────────────────────────────────
+var editingId = null;
+
+function openAddModal(id){
+  editingId = id||null;
+  if(id){
+    var v = VIDEOS.find(function(x){return x.id===id;});
+    if(v){
+      document.getElementById('inp-ytid').value = v.id;
+      document.getElementById('inp-imp48').value = v.imp||'';
+      document.getElementById('inp-views48').value = v.views||'';
+      document.getElementById('inp-ctr48').value = v.ctr||'';
+      document.getElementById('inp-avd48').value = v.avd_sec||'';
+      document.getElementById('inp-avgpct48').value = v.avgpct||'';
+      document.getElementById('inp-subs48').value = v.subs48||'';
+      document.getElementById('inp-notes').value = v.notes||'';
+    }
+  } else {
+    ['inp-ytid','inp-imp48','inp-views48','inp-ctr48','inp-avd48','inp-avgpct48','inp-browse48','inp-ctrvsavg','inp-avdvsavg','inp-subs48','inp-notes'].forEach(function(id){
+      document.getElementById(id).value='';
+    });
+  }
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal(){
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+function saveData(){
+  var ytid = document.getElementById('inp-ytid').value.trim();
+  if(!ytid){ alert('Enter a YouTube video ID'); return; }
+  var v = VIDEOS.find(function(x){return x.id===ytid;});
+  if(!v){ alert('Video ID not found in database. Add it to the source data.'); return; }
+  var avdSec = parseInt(document.getElementById('inp-avd48').value)||v.avd_sec;
+  var avdM = Math.floor(avdSec/60), avdS = avdSec%60;
+  v.imp = parseFloat(document.getElementById('inp-imp48').value)||v.imp;
+  v.views = parseFloat(document.getElementById('inp-views48').value)||v.views;
+  v.ctr = parseFloat(document.getElementById('inp-ctr48').value)||v.ctr;
+  v.avd_sec = avdSec;
+  v.avd_str = avdM+':'+String(avdS).padStart(2,'0');
+  v.avgpct = parseFloat(document.getElementById('inp-avgpct48').value)||v.avgpct;
+  v.subs48 = parseInt(document.getElementById('inp-subs48').value)||v.subs48;
+  v.notes = document.getElementById('inp-notes').value||v.notes;
+  // Auto-decision based on score
+  var score = calcScore(v);
+  if(!v.decision || v.decision==='No data'){
+    v.decision = score>=60 ? 'Repost Candidate' : score>=40 ? 'Monitor' : 'Change Thumbnail';
+  }
+  persistVideo(v);
+  closeModal();
+  render();
+}
+
+// ─── UTILS ────────────────────────────────────────────────────────────────
+function fmtNum(n){
+  if(!n||isNaN(n)) return '—';
+  if(n>=1000000) return (n/1000000).toFixed(1)+'M';
+  if(n>=1000) return (n/1000).toFixed(1)+'k';
+  return String(Math.round(n));
+}
+
+function applyFilter(){ renderTable(); renderStats(); }
+
+// Close modal on overlay click
+document.getElementById('modalOverlay').addEventListener('click', function(e){
+  if(e.target===this) closeModal();
+});
+
+// ─── INIT ─────────────────────────────────────────────────────────────────
+document.getElementById('lastUpdated').textContent = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'});
+render();
+</script>
+</body>
+</html>
