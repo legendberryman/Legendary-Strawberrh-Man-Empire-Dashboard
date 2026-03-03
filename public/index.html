@@ -111,33 +111,13 @@
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
-var SHOP  = 'pkxkyy-p3.myshopify.com';
-var TOKEN = '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';
 var CI = null;
 
-var PROXIES = [
-  function(u){ return 'https://corsproxy.io/?' + encodeURIComponent(u); },
-  function(u){ return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u); },
-  function(u){ return 'https://thingproxy.freeboard.io/fetch/' + u; }
-];
-
 async function api(path) {
-  var url = 'https://' + SHOP + '/admin/api/2024-01' + path;
-  var lastErr;
-  for (var i = 0; i < PROXIES.length; i++) {
-    try {
-      var proxyUrl = PROXIES[i](url);
-      var res = await fetch(proxyUrl, {
-        headers: { 'X-Shopify-Access-Token': TOKEN, 'Content-Type': 'application/json' }
-      });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      var data = await res.json();
-      return data;
-    } catch(e) {
-      lastErr = e;
-    }
-  }
-  throw new Error('All proxies failed for ' + path + ': ' + lastErr.message);
+  var cleanPath = path.startsWith('/') ? path.slice(1) : path;
+  var res = await fetch('/api/shopify?path=' + encodeURIComponent(cleanPath));
+  if (!res.ok) throw new Error('HTTP ' + res.status + ' for ' + path);
+  return res.json();
 }
 
 function money(v) {
