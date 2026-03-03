@@ -1,16 +1,17 @@
-🍓
-LSM COMMAND CENTER
-Legendary Strawberry Man
+div>`}
 
-LIVE
-⚙ SETTINGS
-↻ REFRESH
-📊 OVERVIEW
-🎬 VIDEOS
-♻️ REPOST QUEUE
-📥 SEAN DATA
-📋 SEO SHEET
-💰 SALES
-✍️ TITLES
-⚙️ SETTINGS
+async function saveSettings(){
+  const g=id=>document.getElementById(id)?.value?.trim();
+  const body={};
+  if(g('s-yt'))body.youtubeApiKey=g('s-yt');if(g('s-gk'))body.googleApiKey=g('s-gk');if(g('s-sh'))body.shopifyToken=g('s-sh');
+  if(g('s-cid'))body.channelId=g('s-cid');if(g('s-s1'))body.sheetsId1=g('s-s1');if(g('s-s2'))body.sheetsId2=g('s-s2');if(g('s-sd'))body.shopifyDomain=g('s-sd'); 
+  await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const msg=document.getElementById('ss-msg');msg.classList.add('show');
+  await refreshAll();setTimeout(()=>msg.classList.remove('show'),3000);
+}
 
+async function init(){render();await loadConfig();render();await Promise.all([loadChannel(),loadVideos(),loadRepost(),loadSeanData()]);render()}
+init();
+</script>
+</body>
+</html>
