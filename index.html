@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LSM Command Center</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#080808;--card:#111;--border:#1e1e1e;--accent:#e63946;--accent2:#ff6b35;--gold:#f4a261;--green:#2ecc71;--purple:#a855f7;--text:#f0ede8;--muted:#555}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes spin{to{transform:rotate(360deg)}}
+header{background:#0a0a0a;border-bottom:1px solid var(--border);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100}
+.logo{display:flex;align-items:center;gap:12px}
+.lt{font-family:'DM Mono',monospace;font-size:12px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--accent)}
+.lsub{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;margin-top:1px}
+.hright{display:flex;align-items:center;gap:16px}
+.livebadge{display:flex;align-items:center;gap:6px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--green);border:1px solid var(--green);padding:4px 10px;border-radius:2px}
+.livedot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite}
+button{cursor:pointer}
+.hbtn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 14px;font-size:11px;font-family:'DM Mono',monospace;letter-spacing:2px;text-transform:uppercase;border-radius:2px;transition:all .15s}
+.hbtn:hover{border-color:var(--accent);color:var(--accent)}
+.rbtn{background:var(--accent);border:none;color:#fff;padding:6px 14px;font-size:11px;font-family:'DM Mono',monospace;letter-spacing:2px;text-transform:uppercase;border-radius:2px}
+nav{background:#0a0a0a;border-bottom:1px solid var(--border);padding:0 32px;display:flex;overflow-x:auto}
+.nt{padding:14px 20px;font-size:12px;font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
+.nt:hover{color:var(--text)}
+.nt.active{color:var(--accent);border-bottom-color:var(--accent)}
+main{padding:32px;max-width:1600px;margin:0 auto}
+.statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:32px}
+.statcard{background:var(--card);padding:24px 20px;position:relative}
+.statbar{position:absolute;top:0;left:0;width:3px;height:100%}
+.statlabel{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.statval{font-size:28px;font-weight:700;line-height:1;margin-bottom:4px}
+.statsub{font-size:11px;color:var(--muted)}
+.section{margin-bottom:40px}
+.sectionhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.sectiontitle{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted)}
+.sectionacts{display:flex;gap:8px}
+.vtable{background:var(--border);border:1px solid var(--border)}
+.vthead{display:grid;grid-template-columns:36px 80px 1fr 90px 110px 80px 80px 110px;gap:12px;padding:10px 20px;background:#0d0d0d;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
+.vrow{display:grid;grid-template-columns:36px 80px 1fr 90px 110px 80px 80px 110px;gap:12px;padding:14px 20px;background:var(--card);border-top:1px solid var(--border);align-items:center;text-decoration:none;color:inherit;transition:background .1s}
+.vrow:hover{background:#161616}
+.vnum{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)}
+.vthumb{width:80px;height:45px;object-fit:cover;border-radius:2px;border:1px solid var(--border);background:var(--border)}
+.vtitle{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vdate{font-size:11px;color:var(--muted);margin-top:2px;font-family:'DM Mono',monospace}
+.vstat{font-family:'DM Mono',monospace;font-size:12px;text-align:right;white-space:nowrap}
+.vbarwrap{display:flex;align-items:center;gap:8px}
+.vbar{height:3px;background:var(--border);border-radius:2px;flex:1;overflow:hidden;min-width:40px}
+.vbarfill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px}
+.badge{display:inline-block;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border-radius:2px;white-space:nowrap}
+.badge-r{background:rgba(46,204,113,.15);color:var(--green);border:1px solid rgba(46,204,113,.3)}
+.badge-h{background:rgba(230,57,70,.15);color:var(--accent);border:1px solid rgba(230,57,70,.3)}
+.badge-c{background:rgba(85,85,85,.15);color:var(--muted);border:1px solid var(--border)}
+.insightgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:32px}
+.insightcard{background:var(--card);border:1px solid var(--border);border-radius:4px;padding:20px}
+.insighttitle{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent2);margin-bottom:8px}
+.insighttext{font-size:13px;line-height:1.7}
+.insightlink{display:inline-block;margin-top:12px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--accent);text-transform:uppercase;cursor:pointer;border-bottom:1px solid var(--accent);padding-bottom:1px}
+.repostgrid{display:flex;flex-direction:column;gap:1px;background:var(--border);border:1px solid var(--border)}
+.repostrow{background:var(--card);padding:16px 20px;display:grid;grid-template-columns:80px 1fr auto auto;gap:16px;align-items:center}
+.repostrow:hover{background:#161616}
+.repostscore{font-family:'DM Mono',monospace;font-size:20px;font-weight:700;color:var(--green);text-align:center}
+.reposttitle{font-size:13px;margin-bottom:4px}
+.repostmeta{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)}
+.repostviews{font-family:'DM Mono',monospace;font-size:14px;color:var(--gold);text-align:right}
+.btn{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:6px 12px;border-radius:2px;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .15s;white-space:nowrap}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btnprimary{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:6px 12px;border-radius:2px;background:var(--accent);color:#fff;border:1px solid var(--accent);white-space:nowrap}
+.btnprimary:hover{background:#c0303b}
+.loading{display:flex;align-items:center;justify-content:center;padding:80px;gap:12px;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;letter-spacing:2px}
+.spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+.errorbox{background:#1a0a0a;border:1px solid var(--accent);border-radius:4px;padding:16px 20px;font-family:'DM Mono',monospace;font-size:12px;color:#ff6b6b;margin-bottom:24px}
+.emptystate{text-align:center;padding:60px;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;letter-spacing:2px}
+.sheetsw{overflow-x:auto}
+.sheetsw table{width:100%;border-collapse:collapse}
+.sheetsw th{background:#0d0d0d;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:10px 16px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+.sheetsw td{padding:12px 16px;font-size:12px;border-bottom:1px solid var(--border);white-space:nowrap;max-width:260px;overflow:hidden;text-overflow:ellipsis}
+.sheetsw tr{background:var(--card)}
+.sheetsw tr:hover{background:#161616}
+.settingspanel{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:40px;max-width:720px}
+.setlabel{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:16px}
+.formgroup{margin-bottom:20px}
+.formlabel{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:block}
+.forminput{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;font-size:13px;font-family:'DM Mono',monospace;border-radius:2px;outline:none;transition:border .15s}
+.forminput:focus{border-color:var(--accent)}
+.formhint{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.6}
+.divider{border:none;border-top:1px solid var(--border);margin:28px 0}
+.savedmsg{font-family:'DM Mono',monospace;font-size:11px;color:var(--green);margin-left:12px;opacity:0;transition:opacity .3s}
+.savedmsg.show{opacity:1}
+.statusdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-left:6px;vertical-align:middle}
+.statusdot.ok{background:var(--green)}
+.statusdot.no{background:var(--muted)}
+.formrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+.datacard{background:var(--card);border:1px solid var(--border);border-radius:4px;padding:24px;margin-bottom:24px}
+.titlegenwrap{background:var(--card);border:1px solid var(--border);border-radius:4px;padding:24px}
+.titlegeninputrow{display:flex;gap:12px;margin-bottom:20px}
+.titlegeninput{flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;font-size:13px;font-family:'DM Mono',monospace;border-radius:2px;outline:none}
+.titlegeninput:focus{border-color:var(--accent)}
+.titlesuggs{display:flex;flex-direction:column;gap:8px}
+.titlesugg{background:var(--bg);border:1px solid var(--border);border-radius:2px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:16px}
+.titlesugg span{font-size:13px}
+.copybtn{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);cursor:pointer;white-space:nowrap;background:none;border:none}
+.copybtn:hover{color:var(--accent)}
+@media(max-width:860px){
+  .vthead,.vrow{grid-template-columns:28px 1fr auto}
+  .vthead>*:nth-child(n+4),.vrow>*:nth-child(n+4){display:none}
+  .vthead>*:nth-child(2),.vrow>*:nth-child(2){display:none}
+  main{padding:16px}nav{padding:0 16px}header{padding:0 16px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <span style="font-size:24px">🍓</span>
+    <div><div class="lt">LSM Command Center</div><div class="lsub">Legendary Strawberry Man</div></div>
+  </div>
+  <div class="hright">
+    <div class="livebadge"><div class="livedot"></div>LIVE</div>
+    <button class="hbtn" onclick="showTab('settings')">Settings</button>
+    <button class="rbtn" onclick="refreshAll()">Refresh</button>
+  </div>
+</header>
+<nav>
+  <div class="nt active" onclick="showTab('overview')" id="tab-overview">Overview</div>
+  <div class="nt" onclick="showTab('videos')" id="tab-videos">Videos</div>
+  <div class="nt" onclick="showTab('repost')" id="tab-repost">Repost Queue</div>
+  <div class="nt" onclick="showTab('seandata')" id="tab-seandata">Sean Data</div>
+  <div class="nt" onclick="showTab('sheets')" id="tab-sheets">SEO Sheet</div>
+  <div class="nt" onclick="showTab('titles')" id="tab-titles">Titles</div>
+  <div class="nt" onclick="showTab('settings')" id="tab-settings">Settings</div>
+</nav>
+<main id="mc"></main>
+<script>
+var S={tab:'overview',channel:null,videos:[],repost:[],sheets1:null,seanData:[],cfg:{},loading:{},errors:{}};
+function fmt(n){var x=parseInt(n);if(isNaN(x))return'--';if(x>=1e6)return(x/1e6).toFixed(1)+'M';if(x>=1e3)return(x/1e3).toFixed(1)+'K';return x.toLocaleString()}
+function ago(d){var days=Math.floor((new Date()-new Date(d))/86400000);if(days<1)return'Today';if(days<7)return days+'d ago';if(days<30)return Math.floor(days/7)+'w ago';return Math.floor(days/30)+'mo ago'}
+function api(url){return fetch(url).then(function(r){return r.json()})}
+function loadCfg(){return api('/api/config').then(function(d){S.cfg=d})}
+function loadChannel(){
+  if(!S.cfg.hasYoutubeKey)return Promise.resolve();
+  S.loading.channel=true;render();
+  return api('/api/youtube/channel')
+    .then(function(d){S.channel=d;S.errors.channel=null})
+    .catch(function(e){S.errors.channel=e.message})
+    .then(function(){S.loading.channel=false})
+}
+function loadVideos(){
+  if(!S.cfg.hasYoutubeKey)return Promise.resolve();
+  S.loading.videos=true;render();
+  return api('/api/youtube/videos')
+    .then(function(d){S.videos=Array.isArray(d)?d:[];S.errors.videos=null})
+    .catch(function(e){S.errors.videos=e.message})
+    .then(function(){S.loading.videos=false})
+}
+function loadRepost(){
+  if(!S.cfg.hasYoutubeKey)return Promise.resolve();
+  S.loading.repost=true;render();
+  return api('/api/youtube/repost-candidates')
+    .then(function(d){S.repost=Array.isArray(d)?d:[];S.errors.repost=null})
+    .catch(function(e){S.errors.repost=e.message})
+    .then(function(){S.loading.repost=false})
+}
+function loadSheets(){
+  if(!S.cfg.sheetsId1)return Promise.resolve();
+  S.loading.sheets=true;render();
+  return api('/api/sheets/'+S.cfg.sheetsId1+'?range=A1:J100')
+    .then(function(d){S.sheets1=d;S.errors.sheets=null})
+    .catch(function(e){S.errors.sheets=e.message})
+    .then(function(){S.loading.sheets=false})
+}
+function loadSeanData(){
+  S.loading.sean=true;render();
+  return api('/api/video-data')
+    .then(function(d){S.seanData=Array.isArray(d)?d:[];S.errors.sean=null})
+    .catch(function(e){S.errors.sean=e.message})
+    .then(function(){S.loading.sean=false})
+}
+function refreshAll(){
+  return loadCfg().then(function(){
+    return Promise.all([loadChannel(),loadVideos(),loadRepost(),loadSheets(),loadSeanData()])
+  }).then(function(){render()})
+}
+function showTab(tab){
+  S.tab=tab;
+  document.querySelectorAll('.nt').forEach(function(t){t.classList.remove('active')});
+  var el=document.getElementById('tab-'+tab);
+  if(el)el.classList.add('active');
+  render();
+}
+function render(){
+  var el=document.getElementById('mc');
+  if(!el)return;
+  var map={overview:rOverview,videos:rVideos,repost:rRepost,seandata:rSeanData,sheets:rSheets,titles:rTitles,settings:rSettings};
+  el.innerHTML=(map[S.tab]||rOverview)();
+}
+function renderTable(videos){
+  if(!videos.length)return'<div class="emptystate">No videos loaded</div>';
+  var maxV=Math.max.apply(null,videos.map(function(v){return parseInt(v.statistics&&v.statistics.viewCount||0)}));
+  var allAvg=S.channel?Math.round(parseInt(S.channel.statistics.viewCount||0)/parseInt(S.channel.statistics.videoCount||1)):0;
+  var rows=videos.map(function(v,i){
+    var views=parseInt(v.statistics&&v.statistics.viewCount||0);
+    var likes=parseInt(v.statistics&&v.statistics.likeCount||0);
+    var comments=parseInt(v.statistics&&v.statistics.commentCount||0);
+    var pct=Math.round((views/Math.max(maxV,1))*100);
+    var days=Math.floor((new Date()-new Date(v.snippet.publishedAt))/86400000);
+    var isHot=views>allAvg*1.5,isCold=views<allAvg*.3,isRepost=days>30&&views>500;
+    var tn=v.snippet.thumbnails&&(v.snippet.thumbnails.medium||v.snippet.thumbnails.default)||{};
+    var badge=isRepost?'<span class="badge badge-r">Repost</span>':isHot?'<span class="badge badge-h">Hot</span>':isCold?'<span class="badge badge-c">Cold</span>':'';
+    return '<a class="vrow" href="https://youtube.com/watch?v='+v.id+'" target="_blank">'+
+      '<div class="vnum">'+(i+1)+'</div>'+
+      '<img class="vthumb" src="'+(tn.url||'')+'" onerror="this.style.background=\'#1e1e1e\'">'+
+      '<div><div class="vtitle">'+v.snippet.title+'</div><div class="vdate">'+ago(v.snippet.publishedAt)+'</div></div>'+
+      '<div class="vstat" style="color:var(--muted)">'+new Date(v.snippet.publishedAt).toLocaleDateString()+'</div>'+
+      '<div class="vbarwrap"><div class="vbar"><div class="vbarfill" style="width:'+pct+'%"></div></div><div class="vstat" style="color:var(--gold)">'+fmt(views)+'</div></div>'+
+      '<div class="vstat" style="color:var(--green)">'+fmt(likes)+'</div>'+
+      '<div class="vstat" style="color:var(--muted)">'+fmt(comments)+'</div>'+
+      '<div>'+badge+'</div>'+
+      '</a>';
+  });
+  return '<div class="vtable"><div class="vthead"><div>#</div><div>Thumb</div><div>Title</div><div>Date</div><div>Views</div><div>Likes</div><div>Comments</div><div>Status</div></div>'+rows.join('')+'</div>';
+}
+function insights(){
+  var ins=[];
+  if(!S.channel||!S.videos.length){
+    ins.push({title:'Connect YouTube',text:'Enter your YouTube API key in Settings to see live data.',tab:'settings'});
+    return ins;
+  }
+  var st=S.channel.statistics;
+  var totalV=parseInt(st.viewCount||0),vidC=parseInt(st.videoCount||1),subs=parseInt(st.subscriberCount||0);
+  var allAvg=Math.round(totalV/vidC);
+  var rec5=S.videos.slice(0,5);
+  var recAvg=Math.round(rec5.reduce(function(s,v){return s+parseInt(v.statistics&&v.statistics.viewCount||0)},0)/Math.max(rec5.length,1));
+  if(recAvg<allAvg*.5)ins.push({title:'Performance Drop',text:'Last 5 avg '+fmt(recAvg)+' vs all-time avg '+fmt(allAvg)+'. Quality beats volume.',tab:null});
+  if(subs>0&&totalV/subs>150)ins.push({title:'Low Sub Conversion',text:fmt(totalV)+' views but only '+fmt(subs)+' subs. Add verbal CTA at 30 seconds in every video.',tab:null});
+  if(S.repost.length>0)ins.push({title:S.repost.length+' Repost Candidates',text:'"'+S.repost[0].snippet.title+'" scored '+S.repost[0].repostScore+'. Your Brazilian girls strategy proved reposting works.',tab:'repost'});
+  ins.push({title:'Title Formula',text:'Best: "This Didgeridoo Sound [VERB] You [EMOTION]". Rotate: Goosebumps, Brain Glitch, Impossible, Adrenaline.',tab:'titles'});
+  return ins;
+}
+function rOverview(){
+  var st=S.channel&&S.channel.statistics;
+  var subs=st?fmt(st.subscriberCount):'--';
+  var views=st?fmt(st.viewCount):'--';
+  var vids=st?fmt(st.videoCount):'--';
+  var avgV=st?fmt(Math.round(parseInt(st.viewCount||0)/parseInt(st.videoCount||1))):'--';
+  var rec5=S.videos.slice(0,5);
+  var recAvg=rec5.length?Math.round(rec5.reduce(function(s,v){return s+parseInt(v.statistics&&v.statistics.viewCount||0)},0)/rec5.length):null;
+  var h='';
+  if(!S.cfg.hasYoutubeKey)h+='<div class="errorbox">No YouTube API key yet -- <span style="cursor:pointer;color:var(--accent2);text-decoration:underline" onclick="showTab(\'settings\')">go to Settings</span></div>';
+  h+='<div class="statgrid">';
+  h+='<div class="statcard"><div class="statbar" style="background:var(--accent)"></div><div class="statlabel">Subscribers</div><div class="statval" style="color:var(--accent)">'+(S.loading.channel?'...':subs)+'</div><div class="statsub">YouTube</div></div>';
+  h+='<div class="statcard"><div class="statbar" style="background:var(--accent2)"></div><div class="statlabel">Total Views</div><div class="statval" style="color:var(--accent2)">'+(S.loading.channel?'...':views)+'</div><div class="statsub">All time</div></div>';
+  h+='<div class="statcard"><div class="statbar" style="background:var(--gold)"></div><div class="statlabel">Videos</div><div class="statval" style="color:var(--gold)">'+(S.loading.channel?'...':vids)+'</div><div class="statsub">Published</div></div>';
+  h+='<div class="statcard"><div class="statbar" style="background:var(--green)"></div><div class="statlabel">Avg Views</div><div class="statval" style="color:var(--green)">'+(S.loading.channel?'...':avgV)+'</div><div class="statsub">Per video</div></div>';
+  h+='<div class="statcard"><div class="statbar" style="background:var(--purple)"></div><div class="statlabel">Recent Avg</div><div class="statval" style="color:var(--purple)">'+(S.loading.videos?'...':recAvg?fmt(recAvg):'--')+'</div><div class="statsub">Last 5 videos</div></div>';
+  h+='<div class="statcard"><div class="statbar" style="background:#c13584"></div><div class="statlabel">Instagram</div><div class="statval" style="color:#c13584">65K</div><div class="statsub">@lsm.life</div></div>';
+  h+='<div class="statcard"><div class="statbar" style="background:var(--gold)"></div><div class="statlabel">Monthly Sales</div><div class="statval" style="color:var(--gold)">3-4</div><div class="statsub">Saxo-Didge</div></div>';
+  h+='<div class="statcard"><div class="statbar" style="background:var(--accent)"></div><div class="statlabel">Repost Ready</div><div class="statval" style="color:var(--accent)">'+(S.loading.repost?'...':fmt(S.repost.length))+'</div><div class="statsub">Queued</div></div>';
+  h+='</div>';
+  h+='<div class="section"><div class="sectionhead"><div class="sectiontitle">Insights</div></div><div class="insightgrid">';
+  insights().forEach(function(i){
+    h+='<div class="insightcard"><div class="insighttitle">'+i.title+'</div><div class="insighttext">'+i.text+'</div>';
+    if(i.tab)h+='<div class="insightlink" onclick="showTab(\''+i.tab+'\')">View</div>';
+    h+='</div>';
+  });
+  h+='</div></div>';
+  if(S.videos.length){
+    h+='<div class="section"><div class="sectionhead"><div class="sectiontitle">Latest 5 Videos</div><div class="sectionacts"><button class="btn" onclick="showTab(\'videos\')">View All</button></div></div>';
+    h+=renderTable(S.videos.slice(0,5));
+    h+='</div>';
+  }
+  return h;
+}
+function rVideos(){
+  return '<div class="section"><div class="sectionhead"><div class="sectiontitle">All Videos</div><div class="sectionacts">'+
+    '<button class="btn" onclick="sortV(\'date\')">By Date</button>'+
+    '<button class="btn" onclick="sortV(\'views\')">By Views</button>'+
+    '<button class="btn" onclick="sortV(\'likes\')">By Likes</button>'+
+    '</div></div>'+
+    (S.loading.videos?'<div class="loading"><div class="spinner"></div>Loading...</div>':
+     S.errors.videos?'<div class="errorbox">'+S.errors.videos+'</div>':
+     renderTable(S.videos))+'</div>';
+}
+function sortV(by){
+  if(by==='views')S.videos.sort(function(a,b){return parseInt(b.statistics&&b.statistics.viewCount||0)-parseInt(a.statistics&&a.statistics.viewCount||0)});
+  else if(by==='likes')S.videos.sort(function(a,b){return parseInt(b.statistics&&b.statistics.likeCount||0)-parseInt(a.statistics&&a.statistics.likeCount||0)});
+  else S.videos.sort(function(a,b){return new Date(b.snippet.publishedAt)-new Date(a.snippet.publishedAt)});
+  render();
+}
+function rRepost(){
+  var h='<div class="section"><div class="sectionhead"><div class="sectiontitle">Repost Queue</div></div>';
+  h+='<div style="background:var(--card);border:1px solid var(--border);border-radius:4px;padding:16px 20px;margin-bottom:20px;font-size:13px;color:var(--muted);line-height:1.7"><b style="color:var(--text)">Score = views divided by days old.</b> Videos 30+ days old with 500+ views, ranked best first.</div>';
+  if(S.loading.repost)h+='<div class="loading"><div class="spinner"></div>Loading...</div>';
+  else if(S.errors.repost)h+='<div class="errorbox">'+S.errors.repost+'</div>';
+  else if(!S.repost.length)h+='<div class="emptystate">No candidates yet</div>';
+  else{
+    h+='<div class="repostgrid">';
+    S.repost.slice(0,25).forEach(function(v){
+      h+='<div class="repostrow">'+
+        '<div><div class="repostscore">'+v.repostScore+'</div><div style="text-align:center;font-family:DM Mono,monospace;font-size:9px;color:var(--muted);margin-top:2px">SCORE</div></div>'+
+        '<div><div class="reposttitle">'+v.snippet.title+'</div><div class="repostmeta">'+v.daysSince+'d old'+(v.views48h?' - 48h: '+fmt(v.views48h):'')+'</div></div>'+
+        '<div><div class="repostviews">'+fmt(v.statistics.viewCount)+'</div><div style="font-family:DM Mono,monospace;font-size:11px;color:var(--muted);text-align:right">'+fmt(v.statistics.likeCount)+' likes</div></div>'+
+        '<div><a href="https://youtube.com/watch?v='+v.id+'" target="_blank" class="btnprimary">Open</a></div>'+
+        '</div>';
+    });
+    h+='</div>';
+  }
+  return h+'</div>';
+}
+function rSeanData(){
+  var h='<div class="section"><div class="sectionhead"><div class="sectiontitle">48hr and 7-Day Data Entry</div></div>';
+  h+='<div style="background:var(--card);border:1px solid var(--border);border-radius:4px;padding:16px 20px;margin-bottom:20px;font-size:13px;color:var(--muted);line-height:1.7"><b style="color:var(--text)">Sean job:</b> Enter real view counts from YouTube Studio. API has 48hr delay.</div>';
+  h+='<div class="datacard">';
+  h+='<div style="font-family:DM Mono,monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent2);margin-bottom:16px">Enter Video Data</div>';
+  h+='<div class="formrow"><div><label class="formlabel">Video ID</label><input class="forminput" id="d-vid" placeholder="dQw4w9WgXcQ"></div><div><label class="formlabel">Title</label><input class="forminput" id="d-title" placeholder="This Didgeridoo..."></div></div>';
+  h+='<div class="formrow"><div><label class="formlabel">Views at 48h</label><input class="forminput" id="d-v48" type="number" placeholder="1240"></div><div><label class="formlabel">Views at 7 Days</label><input class="forminput" id="d-v7" type="number" placeholder="4500"></div><div><label class="formlabel">Times Reposted</label><input class="forminput" id="d-rp" type="number" placeholder="0"></div><div><label class="formlabel">Your Name</label><input class="forminput" id="d-who" placeholder="Sean"></div></div>';
+  h+='<button class="btnprimary" onclick="saveSean()">Save Data</button><span class="savedmsg" id="sean-ok">Saved!</span></div>';
+  if(S.loading.sean)h+='<div class="loading"><div class="spinner"></div>Loading...</div>';
+  else if(!S.seanData.length)h+='<div class="emptystate">No data entered yet</div>';
+  else{
+    h+='<div class="vtable"><div style="display:grid;grid-template-columns:1fr 90px 90px 70px 90px;gap:12px;padding:10px 20px;background:#0d0d0d;font-family:DM Mono,monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)"><div>Video</div><div>48h</div><div>7d</div><div>Reposts</div><div>Updated</div></div>';
+    S.seanData.forEach(function(d){
+      h+='<div style="display:grid;grid-template-columns:1fr 90px 90px 70px 90px;gap:12px;padding:14px 20px;background:var(--card);border-top:1px solid var(--border);align-items:center">'+
+        '<div><div style="font-size:13px">'+(d.video_title||d.video_id)+'</div><div style="font-family:DM Mono,monospace;font-size:10px;color:var(--muted)">'+d.video_id+'</div></div>'+
+        '<div style="font-family:DM Mono,monospace;font-size:13px;color:var(--gold)">'+fmt(d.views_48h)+'</div>'+
+        '<div style="font-family:DM Mono,monospace;font-size:13px;color:var(--green)">'+fmt(d.views_7d)+'</div>'+
+        '<div style="font-family:DM Mono,monospace;font-size:13px;color:var(--muted)">'+(d.repost_count||0)+'x</div>'+
+        '<div style="font-family:DM Mono,monospace;font-size:11px;color:var(--muted)">'+ago(d.updated_at)+'</div>'+
+        '</div>';
+    });
+    h+='</div>';
+  }
+  return h+'</div>';
+}
+function saveSean(){
+  var vid=document.getElementById('d-vid').value.trim();
+  if(!vid){alert('Please enter a Video ID');return}
+  var body={video_id:vid,video_title:document.getElementById('d-title').value.trim(),views_48h:parseInt(document.getElementById('d-v48').value)||0,views_7d:parseInt(document.getElementById('d-v7').value)||0,repost_count:parseInt(document.getElementById('d-rp').value)||0,entered_by:document.getElementById('d-who').value||'Sean'};
+  fetch('/api/video-data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(function(){
+    var msg=document.getElementById('sean-ok');
+    msg.classList.add('show');
+    setTimeout(function(){msg.classList.remove('show')},2000);
+    loadSeanData().then(render);
+  });
+}
+function rSheets(){
+  var rows=S.sheets1&&S.sheets1.values||[];
+  var h='<div class="section"><div class="sectionhead"><div class="sectiontitle">SEO Sheet</div><div class="sectionacts"><button class="btn" onclick="loadSheets().then(render)">Reload</button></div></div>';
+  if(!S.cfg.sheetsId1)h+='<div class="errorbox">Sheets ID not set -- <span style="cursor:pointer;color:var(--accent2);text-decoration:underline" onclick="showTab(\'settings\')">go to Settings</span></div>';
+  else if(S.loading.sheets)h+='<div class="loading"><div class="spinner"></div>Loading...</div>';
+  else if(S.errors.sheets)h+='<div class="errorbox">'+S.errors.sheets+'</div>';
+  else if(!rows.length)h+='<div class="emptystate">No data</div>';
+  else{
+    h+='<div class="sheetsw"><table><thead><tr>'+(rows[0]||[]).map(function(c){return'<th>'+c+'</th>'}).join('')+'</tr></thead><tbody>';
+    rows.slice(1).forEach(function(row){h+='<tr>'+row.map(function(c){return'<td>'+c+'</td>'}).join('')+'</tr>'});
+    h+='</tbody></table></div>';
+  }
+  return h+'</div>';
+}
+function rTitles(){
+  var h='<div class="section"><div class="sectionhead"><div class="sectiontitle">Title Generator</div></div>';
+  h+='<div class="titlegenwrap"><div style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.7">Enter a topic and get 8 title variations using your proven formulas.</div>';
+  h+='<div class="titlegeninputrow"><input class="titlegeninput" id="t-in" placeholder="e.g. forest, healing, beatboxing, 432hz..." onkeydown="if(event.key===\'Enter\')genTitles()"><button class="btnprimary" onclick="genTitles()">Generate</button></div>';
+  h+='<div id="tresults"></div></div>';
+  h+='<div class="section" style="margin-top:32px"><div class="sectionhead"><div class="sectiontitle">Proven Formulas</div></div>';
+  [{f:'This Didgeridoo Sound [VERB] You [EMOTION]',e:'This Didgeridoo Sound Gives You Instant Goosebumps'},{f:'This Didgeridoo Sound Should NOT Be Possible',e:'This Didgeridoo Sound Should NOT Be Possible'},{f:'[PEOPLE] React to Saxo-Didge',e:'Brazilian Girls Hear a Saxo-Didge For the First Time'},{f:'[TOPIC] Healing Frequencies Saxo-Didge Sound Bath',e:'Forest Healing Frequencies Saxo-Didge Sound Bath'}].forEach(function(f){
+    h+='<div style="background:var(--card);border:1px solid var(--border);border-radius:2px;padding:16px 20px;margin-bottom:8px"><div style="font-family:DM Mono,monospace;font-size:11px;color:var(--accent2);margin-bottom:6px">'+f.f+'</div><div style="font-size:13px;color:var(--muted)">e.g. "'+f.e+'"</div></div>';
+  });
+  return h+'</div></div>';
+}
+function genTitles(){
+  var t=document.getElementById('t-in').value.trim();
+  var el=document.getElementById('tresults');
+  if(!t||!el)return;
+  var T=t.charAt(0).toUpperCase()+t.slice(1);
+  var titles=[
+    'This Didgeridoo '+T+' Will Give You Goosebumps',
+    'The '+T+' Didgeridoo Sound That Should NOT Be Possible',
+    'I Played '+T+' on a Saxo-Didge and Something Happened',
+    T+' on a Didgeridoo (You Have Never Heard This)',
+    'This Is What '+T+' Sounds Like on the Most Unique Didgeridoo',
+    'Warning: This Didgeridoo '+T+' Will Change How You Hear Music',
+    T+' Healing Frequencies Saxo-Didge Sound Bath',
+    'The '+T+' Didgeridoo That Causes a Brain Glitch'
+  ];
+  var h='<div class="titlesuggs">';
+  titles.forEach(function(tt){
+    h+='<div class="titlesugg"><span>'+tt+'</span><button class="copybtn" onclick="copyTitle(this,\''+tt.replace(/'/g,"\\'")+'\')">Copy</button></div>';
+  });
+  el.innerHTML=h+'</div>';
+}
+function copyTitle(btn,text){
+  navigator.clipboard.writeText(text);
+  btn.textContent='Copied';
+  setTimeout(function(){btn.textContent='Copy'},1500);
+}
+function rSettings(){
+  var h='<div class="settingspanel">';
+  h+='<div class="setlabel">YouTube <span class="statusdot '+(S.cfg.hasYoutubeKey?'ok':'no')+'"></span></div>';
+  h+='<div class="formgroup"><label class="formlabel">YouTube Data API v3 Key</label><input class="forminput" type="password" id="s-yt" placeholder="AIza..."><div class="formhint">console.cloud.google.com - Credentials - Create API Key - restrict to YouTube Data API v3</div></div>';
+  h+='<div class="formgroup"><label class="formlabel">Channel ID</label><input class="forminput" id="s-cid" value="'+(S.cfg.channelId||'UCE5Qdgrpen7tB4tQ6TdHwUw')+'"></div>';
+  h+='<hr class="divider">';
+  h+='<div class="setlabel">Google Sheets <span class="statusdot '+(S.cfg.hasGoogleKey?'ok':'no')+'"></span></div>';
+  h+='<div class="formgroup"><label class="formlabel">Google API Key</label><input class="forminput" type="password" id="s-gk" placeholder="AIza..."></div>';
+  h+='<div class="formgroup"><label class="formlabel">YT Export Sheet ID</label><input class="forminput" id="s-s1" value="'+(S.cfg.sheetsId1||'')+'" placeholder="1kPJQHxbb..."><div class="formhint">Long ID in the Google Sheets URL between /d/ and /edit</div></div>';
+  h+='<div class="formgroup"><label class="formlabel">Crushing YouTube Sheet ID</label><input class="forminput" id="s-s2" value="'+(S.cfg.sheetsId2||'')+'" placeholder="1MxPgEgo..."></div>';
+  h+='<hr class="divider">';
+  h+='<button class="btnprimary" onclick="saveSettings()">Save All Settings</button><span class="savedmsg" id="s-ok">Saved!</span>';
+  h+='</div>';
+  return h;
+}
+function saveSettings(){
+  function g(id){var el=document.getElementById(id);return el?el.value.trim():''}
+  var body={};
+  if(g('s-yt'))body.youtubeApiKey=g('s-yt');
+  if(g('s-gk'))body.googleApiKey=g('s-gk');
+  if(g('s-cid'))body.channelId=g('s-cid');
+  if(g('s-s1'))body.sheetsId1=g('s-s1');
+  if(g('s-s2'))body.sheetsId2=g('s-s2');
+  fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(function(){
+    var msg=document.getElementById('s-ok');
+    msg.classList.add('show');
+    refreshAll().then(function(){setTimeout(function(){msg.classList.remove('show')},3000)});
+  });
+}
+render();
+loadCfg().then(function(){
+  render();
+  return Promise.all([loadChannel(),loadVideos(),loadRepost(),loadSeanData()]);
+}).then(render);
+</script>
+</body>
+</html>
