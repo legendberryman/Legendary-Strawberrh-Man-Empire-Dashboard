@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>LSM Empire OS</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Syne+Mono&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#08080a;--s1:#0f0f12;--s2:#16161a;--s3:#1e1e24;
+  --border:#2a2a32;--border2:#3a3a45;
+  --gold:#d4a843;--gold2:#f0c866;--gold3:rgba(212,168,67,.12);
+  --green:#2ecc8a;--red:#e04545;--blue:#4a90d9;--purple:#9b59e8;--orange:#e8763a;
+  --heal:#5bc4a0;--energy:#e8763a;--hour:#4a90d9;
+  --text:#eeeef2;--text2:#a0a0b0;--text3:#606070;
+  --urgent:#e04545;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:13px;scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* ── LAYOUT ── */
+.app{display:grid;grid-template-columns:220px 1fr;grid-template-rows:auto 1fr;min-height:100vh}
+.topbar{grid-column:1/-1;background:var(--s1);border-bottom:1px solid var(--border);padding:.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200}
+.sidebar{background:var(--s1);border-right:1px solid var(--border);padding:1.2rem 0;position:sticky;top:41px;height:calc(100vh - 41px);overflow-y:auto}
+.content{overflow-y:auto}
+
+/* ── TOPBAR ── */
+.logo{font-size:1.1rem;font-weight:800;letter-spacing:.08em;color:var(--gold2)}
+.logo span{color:var(--text3);font-weight:400;font-size:.75rem;margin-left:.6rem;letter-spacing:.12em;text-transform:uppercase}
+.topbar-right{display:flex;align-items:center;gap:1rem}
+.alert-banner{display:flex;align-items:center;gap:.5rem;background:rgba(224,69,69,.12);border:1px solid rgba(224,69,69,.3);padding:.3rem .75rem;font-size:.65rem;letter-spacing:.08em;color:var(--red);text-transform:uppercase}
+.alert-dot{width:6px;height:6px;background:var(--red);border-radius:50%;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── SIDEBAR ── */
+.sidebar-section{padding:.4rem 0;border-bottom:1px solid var(--border);margin-bottom:.3rem}
+.sidebar-label{font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);padding:.4rem 1.2rem .2rem}
+.nav-item{display:flex;align-items:center;gap:.6rem;padding:.5rem 1.2rem;font-size:.72rem;font-weight:500;color:var(--text2);cursor:pointer;transition:all .15s;border-left:2px solid transparent;letter-spacing:.02em}
+.nav-item:hover{color:var(--text);background:var(--s2)}
+.nav-item.active{color:var(--gold2);border-left-color:var(--gold);background:var(--gold3)}
+.nav-item .ni-icon{font-size:.9rem;width:1.2rem;text-align:center}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:.52rem;padding:.1rem .4rem;border-radius:2px;font-family:'Syne Mono',monospace}
+.nav-badge.gold{background:var(--gold);color:#000}
+
+/* ── PAGES ── */
+.page{display:none;padding:1.5rem;min-height:calc(100vh - 41px)}
+.page.active{display:block}
+.page-title{font-size:1.4rem;font-weight:800;color:var(--gold2);margin-bottom:.3rem}
+.page-sub{font-size:.7rem;color:var(--text3);margin-bottom:1.5rem;letter-spacing:.04em}
+
+/* ── SHARED COMPONENTS ── */
+.btn{border:none;cursor:pointer;font-family:'Syne',sans-serif;font-size:.65rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:.35rem .85rem;transition:all .15s;display:inline-flex;align-items:center;gap:.4rem}
+.btn-gold{background:var(--gold);color:#000}.btn-gold:hover{background:var(--gold2)}
+.btn-outline{background:transparent;border:1px solid var(--border2);color:var(--text2)}.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{opacity:.85}
+.btn-sm{padding:.22rem .6rem;font-size:.58rem}
+.btn-xs{padding:.15rem .45rem;font-size:.54rem}
+
+.pill{display:inline-flex;align-items:center;padding:.15rem .5rem;font-size:.56rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;border-radius:2px}
+.p-heal{background:rgba(91,196,160,.12);color:var(--heal);border:1px solid rgba(91,196,160,.2)}
+.p-energy{background:rgba(232,118,58,.12);color:var(--energy);border:1px solid rgba(232,118,58,.2)}
+.p-hour{background:rgba(74,144,217,.12);color:var(--hour);border:1px solid rgba(74,144,217,.2)}
+.p-green{background:rgba(46,204,138,.1);color:var(--green);border:1px solid rgba(46,204,138,.2)}
+.p-red{background:rgba(224,69,69,.1);color:var(--red);border:1px solid rgba(224,69,69,.2)}
+.p-gold{background:rgba(212,168,67,.1);color:var(--gold2);border:1px solid rgba(212,168,67,.2)}
+.p-purple{background:rgba(155,89,232,.1);color:var(--purple);border:1px solid rgba(155,89,232,.2)}
+
+.card{background:var(--s1);border:1px solid var(--border);padding:1.1rem}
+.card-title{font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:.75rem;font-weight:600}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem}
+
+.stat-card{background:var(--s1);border:1px solid var(--border);padding:.85rem 1rem}
+.stat-val{font-size:1.6rem;font-weight:800;line-height:1;margin-bottom:.2rem}
+.stat-label{font-size:.58rem;color:var(--text3);letter-spacing:.1em;text-transform:uppercase}
+.stat-sub{font-size:.62rem;color:var(--text2);margin-top:.15rem}
+
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);text-align:left;padding:.5rem .7rem;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:.55rem .7rem;font-size:.7rem;border-bottom:1px solid rgba(42,42,50,.5);vertical-align:middle}
+tr:hover td{background:rgba(255,255,255,.02)}
+tr.clickable{cursor:pointer}
+
+.input{background:var(--s2);border:1px solid var(--border);color:var(--text);font-family:'Syne',sans-serif;font-size:.72rem;padding:.4rem .7rem;outline:none;width:100%}
+.input:focus{border-color:var(--gold)}
+.input::placeholder{color:var(--text3)}
+.select{background:var(--s2);border:1px solid var(--border);color:var(--text2);font-family:'Syne',sans-serif;font-size:.65rem;padding:.35rem .6rem;outline:none;cursor:pointer}
+
+.score-bar-wrap{display:flex;align-items:center;gap:.5rem}
+.score-num{font-size:1rem;font-weight:800;min-width:2rem;text-align:right;font-family:'Syne Mono',monospace}
+.score-track{height:3px;background:var(--border);flex:1;max-width:50px}
+.score-fill{height:100%;transition:width .4s ease}
+
+.toggle-group{display:flex;gap:1px;background:var(--border)}
+.tgl{padding:.25rem .65rem;font-size:.6rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;cursor:pointer;font-family:'Syne',sans-serif;border:none;background:transparent;color:var(--text3);transition:all .15s}
+.tgl.on{background:var(--gold);color:#000}
+
+.section-gap{margin-top:1.5rem}
+.row-between{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:.85rem}
+.filter-row{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem}
+
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;display:none;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--s2);border:1px solid var(--border);width:500px;max-width:95vw;max-height:90vh;overflow-y:auto}
+.modal-hd{padding:1rem 1.2rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.modal-title{font-size:.95rem;font-weight:700;color:var(--gold2)}
+.modal-body{padding:1.2rem}
+.modal-ft{padding:.85rem 1.2rem;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:.5rem}
+.form-row{margin-bottom:.75rem}
+.form-label{font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:.28rem}
+.form-grid2{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+
+.dr{display:flex;justify-content:space-between;padding:.28rem 0;border-bottom:1px solid var(--border);font-size:.67rem}
+.dr-label{color:var(--text3)}.dr-val{color:var(--text);font-weight:500}
+.dr-val.g{color:var(--green)}.dr-val.r{color:var(--red)}.dr-val.o{color:var(--orange)}.dr-val.b{color:var(--blue)}
+
+/* ── CONTENT RUNWAY ── */
+.runway{background:var(--s2);border:1px solid var(--border);padding:1rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:2rem;flex-wrap:wrap}
+.runway-days{font-size:2.5rem;font-weight:800;line-height:1;font-family:'Syne Mono',monospace}
+.runway-days.urgent{color:var(--red);animation:flicker .8s infinite alternate}
+.runway-days.warn{color:var(--orange)}
+.runway-days.ok{color:var(--green)}
+@keyframes flicker{from{opacity:1}to{opacity:.6}}
+.runway-info{flex:1}
+.runway-title{font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text3);margin-bottom:.3rem}
+.runway-bar{height:6px;background:var(--border);margin-top:.5rem;position:relative}
+.runway-fill{height:100%;position:absolute;left:0;top:0;transition:width .5s}
+.runway-marker{position:absolute;top:-8px;font-size:.55rem;color:var(--text3)}
+.film-alert{background:rgba(224,69,69,.1);border:1px solid rgba(224,69,69,.25);padding:.6rem 1rem;font-size:.68rem;color:var(--red);display:flex;align-items:center;gap:.5rem;margin-bottom:1rem}
+
+/* ── CONTENT QUEUE BOARD ── */
+.kanban{display:grid;grid-template-columns:repeat(5,minmax(200px,1fr));gap:.75rem;overflow-x:auto;padding-bottom:.5rem}
+.k-col{background:var(--s1);border:1px solid var(--border);min-height:300px}
+.k-col-hd{padding:.6rem .85rem;border-bottom:1px solid var(--border);font-size:.6rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center}
+.k-col-hd .k-count{background:var(--border);padding:.1rem .4rem;font-size:.56rem;border-radius:1px;font-family:'Syne Mono',monospace}
+.k-cards{padding:.5rem;display:flex;flex-direction:column;gap:.4rem;min-height:260px}
+.k-card{background:var(--s2);border:1px solid var(--border);padding:.6rem .75rem;cursor:pointer;transition:all .15s;position:relative}
+.k-card:hover{border-color:var(--gold);background:var(--s3)}
+.k-card-title{font-size:.68rem;font-weight:600;margin-bottom:.35rem;line-height:1.4}
+.k-card-meta{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center}
+.k-card-priority{position:absolute;top:.5rem;right:.5rem;width:6px;height:6px;border-radius:50%}
+.k-card-priority.high{background:var(--red)}
+.k-card-priority.med{background:var(--orange)}
+.k-card-priority.low{background:var(--text3)}
+
+/* ── REPOST QUEUE ── */
+.repost-top{background:var(--s2);border:2px solid var(--gold);padding:1.1rem 1.3rem;margin-bottom:1rem;display:grid;grid-template-columns:auto 1fr auto;gap:1.1rem;align-items:center}
+.repost-rank-big{font-size:3rem;font-weight:800;color:var(--gold);font-family:'Syne Mono',monospace;line-height:1}
+.repost-card-sm{background:var(--s1);border:1px solid var(--border);padding:.75rem 1rem;display:grid;grid-template-columns:auto 1fr auto;gap:.85rem;align-items:center;margin-bottom:.5rem;cursor:pointer;transition:all .15s}
+.repost-card-sm:hover{border-color:var(--gold)}
+.rc-rank{font-size:1.2rem;font-weight:800;color:var(--border2);font-family:'Syne Mono',monospace;min-width:1.8rem;text-align:center}
+
+/* ── TITLE LAB ── */
+.title-formula{background:var(--s2);border:1px solid var(--border);padding:.6rem .9rem;margin-bottom:.4rem;display:flex;justify-content:space-between;align-items:center;gap:1rem}
+.formula-text{font-size:.75rem;font-weight:600;flex:1}
+.formula-ctr{font-family:'Syne Mono',monospace;font-size:.85rem;font-weight:800}
+.title-suggestion{background:var(--s3);border:1px solid var(--gold);border-left:3px solid var(--gold);padding:.7rem 1rem;margin-bottom:.4rem;font-size:.75rem;line-height:1.5;display:flex;justify-content:space-between;align-items:center;gap:.75rem}
+.ai-generating{display:flex;align-items:center;gap:.5rem;color:var(--text3);font-size:.68rem;padding:.75rem}
+.dot-loader span{display:inline-block;width:4px;height:4px;background:var(--gold);border-radius:50%;margin:0 1px;animation:dotbounce .8s infinite both}
+.dot-loader span:nth-child(2){animation-delay:.1s}
+.dot-loader span:nth-child(3){animation-delay:.2s}
+@keyframes dotbounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+
+/* ── INSTRUMENT TRACKER ── */
+.stage-badge{display:inline-flex;align-items:center;padding:.18rem .55rem;font-size:.57rem;font-weight:600;letter-spacing:.05em;border-radius:2px}
+.stage-built{background:rgba(46,204,138,.1);color:var(--green);border:1px solid rgba(46,204,138,.25)}
+.stage-painted{background:rgba(74,144,217,.1);color:var(--blue);border:1px solid rgba(74,144,217,.25)}
+.stage-painting{background:rgba(212,168,67,.1);color:var(--gold2);border:1px solid rgba(212,168,67,.25)}
+.stage-rfp{background:rgba(155,89,232,.1);color:var(--purple);border:1px solid rgba(155,89,232,.25)}
+.stage-printed{background:rgba(160,160,176,.1);color:var(--text2);border:1px solid rgba(160,160,176,.2)}
+.overdue{color:var(--red)}
+.due-soon{color:var(--orange)}
+
+/* ── SCORE SYSTEM ── */
+.score-legend{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem}
+.sc-item{display:flex;align-items:center;gap:.4rem;font-size:.62rem}
+.sc-dot{width:8px;height:8px;border-radius:50%}
+
+/* ── CHEAT SHEET ── */
+.cheat-card{background:var(--s1);border:1px solid var(--border);padding:1.1rem;margin-bottom:.75rem}
+.cheat-title{font-size:.82rem;font-weight:700;margin-bottom:.75rem;color:var(--gold2);display:flex;align-items:center;gap:.5rem}
+.step{display:flex;gap:.7rem;margin-bottom:.65rem;font-size:.7rem;line-height:1.6}
+.step-num{font-size:1rem;font-weight:800;color:var(--gold);min-width:1.4rem;font-family:'Syne Mono',monospace}
+.step-text{color:var(--text2)}.step-text strong{color:var(--text)}
+.rule-row{display:flex;justify-content:space-between;padding:.35rem 0;border-bottom:1px solid var(--border);font-size:.67rem;gap:1rem}
+.rule-label{color:var(--text2)}.rule-val{text-align:right}
+.callout{background:rgba(212,168,67,.07);border:1px solid rgba(212,168,67,.2);padding:.7rem .9rem;margin-top:.75rem;font-size:.68rem;line-height:1.7;color:var(--text2)}
+.callout strong{color:var(--gold2)}
+
+/* expand rows */
+.expand-row{display:none}
+.expand-row.open{display:table-row}
+.expand-content{padding:.85rem 1.1rem 1.1rem;background:var(--s2);border-bottom:2px solid var(--gold)}
+.expand-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.2rem}
+.expand-section{}.es-title{font-size:.56rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:.6rem;font-weight:700}
+.dec-btns{display:flex;flex-direction:column;gap:.3rem}
+.dec-btn{background:transparent;border:1px solid var(--border);color:var(--text2);font-family:'Syne',sans-serif;font-size:.62rem;font-weight:600;padding:.35rem .7rem;cursor:pointer;text-align:left;transition:all .15s;display:flex;align-items:center;gap:.4rem}
+.dec-btn:hover{border-color:var(--gold);color:var(--gold)}
+.dec-btn.sel{background:rgba(212,168,67,.1);border-color:var(--gold);color:var(--gold2)}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div style="display:flex;align-items:center;gap:1rem">
+    <div class="logo">LSM<span>Empire OS</span></div>
+    <div class="alert-banner" id="alertBanner"><div class="alert-dot"></div><span id="alertText">Content runway critical</span></div>
+  </div>
+  <div class="topbar-right">
+    <span style="font-size:.62rem;color:var(--text3)" id="todayDate"></span>
+    <button class="btn btn-gold btn-sm" onclick="showModal('modal-48h')">+ 48h Data</button>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-label">You</div>
+    <div class="nav-item active" onclick="nav('home')" data-page="home"><span class="ni-icon">🏠</span>Command Center</div>
+    <div class="nav-item" onclick="nav('repost')" data-page="repost"><span class="ni-icon">♻️</span>Repost Queue<span class="nav-badge gold" id="nb-repost">0</span></div>
+    <div class="nav-item" onclick="nav('titles')" data-page="titles"><span class="ni-icon">💡</span>Title Lab</div>
+    <div class="nav-item" onclick="nav('guide')" data-page="guide"><span class="ni-icon">📋</span>Decision Guide</div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Sean</div>
+    <div class="nav-item" onclick="nav('tracker')" data-page="tracker"><span class="ni-icon">📊</span>Video Tracker<span class="nav-badge" id="nb-tracker">0</span></div>
+    <div class="nav-item" onclick="nav('queue')" data-page="queue"><span class="ni-icon">📅</span>Content Queue</div>
+    <div class="nav-item" onclick="nav('filming')" data-page="filming"><span class="ni-icon">🎥</span>Filming Planner</div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Lydia</div>
+    <div class="nav-item" onclick="nav('instruments')" data-page="instruments"><span class="ni-icon">🎵</span>Instrument Tracker</div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Carl</div>
+    <div class="nav-item" onclick="nav('editing')" data-page="editing"><span class="ni-icon">✂️</span>Edit Queue</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     PAGES
+════════════════════════════════════════════════════════ -->
+<div style="overflow-y:auto">
+
+<!-- HOME: COMMAND CENTER -->
+<div class="page active" id="page-home">
+  <div class="page-title">Command Center</div>
+  <div class="page-sub">Overview of everything happening in the empire right now.</div>
+
+  <!-- RUNWAY ALERT -->
+  <div id="runwayAlert"></div>
+
+  <div class="grid4" style="margin-bottom:1.25rem" id="homeStats"></div>
+
+  <div class="grid2">
+    <!-- NEXT REPOST -->
+    <div>
+      <div class="card-title">▶ Post This Next (Repost)</div>
+      <div id="homeRepostNext"></div>
+    </div>
+    <!-- CONTENT PIPELINE -->
+    <div>
+      <div class="card-title">📅 Content Pipeline</div>
+      <div id="homePipeline"></div>
+    </div>
+  </div>
+
+  <div class="grid2 section-gap">
+    <!-- DECISIONS NEEDED -->
+    <div>
+      <div class="card-title">⚡ Needs Your Decision</div>
+      <div id="homeDecisions"></div>
+    </div>
+    <!-- TOP PERFORMERS -->
+    <div>
+      <div class="card-title">🏆 Top Performers (All Time)</div>
+      <div id="homeTopPerf"></div>
+    </div>
+  </div>
+</div>
+
+<!-- REPOST QUEUE -->
+<div class="page" id="page-repost">
+  <div class="page-title">Repost Queue</div>
+  <div class="page-sub">Ranked candidates. Post every 4th upload. Alternate ⚡ → 🌿 each cycle.</div>
+
+  <!-- ROTATION VISUAL -->
+  <div class="card" style="margin-bottom:1.2rem">
+    <div class="card-title">Current Upload Cycle</div>
+    <div style="display:grid;grid-template-columns:repeat(8,1fr);gap:2px;background:var(--border)">
+      <div style="background:var(--s2);padding:.55rem .4rem;text-align:center"><div style="font-size:.52rem;color:var(--text3)">1</div><div style="font-size:.7rem;margin-top:.2rem">⚡ New</div></div>
+      <div style="background:var(--s2);padding:.55rem .4rem;text-align:center"><div style="font-size:.52rem;color:var(--text3)">2</div><div style="font-size:.7rem;margin-top:.2rem">🌿 New</div></div>
+      <div style="background:rgba(212,168,67,.07);padding:.55rem .4rem;text-align:center;border-top:2px solid var(--gold)"><div style="font-size:.52rem;color:var(--gold)">3</div><div style="font-size:.7rem;margin-top:.2rem;color:var(--gold2)">♻️ Repost</div></div>
+      <div style="background:rgba(74,144,217,.07);padding:.55rem .4rem;text-align:center"><div style="font-size:.52rem;color:var(--hour)">4</div><div style="font-size:.7rem;margin-top:.2rem;color:var(--hour)">🧘 1-Hour</div></div>
+      <div style="background:var(--s2);padding:.55rem .4rem;text-align:center"><div style="font-size:.52rem;color:var(--text3)">5</div><div style="font-size:.7rem;margin-top:.2rem">⚡ New</div></div>
+      <div style="background:var(--s2);padding:.55rem .4rem;text-align:center"><div style="font-size:.52rem;color:var(--text3)">6</div><div style="font-size:.7rem;margin-top:.2rem">🌿 New</div></div>
+      <div style="background:rgba(212,168,67,.07);padding:.55rem .4rem;text-align:center;border-top:2px solid var(--gold)"><div style="font-size:.52rem;color:var(--gold)">7</div><div style="font-size:.7rem;margin-top:.2rem;color:var(--gold2)">♻️ Repost</div></div>
+      <div style="background:rgba(74,144,217,.07);padding:.55rem .4rem;text-align:center"><div style="font-size:.52rem;color:var(--hour)">8</div><div style="font-size:.7rem;margin-top:.2rem;color:var(--hour)">🧘 1-Hour</div></div>
+    </div>
+  </div>
+
+  <!-- BASELINE TOGGLE -->
+  <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;flex-wrap:wrap">
+    <span style="font-size:.6rem;color:var(--text3);letter-spacing:.1em;text-transform:uppercase">Score baseline:</span>
+    <div class="toggle-group">
+      <button class="tgl on" onclick="setBaseline(30,this)">30d</button>
+      <button class="tgl" onclick="setBaseline(60,this)">60d</button>
+      <button class="tgl" onclick="setBaseline(90,this)">90d</button>
+      <button class="tgl" onclick="setBaseline(0,this)">All</button>
+    </div>
+    <label style="display:flex;align-items:center;gap:.4rem;font-size:.63rem;color:var(--text3);cursor:pointer">
+      <input type="checkbox" id="excOutliers" checked onchange="renderRepost()" style="accent-color:var(--gold)"/> Exclude viral outliers
+    </label>
+    <div style="display:flex;gap:.5rem">
+      <button class="filter-btn btn btn-sm btn-outline" data-rcat="all" onclick="setRcat('all',this)">All</button>
+      <button class="filter-btn btn btn-sm btn-outline" data-rcat="High-Energy" onclick="setRcat('High-Energy',this)">⚡</button>
+      <button class="filter-btn btn btn-sm btn-outline" data-rcat="Healing" onclick="setRcat('Healing',this)">🌿</button>
+      <button class="filter-btn btn btn-sm btn-outline" data-rcat="Healing 1 Hour" onclick="setRcat('Healing 1 Hour',this)">🧘</button>
+    </div>
+  </div>
+  <div id="repostList"></div>
+</div>
+
+<!-- VIDEO TRACKER -->
+<div class="page" id="page-tracker">
+  <div class="page-title">Video Tracker</div>
+  <div class="page-sub">48h decisions, 7-day follow-up, performance scoring.</div>
+
+  <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;flex-wrap:wrap">
+    <div class="toggle-group">
+      <button class="tgl on" onclick="setBaseline(30,this)">30d</button>
+      <button class="tgl" onclick="setBaseline(60,this)">60d</button>
+      <button class="tgl" onclick="setBaseline(90,this)">90d</button>
+      <button class="tgl" onclick="setBaseline(0,this)">All</button>
+    </div>
+    <label style="display:flex;align-items:center;gap:.4rem;font-size:.63rem;color:var(--text3);cursor:pointer">
+      <input type="checkbox" id="excOutliers2" checked onchange="renderTracker()" style="accent-color:var(--gold)"/> Exclude outliers
+    </label>
+    <div id="avgBar" style="font-size:.62rem;color:var(--gold);margin-left:auto"></div>
+  </div>
+
+  <div class="grid4" id="trackerStats" style="margin-bottom:1rem"></div>
+
+  <div class="filter-row">
+    <input class="input" placeholder="Search…" id="trackSearch" oninput="renderTracker()" style="max-width:220px"/>
+    <button class="btn btn-sm btn-outline active" data-tcat="all" onclick="setTcat('all',this)">All</button>
+    <button class="btn btn-sm btn-outline" data-tcat="High-Energy" onclick="setTcat('High-Energy',this)">⚡ Energy</button>
+    <button class="btn btn-sm btn-outline" data-tcat="Healing" onclick="setTcat('Healing',this)">🌿 Healing</button>
+    <button class="btn btn-sm btn-outline" data-tcat="Healing 1 Hour" onclick="setTcat('Healing 1 Hour',this)">🧘 1-Hour</button>
+    <button class="btn btn-sm btn-outline" data-tcat="Archive" onclick="setTcat('Archive',this)">📦 Archive</button>
+    <select class="select" id="trackSort" onchange="renderTracker()">
+      <option value="score-desc">Score ↓</option>
+      <option value="ctr-desc">CTR ↓</option>
+      <option value="avd-desc">AVD ↓</option>
+      <option value="days-asc">Newest</option>
+    </select>
+  </div>
+
+  <div class="table-wrap">
+    <table id="trackerTable">
+      <thead><tr>
+        <th></th><th>Title</th><th>Type</th><th>Score</th>
+        <th>CTR%</th><th>AVD</th><th>Avg%</th><th>Views</th><th>Days</th><th>Format</th><th>Decision</th><th></th>
+      </tr></thead>
+      <tbody id="trackerBody"></tbody>
+    </table>
+  </div>
+  <div class="empty" id="trackerEmpty" style="display:none;padding:2rem;text-align:center;color:var(--text3)">No videos match filter.</div>
+</div>
+
+<!-- TITLE LAB -->
+<div class="page" id="page-titles">
+  <div class="page-title">Title Lab</div>
+  <div class="page-sub">What's working, what to test next, AI-powered title suggestions.</div>
+
+  <div class="grid2">
+    <div>
+      <div class="card-title">🏆 Top Title Formulas (by CTR)</div>
+      <div id="titleFormulas"></div>
+    </div>
+    <div>
+      <div class="card-title">💡 AI Title Suggestions</div>
+      <div style="font-size:.65rem;color:var(--text3);margin-bottom:.75rem">Based on your highest CTR patterns. Click to copy.</div>
+      <div id="titleSuggestions"><div class="ai-generating"><div class="dot-loader"><span></span><span></span><span></span></div> Analysing your top performers…</div></div>
+      <button class="btn btn-gold" style="margin-top:.75rem" onclick="genTitles()">↻ Generate New Titles</button>
+    </div>
+  </div>
+
+  <div class="section-gap">
+    <div class="card-title">📋 All Videos — Title & Thumbnail Performance</div>
+    <div class="filter-row">
+      <button class="btn btn-sm btn-outline active" data-tlcat="all" onclick="setTlcat('all',this)">All</button>
+      <button class="btn btn-sm btn-outline" data-tlcat="High-Energy" onclick="setTlcat('High-Energy',this)">⚡</button>
+      <button class="btn btn-sm btn-outline" data-tlcat="Healing" onclick="setTlcat('Healing',this)">🌿</button>
+      <button class="btn btn-sm btn-outline" data-tlcat="Healing 1 Hour" onclick="setTlcat('Healing 1 Hour',this)">🧘</button>
+    </div>
+    <div id="titleGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.75rem"></div>
+  </div>
+</div>
+
+<!-- CONTENT QUEUE (Kanban) -->
+<div class="page" id="page-queue">
+  <div class="page-title">Content Queue</div>
+  <div class="page-sub">Full pipeline from filming to live. Mirrors the Trello board.</div>
+  <div id="queueRunway" style="margin-bottom:1rem"></div>
+  <div class="kanban" id="kanbanBoard"></div>
+</div>
+
+<!-- FILMING PLANNER -->
+<div class="page" id="page-filming">
+  <div class="page-title">Filming Planner</div>
+  <div class="page-sub">Content runway, filming urgency, what to record next.</div>
+  <div id="filmingContent"></div>
+</div>
+
+<!-- EDIT QUEUE (Carl) -->
+<div class="page" id="page-editing">
+  <div class="page-title">Edit Queue — Carl</div>
+  <div class="page-sub">Videos to edit, reels to cut, notes from analytics.</div>
+  <div id="editingContent"></div>
+</div>
+
+<!-- INSTRUMENT TRACKER (Lydia) -->
+<div class="page" id="page-instruments">
+  <div class="page-title">Instrument Tracker</div>
+  <div class="page-sub">Lydia's production board — all instruments, stages, deadlines.</div>
+  <div id="instrumentContent"></div>
+</div>
+
+<!-- DECISION GUIDE -->
+<div class="page" id="page-guide">
+  <div class="page-title">Decision Guide</div>
+  <div class="page-sub">Sean's cheat sheet — every decision explained. No guessing.</div>
+
+  <div class="grid2">
+    <div>
+      <div class="cheat-card">
+        <div class="cheat-title">📅 Daily Workflow</div>
+        <div class="step"><div class="step-num">1</div><div class="step-text"><strong>48h after upload:</strong> Go to "+ 48h Data" (top right). Enter the numbers from YouTube Studio. The app scores it and tells you what to do.</div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-text"><strong>Read the score:</strong> 75+ = strong, leave it. 55–74 = monitor 7 days. 35–54 = change thumbnail. Under 35 = change thumbnail AND title.</div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-text"><strong>72h after any change:</strong> Check CTR in Studio. Up = working. No change = try new title too.</div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-text"><strong>7 days after upload:</strong> Update 7d data. If score 60+ → mark "Repost Candidate" in the tracker.</div></div>
+        <div class="step"><div class="step-num">5</div><div class="step-text"><strong>Before every 3rd/7th upload:</strong> Check Repost Queue. Pick #1 ranked video in the right category and post it.</div></div>
+      </div>
+
+      <div class="cheat-card">
+        <div class="cheat-title">🔄 Upload Rotation (8-upload cycle)</div>
+        <div class="rule-row"><span class="rule-label">Upload 1</span><span class="rule-val">⚡ High Energy — new content</span></div>
+        <div class="rule-row"><span class="rule-label">Upload 2</span><span class="rule-val">🌿 Healing — new content</span></div>
+        <div class="rule-row" style="background:var(--gold3)"><span class="rule-label" style="color:var(--gold2)">Upload 3 ← REPOST</span><span class="rule-val" style="color:var(--gold2)">Best ⚡ High Energy scorer</span></div>
+        <div class="rule-row" style="background:rgba(74,144,217,.06)"><span class="rule-label" style="color:var(--hour)">Upload 4</span><span class="rule-val" style="color:var(--hour)">🧘 1-Hour (only if earned)</span></div>
+        <div class="rule-row"><span class="rule-label">Upload 5</span><span class="rule-val">⚡ High Energy — new</span></div>
+        <div class="rule-row"><span class="rule-label">Upload 6</span><span class="rule-val">🌿 Healing — new</span></div>
+        <div class="rule-row" style="background:var(--gold3)"><span class="rule-label" style="color:var(--gold2)">Upload 7 ← REPOST</span><span class="rule-val" style="color:var(--gold2)">Best 🌿 Healing scorer</span></div>
+        <div class="rule-row" style="background:rgba(74,144,217,.06)"><span class="rule-label" style="color:var(--hour)">Upload 8</span><span class="rule-val" style="color:var(--hour)">🧘 1-Hour (only if earned)</span></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="cheat-card">
+        <div class="cheat-title">🎯 48h Decision Rules</div>
+        <div class="rule-row"><span class="rule-label">CTR above category avg</span><span class="rule-val" style="color:var(--green)">✓ Thumbnail working</span></div>
+        <div class="rule-row"><span class="rule-label">CTR below avg 20%+</span><span class="rule-val" style="color:var(--red)">→ Change thumbnail NOW</span></div>
+        <div class="rule-row"><span class="rule-label">AVD above category avg</span><span class="rule-val" style="color:var(--green)">✓ Content is strong</span></div>
+        <div class="rule-row"><span class="rule-label">AVD below avg 20%+</span><span class="rule-val" style="color:var(--orange)">→ Hook weak? Check first 5 sec</span></div>
+        <div class="rule-row"><span class="rule-label">Avg% viewed 50%+</span><span class="rule-val" style="color:var(--green)">Strong retention = repost candidate</span></div>
+        <div class="rule-row"><span class="rule-label">Browse % 70%+</span><span class="rule-val" style="color:var(--green)">Algorithm pushing it ✓</span></div>
+        <div class="callout">
+          <strong>The One Rule:</strong> Bad CTR + good AVD = thumbnail problem.<br/>
+          Good CTR + bad AVD = content/hook problem.<br/>
+          Both bad = change thumbnail AND title.
+        </div>
+      </div>
+
+      <div class="cheat-card">
+        <div class="cheat-title">🧘 When to Make a 1-Hour Version</div>
+        <div class="rule-row"><span class="rule-label">AVD% of video length</span><span class="rule-val" style="color:var(--green)">Must be ≥ 35%</span></div>
+        <div class="rule-row"><span class="rule-label">CTR%</span><span class="rule-val" style="color:var(--green)">Must be ≥ 4.5%</span></div>
+        <div class="rule-row"><span class="rule-label">Video category</span><span class="rule-val" style="color:var(--heal)">Healing only</span></div>
+        <div class="rule-row"><span class="rule-label">Decision timing</span><span class="rule-val">After 7-day data confirmed</span></div>
+        <div class="callout">
+          <strong>Why both metrics matter:</strong> High AVD% = people want to keep listening (loop works). High CTR = thumbnail/title works at scale — needed for a 1-hour video to get discovered by new viewers.
+        </div>
+        <div class="callout" style="margin-top:.4rem;border-color:rgba(74,144,217,.3);background:rgba(74,144,217,.06)">
+          <strong>Revenue note:</strong> 1-hour RPM is 3–5× higher. These are the money engine. Don't skip them when a Healing video qualifies.
+        </div>
+      </div>
+
+      <div class="cheat-card">
+        <div class="cheat-title">📊 Score Formula (vs category average)</div>
+        <div class="rule-row"><span class="rule-label">AVD % of video length (35%)</span><span class="rule-val">How much of the video they watch</span></div>
+        <div class="rule-row"><span class="rule-label">CTR vs category avg (25%)</span><span class="rule-val">Thumbnail performance</span></div>
+        <div class="rule-row"><span class="rule-label">Retention % (25%)</span><span class="rule-val">Avg % viewed</span></div>
+        <div class="rule-row"><span class="rule-label">View momentum (15%)</span><span class="rule-val">Log scale view count</span></div>
+        <div class="callout">
+          Use <strong>30d baseline</strong> to see what's working NOW. Use <strong>90d baseline</strong> to see your true average. Toggle in Video Tracker.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end content wrapper -->
+</div><!-- end app -->
+
+<!-- MODAL: 48h DATA ENTRY -->
+<div class="modal-bg" id="modal-48h">
+  <div class="modal">
+    <div class="modal-hd"><span class="modal-title">Enter 48-Hour Data</span><button style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:1.1rem" onclick="closeModal('modal-48h')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row"><label class="form-label">YouTube Video ID (from URL after ?v=)</label><input class="input" id="m-ytid" placeholder="e.g. dQw4w9WgXcQ"/></div>
+      <div class="form-grid2">
+        <div class="form-row"><label class="form-label">Impressions (48h)</label><input class="input" id="m-imp" placeholder="e.g. 1200"/></div>
+        <div class="form-row"><label class="form-label">Views (48h)</label><input class="input" id="m-views" placeholder="e.g. 95"/></div>
+        <div class="form-row"><label class="form-label">CTR % (48h)</label><input class="input" id="m-ctr" placeholder="e.g. 4.8"/></div>
+        <div class="form-row"><label class="form-label">AVD in seconds</label><input class="input" id="m-avd" placeholder="e.g. 72 = 1m 12s"/></div>
+        <div class="form-row"><label class="form-label">Avg % Viewed</label><input class="input" id="m-avgpct" placeholder="e.g. 38.5"/></div>
+        <div class="form-row"><label class="form-label">Browse %</label><input class="input" id="m-browse" placeholder="e.g. 55"/></div>
+        <div class="form-row"><label class="form-label">Subs Gained (48h)</label><input class="input" id="m-subs" placeholder="e.g. 3"/></div>
+      </div>
+      <div class="form-row"><label class="form-label">Notes</label><input class="input" id="m-notes" placeholder="Thumbnail test A, title change, etc."/></div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-outline" onclick="closeModal('modal-48h')">Cancel</button>
+      <button class="btn btn-gold" onclick="save48h()">Save & Score</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════════════════════════
+var TODAY = new Date('2026-03-03');
+
+var VIDEOS = [
+  // Oct 2025 onwards = serious era
+  {id:'8AsXKLh-ZFY',title:'Didgeridoo Healing Meditation - Align Thoughts 69Hz',cat:'Healing',days:142,ctr:1.53,views:570,avd_sec:148,avd_str:'2:28',avgpct:32.57,dur:457,format:'Edited',decision:'Repost Candidate',era:'serious',subs48:null,notes:''},
+  {id:'fHEktF98q-o',title:'Never Seen a Didgeridoo Like This | 1 Hour Ocean Vibes',cat:'Healing 1 Hour',days:77,ctr:3.50,views:502,avd_sec:385,avd_str:'6:25',avgpct:10.47,dur:3680,format:'Edited',decision:'Repost Candidate',era:'serious',subs48:null,notes:''},
+  {id:'Ke_pe1H3VAQ',title:"You've Never Heard a Didgeridoo Like This | 4K Nature Loop",cat:'Healing 1 Hour',days:78,ctr:5.77,views:1148,avd_sec:275,avd_str:'4:35',avgpct:7.31,dur:3768,format:'Edited',decision:'Repost Candidate',era:'serious',subs48:null,notes:''},
+  {id:'a6AALmHI0rY',title:'1 Hour Healing Didgeridoo | Your Nervous System Needs This',cat:'Healing 1 Hour',days:84,ctr:4.99,views:683,avd_sec:361,avd_str:'6:01',avgpct:10.03,dur:3606,format:'Edited',decision:'Repost Candidate',era:'serious',subs48:null,notes:''},
+  {id:'EJohVnzCm_g',title:'The #1 Sound for INSTANT CALM - 1 Hour 73 Hz',cat:'Healing 1 Hour',days:116,ctr:7.45,views:1479,avd_sec:741,avd_str:'12:21',avgpct:19.67,dur:3771,format:'Edited',decision:'Repost Candidate',era:'serious',subs48:null,notes:'Highest AVD 1-hour'},
+  {id:'4qIPQ9Fuz-M',title:'This Sound Deletes Stress From Your Body | 1 Hour',cat:'Healing 1 Hour',days:60,ctr:5.30,views:3048,avd_sec:322,avd_str:'5:22',avgpct:8.79,dur:3666,format:'Edited',decision:'Repost Candidate',era:'serious',subs48:null,notes:''},
+  {id:'7nhuUgUXc2c',title:'This Didgeridoo Feels Like a SEDATIVE | 1 Hour v2',cat:'Healing 1 Hour',days:54,ctr:6.49,views:2535,avd_sec:385,avd_str:'6:25',avgpct:10.50,dur:3666,format:'Edited',decision:'Repost Candidate',era:'serious',subs48:null,notes:''},
+  {id:'HcaujUinjTg',title:'This Sound Deletes Stress | 1 Hour Didgeridoo',cat:'Healing 1 Hour',days:43,ctr:5.10,views:514,avd_sec:479,avd_str:'7:59',avgpct:13.17,dur:3644,format:'Edited',decision:'Repost Candidate',era:'serious',subs48:null,notes:''},
+  {id:'Xmx24mN9qKo',title:'This Didgeridoo Sound Removes ALL Tension | 1 Hour',cat:'Healing 1 Hour',days:25,ctr:5.10,views:510,avd_sec:602,avd_str:'10:02',avgpct:15.46,dur:3897,format:'Static',decision:'Repost Candidate',era:'serious',subs48:null,notes:''},
+  {id:'HcyzeHscz38',title:'This Didgeridoo Feels Like a SEDATIVE | 1 Hour',cat:'Healing 1 Hour',days:19,ctr:7.30,views:1213,avd_sec:203,avd_str:'3:23',avgpct:5.57,dur:3644,format:'Static',decision:'Repost Candidate',era:'serious',subs48:null,notes:'Best CTR 1-hour'},
+  {id:'Eq13KuMn9bQ',title:'This Sound Deletes Stress From Your Body | 1 Hour Didgeridoo',cat:'Healing 1 Hour',days:11,ctr:4.68,views:114,avd_sec:585,avd_str:'9:45',avgpct:14.86,dur:3944,format:'Edited',decision:'Monitor',era:'serious',subs48:null,notes:''},
+  // Healing shorts
+  {id:'xIfW_7W5mKw',title:'The #1 Sound for INSTANT CALM - 73 Hz',cat:'Healing',days:120,ctr:9.81,views:2355,avd_sec:54,avd_str:'0:54',avgpct:45.34,dur:120,format:'Edited',decision:'Repost Candidate',era:'serious',subs48:null,notes:'Highest CTR healing — TEXT thumbnail'},
+  {id:'tKExIduceHw',title:'These 69Hz Didgeridoo Frequencies HIT DEEP',cat:'Healing',days:89,ctr:7.80,views:2637,avd_sec:66,avd_str:'1:06',avgpct:35.80,dur:187,format:'Edited',decision:'Repost Candidate',era:'serious',subs48:null,notes:''},
+  {id:'vA8NDWS2azY',title:'The Hidden Power of Didgeridoo Music For Healing',cat:'Healing',days:111,ctr:6.26,views:1735,avd_sec:112,avd_str:'1:52',avgpct:24.33,dur:463,format:'Edited',decision:'Repost Candidate',era:'serious',subs48:null,notes:''},
+  {id:'aJNm1qZ2Tgs',title:'This Didgeridoo Sounds Makes Your Brain Stop',cat:'Healing',days:27,ctr:5.60,views:26149,avd_sec:104,avd_str:'1:44',avgpct:28.28,dur:370,format:'Static',decision:'Repost Candidate',era:'serious',subs48:null,notes:'VIRAL 307k impressions'},
+  {id:'N3AX0Cjx4JE',title:'The #1 Sound for INSTANT CALM - 73 Hz Didgeridoo Tone',cat:'Healing',days:35,ctr:6.83,views:428,avd_sec:65,avd_str:'1:05',avgpct:57.43,dur:114,format:'Static',decision:'Repost Candidate',era:'serious',subs48:null,notes:'Highest avg% — TEXT thumbnail'},
+  {id:'ItAJz3RZqD4',title:'The #1 Sound For INSTANT CALM - 69Hz Didgeridoo Tone',cat:'Healing',days:21,ctr:4.77,views:553,avd_sec:80,avd_str:'1:20',avgpct:36.52,dur:220,format:'Static',decision:'Repost Candidate',era:'serious',subs48:null,notes:''},
+  {id:'evUXopPSZG8',title:'This Didgeridoo Sound Will Put Your Brain to SLEEP',cat:'Healing',days:9,ctr:4.67,views:108,avd_sec:160,avd_str:'2:40',avgpct:40.82,dur:392,format:'Edited',decision:'Repost Candidate',era:'serious',subs48:null,notes:''},
+  // High energy
+  {id:'fslVf6Ndu7Q',title:'Sounds Coming Out Of This Didgeridoo Will Give You GOOSEBUMPS',cat:'High-Energy',days:96,ctr:6.63,views:49272,avd_sec:104,avd_str:'1:44',avgpct:36.84,dur:285,format:'Edited',decision:'Repost Candidate',era:'serious',subs48:null,notes:'TOP 510k impressions'},
+  {id:'941zhOxiViU',title:'This Didgeridoo Sound Will BREAK Your Brain',cat:'High-Energy',days:66,ctr:6.06,views:26227,avd_sec:41,avd_str:'0:41',avgpct:46.06,dur:91,format:'Edited',decision:'Repost Candidate',era:'serious',subs48:null,notes:''},
+  {id:'kwdCP4HYLRw',title:'This Didgeridoo Sound Should NOT Be Possible (viral)',cat:'High-Energy',days:53,ctr:7.62,views:11208,avd_sec:66,avd_str:'1:06',avgpct:30.81,dur:215,format:'Edited',decision:'Repost Candidate',era:'serious',subs48:null,notes:'Viral 115k impressions'},
+  {id:'68SyXKsWOvk',title:'This Didgeridoo Vibration Is Way Too Powerful',cat:'High-Energy',days:58,ctr:7.42,views:2715,avd_sec:65,avd_str:'1:05',avgpct:38.08,dur:173,format:'Edited',decision:'Repost Candidate',era:'serious',subs48:null,notes:''},
+  {id:'auUUg7jO9BA',title:"Didgeridoo Effects That Sound Unreal - Ear Candy",cat:'High-Energy',days:113,ctr:7.70,views:4476,avd_sec:80,avd_str:'1:20',avgpct:37.37,dur:216,format:'Edited',decision:'Repost Candidate',era:'serious',subs48:null,notes:''},
+  {id:'iBPAPuB9qmY',title:"Is This the Most EPIC Didgeridoo Performance You've Ever Heard?",cat:'High-Energy',days:31,ctr:5.01,views:1010,avd_sec:91,avd_str:'1:31',avgpct:41.83,dur:219,format:'Static',decision:'Repost Candidate',era:'serious',subs48:null,notes:''},
+  {id:'p3JUJCftjRc',title:"Didgeridoo Effects That Sound Unreal - Ear Candy v2",cat:'High-Energy',days:41,ctr:4.85,views:519,avd_sec:81,avd_str:'1:21',avgpct:39.07,dur:208,format:'Static',decision:'Repost Candidate',era:'serious',subs48:null,notes:''},
+  {id:'GJnCe6lx_3c',title:'GOOSEBUMPS Didgeridoo Sound v2',cat:'High-Energy',days:46,ctr:4.68,views:401,avd_sec:52,avd_str:'0:52',avgpct:45.90,dur:114,format:'Edited',decision:'Repost Candidate',era:'serious',subs48:null,notes:''},
+  {id:'etJLfkbkkVQ',title:'This Didgeridoo Sound Makes Your Brain Glitch',cat:'High-Energy',days:15,ctr:5.55,views:641,avd_sec:86,avd_str:'1:26',avgpct:30.29,dur:284,format:'Edited',decision:'Repost Candidate',era:'serious',subs48:null,notes:''},
+  {id:'F_mxavVq_90',title:'This Didgeridoo Sound Gives You Instant Goosebumps',cat:'High-Energy',days:13,ctr:4.92,views:98,avd_sec:118,avd_str:'1:58',avgpct:40.48,dur:292,format:'Edited',decision:'Monitor',era:'serious',subs48:null,notes:''},
+  {id:'yqGOfn5O9iQ',title:'This Didgeridoo Sound Should NOT Be Possible',cat:'High-Energy',days:17,ctr:4.04,views:264,avd_sec:116,avd_str:'1:56',avgpct:41.39,dur:281,format:'Static',decision:'Change Thumbnail',era:'serious',subs48:null,notes:''},
+  {id:'lSMJQthFetc',title:'This Didgeridoo Performance Is Pure Adrenaline Rush',cat:'High-Energy',days:23,ctr:3.21,views:323,avd_sec:96,avd_str:'1:36',avgpct:41.07,dur:236,format:'Edited',decision:'Change Thumbnail',era:'serious',subs48:null,notes:''},
+  {id:'7h88uzZf6VE',title:"This Didgeridoo Sounds Like It's Possessed",cat:'High-Energy',days:29,ctr:3.68,views:403,avd_sec:74,avd_str:'1:14',avgpct:48.80,dur:152,format:'Static',decision:'Change Thumbnail',era:'serious',subs48:null,notes:''},
+  // Archive (pre Oct 2025)
+  {id:'EJioKvOcFY0',title:"Dan Flynn's Didgeridoo Playing Style Will Blow Your Mind",cat:'High-Energy',days:151,ctr:10.69,views:2007,avd_sec:128,avd_str:'2:08',avgpct:18.54,dur:693,format:'Edited',decision:'Repost Candidate',era:'archive',subs48:null,notes:'HIGH CTR 10.69% — TEXT thumbnail'},
+  {id:'lDf_fSMkBy4',title:'2 Didgeridoo Masters Play Under a ROARING Waterfall',cat:'High-Energy',days:127,ctr:7.27,views:1689,avd_sec:117,avd_str:'1:57',avgpct:22.79,dur:516,format:'Edited',decision:'Repost Candidate',era:'archive',subs48:null,notes:'Good CTR archive'},
+  {id:'fy13tu3EELo',title:'Strawberry Man Meets Zach Bainter – Epic Didgeridoo Jam',cat:'High-Energy',days:82,ctr:7.87,views:2110,avd_sec:128,avd_str:'2:08',avgpct:43.27,dur:296,format:'Edited',decision:'Repost Candidate',era:'archive',subs48:null,notes:'High CTR + retention'},
+];
+
+// Content queue from Trello
+var QUEUE = [
+  {id:'q1',title:'3 Elephant Anyuta C - Healing 1 (1 Hour Loop)',stage:'Need Sound Update',type:'Healing 1 Hour',priority:'high'},
+  {id:'q2',title:'8 Elephant Anyuta C - Moritzplatz',stage:'Need Sound Update',type:'High-Energy',priority:'med'},
+  {id:'q3',title:'3 Elephant Anyuta C - Healing 1',stage:'Ready to Schedule',type:'Healing',priority:'high'},
+  {id:'q4',title:'4 Elephant Anyuta C - Healing 2',stage:'Ready to Schedule',type:'Healing',priority:'high'},
+  {id:'q5',title:'9 Elephant Major D - Dragon',stage:'Ready to Schedule',type:'High-Energy',priority:'med'},
+  {id:'q6',title:'10 Elephant Major D - Funkedelic',stage:'Ready to Schedule',type:'High-Energy',priority:'med'},
+  {id:'q7',title:'11 Elephant Anyuta C - Dragon',stage:'Ready to Schedule',type:'High-Energy',priority:'med'},
+  {id:'q8',title:'12 Elephant Anyuta C - Funkedelic',stage:'Ready to Schedule',type:'High-Energy',priority:'med'},
+  {id:'q9',title:'7 Elephant Anyuta C - Ear Candy',stage:'Scheduled with SEO',type:'High-Energy',priority:'high'},
+  {id:'q10',title:'2 Elephant Major D - Healing 2',stage:'Uploaded',type:'Healing',priority:'low'},
+  {id:'q11',title:'6 Elephant Major D - Moritzplatz',stage:'Uploaded',type:'High-Energy',priority:'low'},
+  {id:'q12',title:'5 Elephant Major D - Ear Candy',stage:'Uploaded',type:'High-Energy',priority:'low'},
+  {id:'q13',title:'1 Elephant Major D - Healing 1',stage:'Uploaded',type:'Healing',priority:'low'},
+  {id:'q14',title:'Gypsy C - Funkedelic',stage:'Uploaded',type:'High-Energy',priority:'low'},
+  {id:'q15',title:'Gypsy C# - Healing 1 Hour (STATIC)',stage:'Uploaded',type:'Healing 1 Hour',priority:'low'},
+];
+
+// Instruments from Excel
+var INSTRUMENTS = [
+  {id:6,model:'Anyuta',note:'C',color:'Purple Matte',stage:'Built',location:'Roni',assignee:'Roni',deadline:'2026-03-27',client:'Markus Gfatterhofer',type:'Client'},
+  {id:16,model:'Gypsy',note:'C',color:'—',stage:'Built',location:'Roni',assignee:'Roni',deadline:'2026-03-06',client:'Stock',type:'Stock'},
+  {id:18,model:'Lucky',note:'D',color:'—',stage:'Built',location:'Roni',assignee:'Roni',deadline:'2026-03-06',client:'Stock',type:'Stock'},
+  {id:12,model:'Major',note:'D',color:'—',stage:'Built',location:'Workshop',assignee:'Eldar',deadline:'2026-03-04',client:'Stock',type:'Stock'},
+  {id:21,model:'Gypsy',note:'C#',color:'Purple',stage:'Painted',location:'Workshop',assignee:'Eldar',deadline:'—',client:'LSM',type:'LSM',comments:'Few color imperfections'},
+  {id:7,model:'Gypsy',note:'C',color:'Dark Blue',stage:'Painting',location:'Martinho',assignee:'Martinho',deadline:'2026-02-27',client:'Steve Weis',type:'Client'},
+  {id:2,model:'Gypsy',note:'C#',color:'Imitate Bones',stage:'Painting',location:'Workshop',assignee:'Eldar',deadline:'2026-02-27',client:'Michael Hannon',type:'Client',comments:'Eldar sanding/after rone varnish'},
+  {id:1,model:'Lucky',note:'D',color:'Dark Blue',stage:'Painting',location:'Martinho',assignee:'Martinho',deadline:'2026-02-27',client:'William Stoltenberg',type:'Client',comments:'Fix Varnish'},
+  {id:3,model:'Lucky',note:'D',color:'Dark Green',stage:'Painting',location:'Roni',assignee:'Roni',deadline:'2026-02-27',client:'Christina Hagemann',type:'Client'},
+  {id:5,model:'Anyuta',note:'C',color:'Dark Green',stage:'Painting',location:'Roni',assignee:'Roni',deadline:'2026-02-27',client:'Ardavan Razavi',type:'Client'},
+  {id:4,model:'Gypsy',note:'C',color:'Dark Green',stage:'Painting',location:'Roni',assignee:'Roni',deadline:'2026-02-27',client:'Carter Chamberlain',type:'Client'},
+  {id:8,model:'Major',note:'C#',color:'Red Gold',stage:'Ready for Paint',location:'Workshop',assignee:'Martinho',deadline:'2026-03-06',client:'LSM',type:'LSM'},
+  {id:17,model:'Major',note:'D',color:'—',stage:'Ready for Paint',location:'Roni',assignee:'Roni',deadline:'2026-03-06',client:'Stock',type:'Stock'},
+  {id:22,model:'Major',note:'D',color:'Green',stage:'Painting',location:'Workshop',assignee:'Martinho',deadline:'2026-03-06',client:'LSM',type:'LSM',comments:'Repaired bottom — Martinho broke it'},
+  {id:11,model:'Gypsy',note:'C',color:'—',stage:'Printed',location:'Workshop',assignee:'Eldar',deadline:'2026-03-04',client:'Stock',type:'Stock'},
+  {id:13,model:'Gypsy',note:'D',color:'—',stage:'Built',location:'Workshop',assignee:'Eldar',deadline:'2026-03-04',client:'Stock',type:'Stock'},
+  {id:19,model:'Major',note:'D',color:'—',stage:'Printed',location:'Workshop',assignee:'Eldar',deadline:'2026-03-04',client:'Stock',type:'Stock'},
+  {id:20,model:'Lucky',note:'D',color:'—',stage:'Built',location:'Workshop',assignee:'Eldar',deadline:'2026-03-04',client:'Stock',type:'Stock'},
+];
+
+// Merge persisted overrides
+var saved = JSON.parse(localStorage.getItem('lsm_os_v1')||'{}');
+VIDEOS.forEach(function(v){if(saved[v.id])Object.assign(v,saved[v.id]);});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════════════════
+var baselineDays = 30;
+var rcat = 'all';
+var tcat = 'all';
+var tlcat = 'all';
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SCORING
+// ═══════════════════════════════════════════════════════════════════════════
+function catAvg(cat){
+  var excl = (document.getElementById('excOutliers')||document.getElementById('excOutliers2'))
+    ? ((document.getElementById('excOutliers')||{checked:true}).checked) : true;
+  var vids = VIDEOS.filter(function(v){
+    return v.cat===cat && v.era==='serious' && (baselineDays===0||v.days<=baselineDays);
+  });
+  if(!vids.length) vids = VIDEOS.filter(function(v){return v.cat===cat&&v.era==='serious';});
+  if(excl && vids.length>3){
+    var top = vids.slice().sort(function(a,b){return b.views-a.views;})[0];
+    vids = vids.filter(function(v){return v.id!==top.id;});
+  }
+  if(!vids.length) return {ctr:5,avd:80,avgpct:35};
+  return {
+    ctr: vids.reduce(function(s,v){return s+v.ctr;},0)/vids.length,
+    avd: vids.reduce(function(s,v){return s+v.avd_sec;},0)/vids.length,
+    avgpct: vids.reduce(function(s,v){return s+v.avgpct;},0)/vids.length
+  };
+}
+
+function score(v){
+  var avg = catAvg(v.cat);
+  var isLong = v.dur>1800;
+  var avdPct = v.dur>0?(v.avd_sec/v.dur)*100:v.avgpct;
+  var avdS = isLong?Math.min(avdPct*4,100):Math.min(avdPct*1.5,100);
+  var ctrS = Math.min((v.ctr/avg.ctr)*50,100);
+  var retS = Math.min(v.avgpct*1.5,100);
+  var vwS = Math.min(Math.log10(v.views+1)*20,100);
+  return Math.round(avdS*.35+ctrS*.25+retS*.25+vwS*.15);
+}
+
+function sc(s){
+  if(s>=75)return'var(--green)';
+  if(s>=55)return'var(--gold)';
+  if(s>=35)return'var(--orange)';
+  return'var(--red)';
+}
+
+function fmt(n){
+  if(!n||isNaN(n))return'—';
+  if(n>=1000000)return(n/1000000).toFixed(1)+'M';
+  if(n>=1000)return(n/1000).toFixed(1)+'k';
+  return String(Math.round(n));
+}
+
+function tci(cat){return cat==='High-Energy'?'⚡':cat==='Healing'?'🌿':'🧘';}
+function tcp(cat){return cat==='High-Energy'?'p-energy':cat==='Healing'?'p-heal':'p-hour';}
+
+function persist(v){
+  var d=JSON.parse(localStorage.getItem('lsm_os_v1')||'{}');
+  d[v.id]={decision:v.decision,ctr:v.ctr,avd_sec:v.avd_sec,avd_str:v.avd_str,avgpct:v.avgpct,views:v.views,subs48:v.subs48,notes:v.notes};
+  localStorage.setItem('lsm_os_v1',JSON.stringify(d));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// RUNWAY CALCULATION
+// ═══════════════════════════════════════════════════════════════════════════
+function calcRunway(){
+  var live = QUEUE.filter(function(q){return q.stage==='Uploaded'||q.stage==='Scheduled with SEO';}).length;
+  var readyToGo = QUEUE.filter(function(q){return q.stage==='Ready to Schedule';}).length;
+  var total = live + readyToGo;
+  // ~1 video per 2 days posting cadence
+  var daysLeft = total * 2;
+  return {total:total, days:daysLeft, readyToGo:readyToGo};
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// NAV
+// ═══════════════════════════════════════════════════════════════════════════
+function nav(page){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
+  document.getElementById('page-'+page).classList.add('active');
+  document.querySelector('[data-page="'+page+'"]').classList.add('active');
+  var renders = {
+    home:renderHome, repost:renderRepost, tracker:renderTracker,
+    titles:renderTitles, queue:renderQueue, filming:renderFilming,
+    editing:renderEditing, instruments:renderInstruments, guide:function(){}
+  };
+  if(renders[page]) renders[page]();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// HOME
+// ═══════════════════════════════════════════════════════════════════════════
+function renderHome(){
+  var rw = calcRunway();
+  var cls = rw.days<=7?'urgent':rw.days<=14?'warn':'ok';
+  // Alert
+  var filmAlert = rw.days<=14 ? '<div class="film-alert">🚨 Content runway is '+rw.days+' days — FILM THIS WEEK before content runs out!</div>' : '';
+  document.getElementById('runwayAlert').innerHTML = filmAlert +
+    '<div class="runway"><div class="runway-days '+cls+'">'+rw.days+'d</div><div class="runway-info"><div class="runway-title">Content runway remaining</div><div>'+rw.readyToGo+' videos ready to schedule · Post rate: 1 every 2 days</div><div class="runway-bar"><div class="runway-fill" style="width:'+Math.min(rw.days/60*100,100)+'%;background:'+(cls==='urgent'?'var(--red)':cls==='warn'?'var(--orange)':'var(--green)')+'"></div></div></div><div style="text-align:right"><div style="font-size:.58rem;color:var(--text3);text-transform:uppercase;letter-spacing:.1em">Film deadline</div><div style="font-size:.85rem;font-weight:700;color:var(--orange);margin-top:.2rem">ASAP</div></div></div>';
+
+  // Stats
+  var repostReady = VIDEOS.filter(function(v){return v.decision==='Repost Candidate'&&v.era==='serious';}).length;
+  var needsDecision = VIDEOS.filter(function(v){return v.decision==='Monitor';}).length;
+  document.getElementById('homeStats').innerHTML =
+    '<div class="stat-card"><div class="stat-val" style="color:var(--gold2)">'+rw.total+'</div><div class="stat-label">Videos in pipeline</div><div class="stat-sub">Ready to post</div></div>'+
+    '<div class="stat-card"><div class="stat-val" style="color:var(--green)">'+repostReady+'</div><div class="stat-label">Repost candidates</div><div class="stat-sub">Scored & ready</div></div>'+
+    '<div class="stat-card"><div class="stat-val" style="color:var(--orange)">'+needsDecision+'</div><div class="stat-label">Need decision</div><div class="stat-sub">Enter 48h data</div></div>'+
+    '<div class="stat-card"><div class="stat-val" style="color:var(--blue)">'+VIDEOS.filter(function(v){return v.era==='archive';}).length+'</div><div class="stat-label">Archive videos</div><div class="stat-sub">Pre-Oct 2025</div></div>';
+
+  // Next repost
+  var best = VIDEOS.filter(function(v){return v.decision==='Repost Candidate'&&v.era==='serious';})
+    .sort(function(a,b){return score(b)-score(a);})[0];
+  if(best){
+    var s=score(best);
+    document.getElementById('homeRepostNext').innerHTML=
+      '<div style="background:var(--s2);border:2px solid var(--gold);padding:.85rem 1rem">'+
+      '<div class="'+tcp(best.cat)+' pill" style="margin-bottom:.5rem">'+tci(best.cat)+' '+best.cat+'</div>'+
+      '<div style="font-size:.82rem;font-weight:700;margin-bottom:.5rem">'+best.title+'</div>'+
+      '<div style="display:flex;gap:1.5rem;margin-bottom:.65rem">'+
+      '<div><div style="font-size:1.3rem;font-weight:800;color:'+sc(s)+'">'+s+'</div><div style="font-size:.55rem;color:var(--text3);text-transform:uppercase">Score</div></div>'+
+      '<div><div style="font-size:1.3rem;font-weight:800">'+best.ctr+'%</div><div style="font-size:.55rem;color:var(--text3);text-transform:uppercase">CTR</div></div>'+
+      '<div><div style="font-size:1.3rem;font-weight:800">'+best.avd_str+'</div><div style="font-size:.55rem;color:var(--text3);text-transform:uppercase">AVD</div></div>'+
+      '</div>'+
+      '<div style="display:flex;gap:.5rem"><a class="btn btn-gold btn-sm" href="https://youtube.com/watch?v='+best.id+'" target="_blank">▶ Watch</a>'+
+      '<button class="btn btn-outline btn-sm" onclick="setDec(\''+best.id+'\',\'Reposted\')">✓ Mark Reposted</button></div></div>';
+  }
+
+  // Pipeline summary
+  var stages=['Need Sound Update','Ready to Schedule','Scheduled with SEO','Uploaded'];
+  var pipeHtml='';
+  stages.forEach(function(st){
+    var items=QUEUE.filter(function(q){return q.stage===st;});
+    if(!items.length) return;
+    pipeHtml+='<div style="display:flex;justify-content:space-between;align-items:center;padding:.35rem 0;border-bottom:1px solid var(--border);font-size:.68rem">'+
+      '<span style="color:var(--text2)">'+st+'</span>'+
+      '<span style="font-weight:700;color:'+(st==='Need Sound Update'?'var(--red)':st==='Ready to Schedule'?'var(--gold)':'var(--green)')+'">'+items.length+'</span></div>';
+  });
+  document.getElementById('homePipeline').innerHTML=pipeHtml;
+
+  // Decisions needed
+  var decNeeded=VIDEOS.filter(function(v){return v.decision==='Monitor'||v.decision==='Change Thumbnail';}).slice(0,5);
+  var decHtml='';
+  decNeeded.forEach(function(v){
+    decHtml+='<div style="display:flex;justify-content:space-between;align-items:center;padding:.35rem 0;border-bottom:1px solid var(--border);font-size:.68rem;cursor:pointer" onclick="nav(\'tracker\')">';
+    decHtml+='<span style="color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px">'+v.title+'</span>';
+    decHtml+='<span class="pill '+(v.decision==='Change Thumbnail'?'p-red':'p-gold')+'" style="flex-shrink:0">'+v.decision+'</span></div>';
+  });
+  document.getElementById('homeDecisions').innerHTML=decHtml||'<div style="color:var(--text3);font-size:.68rem;padding:.5rem 0">All decisions up to date ✓</div>';
+
+  // Top performers
+  var top5=VIDEOS.slice().sort(function(a,b){return score(b)-score(a);}).slice(0,5);
+  var topHtml='';
+  top5.forEach(function(v,i){
+    var s=score(v);
+    topHtml+='<div style="display:flex;justify-content:space-between;align-items:center;padding:.35rem 0;border-bottom:1px solid var(--border);font-size:.68rem">'+
+      '<span style="color:var(--text3);font-family:\'Syne Mono\',monospace;min-width:1.2rem">'+(i+1)+'</span>'+
+      '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text2);margin:0 .5rem">'+v.title+'</span>'+
+      '<span style="font-weight:800;color:'+sc(s)+'">'+s+'</span></div>';
+  });
+  document.getElementById('homeTopPerf').innerHTML=topHtml;
+
+  // Update navbar badges
+  document.getElementById('nb-repost').textContent=VIDEOS.filter(function(v){return v.decision==='Repost Candidate';}).length;
+  document.getElementById('nb-tracker').textContent=VIDEOS.filter(function(v){return v.decision==='Monitor';}).length;
+  // Alert
+  document.getElementById('alertText').textContent = rw.days<=14 ? '🚨 Film session needed — '+rw.days+'d runway' : 'Content runway: '+rw.days+' days';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// REPOST
+// ═══════════════════════════════════════════════════════════════════════════
+function setBaseline(d,btn){
+  baselineDays=d;
+  btn.closest('.toggle-group').querySelectorAll('.tgl').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+  if(document.getElementById('page-repost').classList.contains('active')) renderRepost();
+  if(document.getElementById('page-tracker').classList.contains('active')) renderTracker();
+}
+
+function setRcat(c,btn){
+  rcat=c;
+  document.querySelectorAll('[data-rcat]').forEach(function(b){b.classList.remove('on');b.style.borderColor='';b.style.color='';});
+  btn.style.borderColor='var(--gold)';btn.style.color='var(--gold)';
+  renderRepost();
+}
+
+function renderRepost(){
+  var cands=VIDEOS.filter(function(v){
+    return v.decision==='Repost Candidate'&&(rcat==='all'||v.cat===rcat);
+  }).map(function(v){return Object.assign({},v,{s:score(v)});}).sort(function(a,b){return b.s-a.s;});
+
+  var html='';
+  cands.forEach(function(v,i){
+    var avg=catAvg(v.cat);
+    var avdPct=v.dur>0?((v.avd_sec/v.dur)*100).toFixed(0):v.avgpct;
+    var q1hr=v.cat==='Healing'&&parseFloat(avdPct)>=35&&v.ctr>=4.5;
+    var ctrDiff=((v.ctr/avg.ctr-1)*100).toFixed(0);
+    var isTop=i===0;
+    html+='<div style="background:var(--s'+(isTop?'2':'1')+');border:1px solid '+(isTop?'var(--gold)':'var(--border)')+';padding:'+(isTop?'1rem 1.1rem':'.7rem .9rem')+';margin-bottom:.5rem;display:grid;grid-template-columns:2rem 1fr auto auto;gap:.85rem;align-items:center">';
+    html+='<div style="font-size:'+(isTop?'1.8rem':'1.1rem')+';font-weight:800;color:'+(isTop?'var(--gold)':'var(--border2)')+';font-family:\'Syne Mono\',monospace;text-align:center">'+(i+1)+'</div>';
+    html+='<div>';
+    html+='<div style="font-size:'+(isTop?'.82rem':'.72rem')+';font-weight:700;margin-bottom:.3rem">'+v.title+(isTop?' <span style="font-size:.6rem;color:var(--gold)">← POST THIS NEXT</span>':'')+'</div>';
+    html+='<div style="display:flex;gap:.5rem;flex-wrap:wrap;font-size:.6rem;color:var(--text3)">';
+    html+='<span class="pill '+tcp(v.cat)+'">'+tci(v.cat)+' '+v.cat+'</span>';
+    html+='<span>'+v.days+'d old</span>';
+    html+='<span style="color:'+(parseFloat(ctrDiff)>=0?'var(--green)':'var(--red)')+'">CTR '+(parseFloat(ctrDiff)>=0?'+':'')+ctrDiff+'% vs cat avg</span>';
+    html+='<span>'+v.avgpct+'% avg viewed</span>';
+    if(v.notes) html+='<span style="color:var(--gold)">'+v.notes+'</span>';
+    if(q1hr) html+='<span class="pill p-blue">🧘 Qualifies for 1-Hour</span>';
+    html+='</div></div>';
+    html+='<div style="display:flex;gap:1.2rem;text-align:center">';
+    html+='<div><div style="font-size:'+(isTop?'1.4rem':'1rem')+';font-weight:800;color:'+sc(v.s)+'">'+v.s+'</div><div style="font-size:.52rem;color:var(--text3);text-transform:uppercase">Score</div></div>';
+    html+='<div><div style="font-size:'+(isTop?'1.1rem':'.9rem')+';font-weight:800">'+v.ctr+'%</div><div style="font-size:.52rem;color:var(--text3);text-transform:uppercase">CTR</div></div>';
+    html+='<div><div style="font-size:'+(isTop?'1.1rem':'.9rem')+';font-weight:800">'+avdPct+'%</div><div style="font-size:.52rem;color:var(--text3);text-transform:uppercase">AVD%</div></div>';
+    html+='</div>';
+    html+='<div style="display:flex;flex-direction:column;gap:.3rem">';
+    html+='<a class="btn btn-gold btn-sm" href="https://youtube.com/watch?v='+v.id+'" target="_blank">▶ Watch</a>';
+    html+='<button class="btn btn-outline btn-sm" onclick="setDec(\''+v.id+'\',\'Reposted\')">✓ Reposted</button>';
+    html+='</div>';
+    html+='</div>';
+  });
+  if(!cands.length) html='<div style="padding:2rem;text-align:center;color:var(--text3)">No repost candidates in this category. Score some videos first.</div>';
+  document.getElementById('repostList').innerHTML=html;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TRACKER
+// ═══════════════════════════════════════════════════════════════════════════
+function setTcat(c,btn){
+  tcat=c;
+  document.querySelectorAll('[data-tcat]').forEach(function(b){b.style.borderColor='';b.style.color='';});
+  btn.style.borderColor='var(--gold)';btn.style.color='var(--gold)';
+  renderTracker();
+}
+
+function renderTracker(){
+  var search=(document.getElementById('trackSearch')||{value:''}).value.toLowerCase();
+  var sort=(document.getElementById('trackSort')||{value:'score-desc'}).value;
+  var list=VIDEOS.filter(function(v){
+    if(tcat==='Archive') return v.era==='archive';
+    if(tcat!=='all'&&v.cat!==tcat) return false;
+    if(tcat!=='Archive'&&v.era==='archive') return false;
+    if(search&&!v.title.toLowerCase().includes(search)) return false;
+    return true;
+  }).map(function(v){return Object.assign({},v,{s:score(v)});});
+  list.sort(function(a,b){
+    if(sort==='score-desc')return b.s-a.s;
+    if(sort==='ctr-desc')return b.ctr-a.ctr;
+    if(sort==='avd-desc')return b.avd_sec-a.avd_sec;
+    if(sort==='days-asc')return a.days-b.days;
+    return b.s-a.s;
+  });
+
+  // Stats
+  var all=list.filter(function(v){return v.era==='serious';});
+  if(all.length){
+    var ac=(all.reduce(function(s,v){return s+v.ctr;},0)/all.length).toFixed(2);
+    var aa=Math.round(all.reduce(function(s,v){return s+v.avd_sec;},0)/all.length);
+    var ap=(all.reduce(function(s,v){return s+v.avgpct;},0)/all.length).toFixed(1);
+    var m=Math.floor(aa/60),s=aa%60;
+    document.getElementById('trackerStats').innerHTML=
+      '<div class="stat-card"><div class="stat-val">'+ac+'%</div><div class="stat-label">Avg CTR</div></div>'+
+      '<div class="stat-card"><div class="stat-val">'+m+':'+String(s).padStart(2,'0')+'</div><div class="stat-label">Avg AVD</div></div>'+
+      '<div class="stat-card"><div class="stat-val">'+ap+'%</div><div class="stat-label">Avg Retention</div></div>'+
+      '<div class="stat-card"><div class="stat-val">'+list.filter(function(v){return v.decision==='Repost Candidate';}).length+'</div><div class="stat-label">Repost Ready</div></div>';
+  }
+
+  // Avg bar
+  var cats=['High-Energy','Healing','Healing 1 Hour'];
+  var avgParts=cats.map(function(c){var a=catAvg(c);return tci(c)+' CTR '+a.ctr.toFixed(1)+'%';});
+  var avgEl=document.getElementById('avgBar');
+  if(avgEl) avgEl.textContent='Baselines ('+( baselineDays||'all')+'d): '+avgParts.join(' · ');
+
+  var empty=document.getElementById('trackerEmpty');
+  var tbody=document.getElementById('trackerBody');
+  if(!list.length){tbody.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+
+  var html='';
+  list.forEach(function(v){
+    var avg=catAvg(v.cat);
+    var cCls=v.ctr>=avg.ctr*1.1?'style="color:var(--green)"':v.ctr<avg.ctr*0.8?'style="color:var(--red)"':'';
+    var aCls=v.avd_sec>=avg.avd*1.1?'style="color:var(--green)"':v.avd_sec<avg.avd*0.8?'style="color:var(--red)"':'';
+    var dCls=v.decision==='Repost Candidate'?'var(--green)':v.decision==='Change Thumbnail'||v.decision==='Change Title'?'var(--orange)':v.decision==='Monitor'?'var(--gold)':'var(--text3)';
+    var era=v.era==='archive'?'<span class="pill" style="font-size:.5rem;background:rgba(160,160,176,.1);color:var(--text3);border:1px solid var(--border)">archive</span>':'';
+    html+='<tr class="clickable" id="tr-'+v.id+'" onclick="toggleExp(\''+v.id+'\')">';
+    html+='<td>'+tci(v.cat)+'</td>';
+    html+='<td style="max-width:250px"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:250px" title="'+v.title+'">'+v.title+'</div>'+era+'</td>';
+    html+='<td><span class="pill '+tcp(v.cat)+'" style="font-size:.52rem">'+v.cat+'</span></td>';
+    html+='<td><div class="score-bar-wrap"><span class="score-num" style="color:'+sc(v.s)+'">'+v.s+'</span><div class="score-track"><div class="score-fill" style="width:'+v.s+'%;background:'+sc(v.s)+'"></div></div></div></td>';
+    html+='<td '+cCls+'>'+v.ctr+'%</td>';
+    html+='<td '+aCls+'>'+v.avd_str+'</td>';
+    html+='<td>'+v.avgpct+'%</td>';
+    html+='<td>'+fmt(v.views)+'</td>';
+    html+='<td style="color:var(--text3)">'+v.days+'d</td>';
+    html+='<td><span class="pill" style="font-size:.5rem;background:rgba(74,144,217,.1);color:var(--blue);border:1px solid rgba(74,144,217,.2)">'+v.format+'</span></td>';
+    html+='<td style="color:'+dCls+';font-size:.65rem">'+v.decision+'</td>';
+    html+='<td><a href="https://youtube.com/watch?v='+v.id+'" target="_blank" onclick="event.stopPropagation()" style="color:var(--text3);text-decoration:none">▶</a></td>';
+    html+='</tr>';
+    html+='<tr class="expand-row" id="exp-'+v.id+'"><td colspan="12"><div class="expand-content">'+expContent(v)+'</div></td></tr>';
+  });
+  tbody.innerHTML=html;
+}
+
+function expContent(v){
+  var avg=catAvg(v.cat);
+  var avdPct=v.dur>0?((v.avd_sec/v.dur)*100).toFixed(1):'—';
+  var q1hr=v.cat==='Healing'&&parseFloat(avdPct)>=35&&v.ctr>=4.5;
+  var s=score(v);
+  var html='<div class="expand-grid">';
+  html+='<div class="expand-section"><div class="es-title">48h Data</div>';
+  html+=dr2('Views',fmt(v.views))+dr2('CTR %',v.ctr+'%',v.ctr>=avg.ctr?'g':'r')+dr2('Category avg CTR',avg.ctr.toFixed(2)+'%');
+  html+=dr2('AVD',v.avd_str,v.avd_sec>=avg.avd?'g':'r')+dr2('Category avg AVD',Math.floor(avg.avd/60)+':'+(Math.round(avg.avd%60)).toString().padStart(2,'0'));
+  html+=dr2('Avg % Viewed',v.avgpct+'%')+dr2('AVD% of video',avdPct+'%');
+  if(v.subs48) html+=dr2('Subs gained (48h)',v.subs48);
+  if(v.notes) html+=dr2('Notes',v.notes);
+  html+='</div>';
+  html+='<div class="expand-section"><div class="es-title">Score: '+s+'/100</div>';
+  var avdS=v.dur>0?Math.min((v.avd_sec/v.dur)*100*(v.dur>1800?4:1.5),100):v.avgpct;
+  var ctrS=Math.min((v.ctr/avg.ctr)*50,100);
+  var retS=Math.min(v.avgpct*1.5,100);
+  html+=dr2('AVD component (35%)',Math.round(avdS)+'/100')+dr2('CTR vs category (25%)',Math.round(ctrS)+'/100')+dr2('Retention (25%)',Math.round(retS)+'/100');
+  if(q1hr) html+='<div class="pill p-blue" style="margin-top:.6rem;display:inline-flex">🧘 Qualifies for 1-Hour version!</div>';
+  html+='</div>';
+  html+='<div class="expand-section"><div class="es-title">Decision</div><div class="dec-btns" id="db-'+v.id+'">';
+  [{val:'Repost Candidate',icon:'✅',label:'Repost as-is'},{val:'Change Thumbnail',icon:'🖼',label:'Change Thumbnail'},{val:'Change Title',icon:'✏️',label:'Change Title'},{val:'Re-edit',icon:'✂️',label:'Re-edit First'},{val:'Monitor',icon:'👁',label:'Monitor'},{val:'Reposted',icon:'♻️',label:'Already Reposted'}].forEach(function(d){
+    html+='<button class="dec-btn'+(v.decision===d.val?' sel':'')+'" onclick="setDec(\''+v.id+'\',\''+d.val+'\')">'+d.icon+' '+d.label+'</button>';
+  });
+  html+='</div>';
+  html+='<div style="margin-top:.75rem;display:flex;flex-direction:column;gap:.3rem">';
+  html+='<a class="btn btn-outline btn-sm" href="https://youtube.com/watch?v='+v.id+'" target="_blank">▶ Watch on YouTube</a>';
+  html+='<a class="btn btn-outline btn-sm" href="https://studio.youtube.com/video/'+v.id+'/edit" target="_blank">⚙ YouTube Studio</a>';
+  html+='</div></div>';
+  html+='</div>';
+  return html;
+}
+
+function dr2(l,v,cls){return '<div class="dr"><span class="dr-label">'+l+'</span><span class="dr-val'+(cls?' '+cls:'')+'">'+(v||'—')+'</span></div>';}
+
+function toggleExp(id){
+  var r=document.getElementById('exp-'+id);
+  var tr=document.getElementById('tr-'+id);
+  var open=r&&r.classList.contains('open');
+  document.querySelectorAll('.expand-row.open').forEach(function(x){x.classList.remove('open');});
+  if(!open&&r){r.classList.add('open');if(tr)tr.style.background='rgba(212,168,67,.05)';}
+  else if(tr)tr.style.background='';
+}
+
+function setDec(id,dec){
+  var v=VIDEOS.find(function(x){return x.id===id;});
+  if(!v)return;
+  v.decision=dec;persist(v);
+  var btns=document.getElementById('db-'+id);
+  if(btns)btns.querySelectorAll('.dec-btn').forEach(function(b){b.classList.toggle('sel',b.textContent.trim().startsWith(dec.substring(0,5)));});
+  renderHome();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TITLE LAB
+// ═══════════════════════════════════════════════════════════════════════════
+function setTlcat(c,btn){
+  tlcat=c;
+  document.querySelectorAll('[data-tlcat]').forEach(function(b){b.style.borderColor='';b.style.color='';});
+  btn.style.borderColor='var(--gold)';btn.style.color='var(--gold)';
+  renderTitleGrid();
+}
+
+var FORMULAS = [
+  {formula:'This Didgeridoo Sound Will [EMOTION VERB] Your [BODY PART]',avgCtr:7.2,examples:['BREAK Your Brain','MELT Your Face','DESTROY Your Stress'],note:'Best performer. Visceral body reaction.'},
+  {formula:'This Didgeridoo Sound [DOES IMPOSSIBLE THING]',avgCtr:6.8,examples:['Should NOT Be Possible','Will Put Your Brain to SLEEP','Makes Your Brain Stop'],note:'Mystery + impossibility drives clicks.'},
+  {formula:'The #1 Sound for [INSTANT BENEFIT] - [Hz] Didgeridoo',avgCtr:6.6,examples:['INSTANT CALM - 73Hz','INSTANT CALM - 69Hz'],note:'Healing category. TEXT thumbnail = high CTR.'},
+  {formula:'[CAPS HOOK] – [Description] | Legendary Strawberry Man',avgCtr:6.3,examples:['GOOSEBUMPS GUARANTEED','BEATBOXING IN DIDGERIDOO'],note:'Collab videos. Works with text thumbnail.'},
+  {formula:'Is This the Most EPIC Didgeridoo [Event] EVER?',avgCtr:5.8,examples:['Performance You\'ve Ever Heard','Jam Session EVER'],note:'Question format. Good for collab content.'},
+];
+
+var AI_TITLES = [
+  'This Didgeridoo Sound Will REWIRE Your Nervous System',
+  'What Happens to Your Brain When You Hear This Didgeridoo?',
+  'The #1 Sound for INSTANT FOCUS - 73Hz Didgeridoo Tone',
+  'This Didgeridoo Sound Should Be ILLEGAL',
+  'Your Body Has Never Felt a Sound Like This',
+  'This Didgeridoo Frequency Will DISSOLVE Your Anxiety',
+  'I Recorded the Most DANGEROUS Didgeridoo Sound',
+  'The #1 Sound for DEEP SLEEP - 65Hz Didgeridoo Loop',
+  'This Didgeridoo Sound Hits Differently at 3am',
+  'What This Didgeridoo Does to Your Brain Is Unreal',
+];
+
+function renderTitles(){
+  var html='';
+  FORMULAS.sort(function(a,b){return b.avgCtr-a.avgCtr;}).forEach(function(f){
+    html+='<div class="title-formula"><div><div class="formula-text">'+f.formula+'</div><div style="font-size:.6rem;color:var(--text3);margin-top:.2rem">'+f.note+'</div></div><div style="text-align:right"><div class="formula-ctr" style="color:'+sc(Math.round(f.avgCtr*10))+'">'+f.avgCtr+'%</div><div style="font-size:.55rem;color:var(--text3);text-transform:uppercase">avg CTR</div></div></div>';
+  });
+  document.getElementById('titleFormulas').innerHTML=html;
+  renderTitleSuggestions();
+  renderTitleGrid();
+}
+
+function renderTitleSuggestions(){
+  var html='';
+  AI_TITLES.forEach(function(t){
+    html+='<div class="title-suggestion"><span>'+t+'</span><button class="btn btn-outline btn-xs" onclick="navigator.clipboard.writeText(\''+t.replace(/'/g,"\\'")+'\')" title="Copy">⎘</button></div>';
+  });
+  document.getElementById('titleSuggestions').innerHTML=html;
+}
+
+function genTitles(){
+  document.getElementById('titleSuggestions').innerHTML='<div class="ai-generating"><div class="dot-loader"><span></span><span></span><span></span></div> Generating new titles based on your top performers…</div>';
+  var topVids=VIDEOS.filter(function(v){return v.ctr>6;}).slice(0,5);
+  var prompt='You are a YouTube title expert for a didgeridoo channel called "Legendary Strawberry Man". The channel makes 3 types of content: High-Energy short clips, Healing frequency videos, and 1-Hour meditation loops.\n\nHighest CTR titles (above 6%):\n'+topVids.map(function(v){return'- "'+v.title+'" CTR: '+v.ctr+'% AVD: '+v.avd_str;}).join('\n')+'\n\nFormulas that work best:\n- "This Didgeridoo Sound Will [ACTION] Your [BODY PART]"\n- "The #1 Sound for INSTANT [BENEFIT] - [Hz] Didgeridoo"\n- "This Didgeridoo Sound Should NOT Be Possible"\n\nGenerate 10 new YouTube titles following these patterns. Mix Healing and High-Energy styles. Focus on emotional reactions, impossible sounds, and body/brain effects. Return ONLY a JSON array of strings, no markdown.';
+
+  fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:1000,
+      messages:[{role:'user',content:prompt}]
+    })
+  }).then(function(r){return r.json();}).then(function(data){
+    try{
+      var text=data.content.filter(function(c){return c.type==='text';}).map(function(c){return c.text;}).join('');
+      var clean=text.replace(/```json|```/g,'').trim();
+      var titles=JSON.parse(clean);
+      if(Array.isArray(titles)){
+        AI_TITLES.splice(0,AI_TITLES.length);
+        titles.forEach(function(t){AI_TITLES.push(t);});
+        renderTitleSuggestions();
+      }
+    }catch(e){renderTitleSuggestions();}
+  }).catch(function(){renderTitleSuggestions();});
+}
+
+function renderTitleGrid(){
+  var list=VIDEOS.filter(function(v){return tlcat==='all'||v.cat===tlcat;}).slice().sort(function(a,b){return b.ctr-a.ctr;});
+  var html='';
+  list.forEach(function(v){
+    var hasText=v.notes&&v.notes.toLowerCase().includes('text');
+    html+='<div style="background:var(--s1);border:1px solid var(--border);padding:.75rem;cursor:pointer;transition:border-color .15s" onmouseenter="this.style.borderColor=\'var(--gold)\'" onmouseleave="this.style.borderColor=\'var(--border)\'" onclick="window.open(\'https://youtube.com/watch?v='+v.id+'\',\'_blank\')">';
+    html+='<div style="background:var(--s3);height:80px;display:flex;align-items:center;justify-content:center;margin-bottom:.5rem;position:relative;font-size:1.5rem">'+tci(v.cat)+(hasText?'<div style="position:absolute;top:.3rem;right:.3rem;font-size:.52rem;background:var(--gold);color:#000;padding:.1rem .35rem;font-weight:700">TEXT</div>':'')+'</div>';
+    html+='<div style="font-size:.64rem;font-weight:600;margin-bottom:.35rem;line-height:1.4;color:var(--text2)">'+v.title+'</div>';
+    html+='<div style="display:flex;justify-content:space-between;font-size:.62rem">';
+    html+='<span style="color:'+sc(Math.round(v.ctr*10))+'">CTR '+v.ctr+'%</span>';
+    html+='<span style="color:var(--text3)">'+v.days+'d</span>';
+    html+='</div></div>';
+  });
+  document.getElementById('titleGrid').innerHTML=html;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CONTENT QUEUE (Kanban)
+// ═══════════════════════════════════════════════════════════════════════════
+function renderQueue(){
+  var rw=calcRunway();
+  var cls=rw.days<=7?'urgent':rw.days<=14?'warn':'ok';
+  document.getElementById('queueRunway').innerHTML='<div style="display:flex;align-items:center;gap:1.5rem;background:var(--s2);border:1px solid var(--border);padding:.75rem 1rem;margin-bottom:.5rem"><div class="runway-days '+cls+'">'+rw.days+'d</div><div><div style="font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:.1em">Content runway</div><div style="font-size:.68rem;color:var(--text2);margin-top:.15rem">'+rw.readyToGo+' videos ready to schedule</div></div>'+(rw.days<=14?'<div style="margin-left:auto;background:rgba(224,69,69,.1);border:1px solid rgba(224,69,69,.25);padding:.4rem .75rem;font-size:.65rem;color:var(--red);font-weight:700">🚨 FILM SESSION NEEDED</div>':'')+'</div>';
+
+  var stages=['Need Sound Update','Ready to Schedule','Scheduled with SEO','Uploaded','Added to Repost List'];
+  var stageColors={'Need Sound Update':'var(--red)','Ready to Schedule':'var(--gold)','Scheduled with SEO':'var(--blue)','Uploaded':'var(--green)','Added to Repost List':'var(--purple)'};
+  var html='';
+  stages.forEach(function(st){
+    var cards=QUEUE.filter(function(q){return q.stage===st;});
+    html+='<div class="k-col"><div class="k-col-hd" style="border-top:2px solid '+stageColors[st]+'"><span>'+st+'</span><span class="k-count">'+cards.length+'</span></div><div class="k-cards">';
+    cards.forEach(function(c){
+      html+='<div class="k-card"><div class="k-card-priority '+c.priority+'"></div><div class="k-card-title">'+c.title+'</div><div class="k-card-meta"><span class="pill '+tcp(c.type)+'" style="font-size:.5rem">'+tci(c.type)+' '+c.type+'</span></div></div>';
+    });
+    html+='</div></div>';
+  });
+  document.getElementById('kanbanBoard').innerHTML=html;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FILMING PLANNER
+// ═══════════════════════════════════════════════════════════════════════════
+function renderFilming(){
+  var rw=calcRunway();
+  var cls=rw.days<=7?'urgent':rw.days<=14?'warn':'ok';
+  var html='';
+  if(rw.days<=14){
+    html+='<div class="film-alert" style="font-size:.75rem;padding:.85rem 1rem">🚨 URGENT: Content runs out in '+rw.days+' days. Film session needed NOW. You need 2–3 weeks lead time for editing + sound.</div>';
+  }
+  html+='<div class="grid2" style="margin-bottom:1.5rem">';
+  html+='<div class="card"><div class="card-title">📊 Pipeline Status</div>';
+  html+=dr2('Videos in pipeline',rw.total.toString())+dr2('Days of content left',rw.days+'d',(cls==='ok'?'g':cls==='warn'?'o':'r'))+dr2('Post cadence','1 video every 2 days')+dr2('Buffer needed','21+ days (3 weeks)');
+  html+=dr2('Film session status',rw.days<=14?'🚨 OVERDUE':'✓ On track',(rw.days<=14?'r':'g'));
+  html+='</div>';
+  html+='<div class="card"><div class="card-title">🎯 What to Film Next</div>';
+  // Songs not yet used
+  var usedSongs=['Elephant Major D','Elephant Anyuta C','Gypsy C','Gypsy C#'];
+  html+='<div style="font-size:.68rem;color:var(--text2);margin-bottom:.75rem">Based on your best performers, these song/style combos should be priority:</div>';
+  [{song:'Elephant Anyuta C#',why:'Not yet filmed in Healing style — variant of your highest CTR formula'},{song:'New collab with Dan Flynn',why:'Your collab content has 7.87% CTR — highest in High Energy'},{song:'Gypsy D — Healing',why:'Healing Gypsy D not yet in pipeline'},{song:'Anyuta C — Ear Candy (new location)',why:'Ear Candy is a proven title formula — refilm in new location'}].forEach(function(s){
+    html+='<div style="padding:.4rem 0;border-bottom:1px solid var(--border)"><div style="font-size:.72rem;font-weight:600;color:var(--text)">'+s.song+'</div><div style="font-size:.62rem;color:var(--text3);margin-top:.15rem">'+s.why+'</div></div>';
+  });
+  html+='</div></div>';
+
+  html+='<div class="card"><div class="card-title">📅 Timeline</div>';
+  html+='<div style="font-size:.65rem;color:var(--text3);margin-bottom:.75rem">Working backwards from content end date:</div>';
+  [{label:'Content runs out',date:'+'+rw.days+'d',note:'Based on current pipeline',color:'var(--red)'},{label:'Latest film date',date:'+'+Math.max(rw.days-21,0)+'d',note:'Must film 3 weeks before content ends',color:'var(--orange)'},{label:'Sound edit deadline',date:'Film date +3d',note:'3 days for sound engineer',color:'var(--gold)'},{label:'Video edit deadline',date:'Sound +7d',note:'7 days for Carl to edit',color:'var(--blue)'},{label:'SEO + schedule',date:'Edit +2d',note:'2 days for title/thumbnail/SEO',color:'var(--green)'}].forEach(function(t){
+    html+='<div style="display:flex;align-items:center;gap:.75rem;padding:.4rem 0;border-bottom:1px solid var(--border)"><div style="width:6px;height:6px;border-radius:50%;background:'+t.color+';flex-shrink:0"></div><div style="flex:1"><div style="font-size:.7rem;font-weight:600;color:var(--text)">'+t.label+'</div><div style="font-size:.6rem;color:var(--text3)">'+t.note+'</div></div><div style="font-size:.72rem;font-weight:700;color:'+t.color+'">'+t.date+'</div></div>';
+  });
+  html+='</div>';
+  document.getElementById('filmingContent').innerHTML=html;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// EDITING QUEUE (Carl)
+// ═══════════════════════════════════════════════════════════════════════════
+function renderEditing(){
+  var toEdit=QUEUE.filter(function(q){return q.stage==='Need Sound Update'||q.stage==='Ready to Schedule';});
+  var html='<div class="grid2" style="margin-bottom:1.5rem">';
+  html+='<div class="card"><div class="card-title">✂️ Edit Queue</div>';
+  toEdit.forEach(function(q,i){
+    html+='<div style="display:flex;align-items:center;gap:.6rem;padding:.45rem 0;border-bottom:1px solid var(--border)">';
+    html+='<span style="font-family:\'Syne Mono\',monospace;color:var(--text3);font-size:.65rem;min-width:1.2rem">'+(i+1)+'</span>';
+    html+='<div style="flex:1"><div style="font-size:.7rem;font-weight:600">'+q.title+'</div><div style="font-size:.58rem;color:var(--text3);margin-top:.1rem">'+q.stage+'</div></div>';
+    html+='<span class="pill '+tcp(q.type)+'" style="font-size:.5rem">'+tci(q.type)+'</span>';
+    html+='<span class="pill '+(q.stage==='Need Sound Update'?'p-red':'p-gold')+'" style="font-size:.5rem">'+(q.stage==='Need Sound Update'?'🔊 Sound needed':'✓ Ready')+'</span>';
+    html+='</div>';
+  });
+  html+='</div>';
+  html+='<div class="card"><div class="card-title">📋 Carl\'s Notes</div>';
+  html+='<div style="font-size:.68rem;color:var(--text2);line-height:1.8">'+
+    '<div style="padding:.4rem 0;border-bottom:1px solid var(--border)"><strong style="color:var(--text)">Reels:</strong> Every long-form video needs a 30–60s reel cut. Use the most dramatic sound moment.</div>'+
+    '<div style="padding:.4rem 0;border-bottom:1px solid var(--border)"><strong style="color:var(--text)">1-Hour loops:</strong> Crossfade at loop point. No visible cut. Export at 4K.</div>'+
+    '<div style="padding:.4rem 0;border-bottom:1px solid var(--border)"><strong style="color:var(--text)">Thumbnails:</strong> Healing = calm face close-up or frequency visualization. High Energy = movement blur or shock expression. TEXT thumbnails have been getting 8%+ CTR — test more.</div>'+
+    '<div style="padding:.4rem 0"><strong style="color:var(--text)">Priority order:</strong> Scheduled with SEO first → Ready to Schedule → Need Sound Update</div>'+
+  '</div></div></div>';
+  document.getElementById('editingContent').innerHTML=html;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// INSTRUMENTS (Lydia)
+// ═══════════════════════════════════════════════════════════════════════════
+function renderInstruments(){
+  function stageClass(s){
+    if(s==='Built')return'stage-built';
+    if(s==='Painted')return'stage-painted';
+    if(s==='Painting')return'stage-painting';
+    if(s==='Ready for Paint')return'stage-rfp';
+    return'stage-printed';
+  }
+  function dueClass(d){
+    if(d==='—'||!d)return'';
+    var dt=new Date(d);
+    var diff=(dt-TODAY)/86400000;
+    if(diff<0)return'overdue';
+    if(diff<7)return'due-soon';
+    return'';
+  }
+
+  // Summary cards
+  var stages=['Built','Painting','Painted','Ready for Paint','Printed'];
+  var sumHtml='<div class="grid4" style="margin-bottom:1.25rem">';
+  stages.slice(0,4).forEach(function(st){
+    var n=INSTRUMENTS.filter(function(i){return i.stage===st;}).length;
+    sumHtml+='<div class="stat-card"><div class="stat-val">'+n+'</div><div class="stat-label">'+st+'</div></div>';
+  });
+  sumHtml+='</div>';
+
+  // Overdue
+  var overdue=INSTRUMENTS.filter(function(i){return dueClass(i.deadline)==='overdue';});
+  var overdueHtml=overdue.length?'<div class="film-alert" style="margin-bottom:1rem">⚠️ '+overdue.length+' instrument(s) past deadline: '+overdue.map(function(i){return '#'+i.id+' '+i.model+' '+i.note+' ('+i.client+')'}).join(', ')+'</div>':'';
+
+  var tableHtml='<div class="table-wrap"><table><thead><tr><th>ID</th><th>Model</th><th>Note</th><th>Color</th><th>Stage</th><th>Location</th><th>Assignee</th><th>Deadline</th><th>Client/Owner</th><th>Type</th><th>Comments</th></tr></thead><tbody>';
+  INSTRUMENTS.forEach(function(i){
+    var dc=dueClass(i.deadline);
+    tableHtml+='<tr>';
+    tableHtml+='<td style="font-family:\'Syne Mono\',monospace;color:var(--text3)">#'+i.id+'</td>';
+    tableHtml+='<td style="font-weight:700">'+i.model+'</td>';
+    tableHtml+='<td>'+i.note+'</td>';
+    tableHtml+='<td style="font-size:.65rem;color:var(--text2)">'+(i.color||'—')+'</td>';
+    tableHtml+='<td><span class="stage-badge '+stageClass(i.stage)+'">'+i.stage+'</span></td>';
+    tableHtml+='<td style="font-size:.65rem">'+i.location+'</td>';
+    tableHtml+='<td style="font-size:.65rem">'+i.assignee+'</td>';
+    tableHtml+='<td class="'+dc+'" style="font-size:.65rem;font-family:\'Syne Mono\',monospace">'+(i.deadline&&i.deadline!=='—'?i.deadline.substring(0,10):' — ')+'</td>';
+    tableHtml+='<td style="font-size:.65rem">'+i.client+'</td>';
+    tableHtml+='<td><span class="pill '+(i.type==='Client'?'p-gold':i.type==='LSM'?'p-blue':'p-green')+'" style="font-size:.5rem">'+i.type+'</span></td>';
+    tableHtml+='<td style="font-size:.6rem;color:var(--text3);max-width:150px">'+(i.comments||'')+'</td>';
+    tableHtml+='</tr>';
+  });
+  tableHtml+='</tbody></table></div>';
+  document.getElementById('instrumentContent').innerHTML=sumHtml+overdueHtml+tableHtml;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MODAL: 48H DATA
+// ═══════════════════════════════════════════════════════════════════════════
+function showModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-bg').forEach(function(m){
+  m.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+});
+
+function save48h(){
+  var id=(document.getElementById('m-ytid')||{value:''}).value.trim();
+  if(!id){alert('Enter a YouTube Video ID');return;}
+  var v=VIDEOS.find(function(x){return x.id===id;});
+  if(!v){alert('Video ID "'+id+'" not found. Check the URL and try again.');return;}
+  var avd=parseInt(document.getElementById('m-avd').value)||v.avd_sec;
+  var m=Math.floor(avd/60),s=avd%60;
+  v.ctr=parseFloat(document.getElementById('m-ctr').value)||v.ctr;
+  v.views=parseFloat(document.getElementById('m-views').value)||v.views;
+  v.avd_sec=avd;v.avd_str=m+':'+String(s).padStart(2,'0');
+  v.avgpct=parseFloat(document.getElementById('m-avgpct').value)||v.avgpct;
+  v.subs48=parseInt(document.getElementById('m-subs').value)||v.subs48;
+  v.notes=document.getElementById('m-notes').value||v.notes;
+  var sc2=score(v);
+  if(!v.decision||v.decision==='Monitor'){
+    v.decision=sc2>=60?'Repost Candidate':sc2>=40?'Monitor':'Change Thumbnail';
+  }
+  persist(v);
+  closeModal('modal-48h');
+  renderHome();
+  if(document.getElementById('page-tracker').classList.contains('active'))renderTracker();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════════════
+document.getElementById('todayDate').textContent = TODAY.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+renderHome();
+setTimeout(function(){renderTitleSuggestions();renderTitleGrid();},100);
+</script>
+</body>
+</html>
