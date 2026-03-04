@@ -39,7 +39,7 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 .layout{display:flex;min-height:100vh}
 .sidebar{width:240px;background:var(--s1);border-right:1px solid var(--border);position:fixed;left:0;top:0;bottom:0;z-index:100;transition:transform .25s ease;overflow-y:auto;display:flex;flex-direction:column}
 .sidebar.collapsed{transform:translateX(-240px)}
-.main{margin-left:240px;min-height:100vh;transition:margin-left .25s ease;display:flex;flex-direction:column}
+.main{margin-left:240px;min-height:100vh;width:calc(100vw - 240px);max-width:calc(100vw - 240px);overflow-x:hidden;transition:margin-left .25s ease;display:flex;flex-direction:column}
 .main.expanded{margin-left:0}
 
 /* ── SIDEBAR ── */
@@ -328,7 +328,7 @@ tbody tr.expanded td{background:var(--goldbg)!important}
 <div class="sidebar" id="sidebar">
   <div class="sb-header">
     <div class="sb-logo">⚡ LSM<span style="color:var(--text3);font-weight:400;font-size:.75rem;margin-left:.3rem">Empire OS</span></div>
-    <div class="sb-version">v2.0 · Tue 3 Mar 2026</div>
+    <div class="sb-version">v2.1 · Wed 4 Mar 2026</div>
   </div>
 
   <div class="sb-section">
@@ -340,6 +340,7 @@ tbody tr.expanded td{background:var(--goldbg)!important}
     <div class="sb-section-label">YouTube</div>
     <div class="nav-item" onclick="nav('repost')" data-page="repost"><span class="icon">♻️</span>Repost Queue<span class="nav-badge nb-gold" id="nb-repost">–</span></div>
     <div class="nav-item" onclick="nav('tracker')" data-page="tracker"><span class="icon">📊</span>Video Tracker<span class="nav-badge nb-red" id="nb-tracker">–</span></div>
+    <div class="nav-item" onclick="nav('decisions')" data-page="decisions"><span class="icon">🎯</span>Decisions Log<span class="nav-badge nb-blue" id="nb-decisions">0</span></div>
     <div class="nav-item" onclick="nav('titles')" data-page="titles"><span class="icon">💡</span>Title Lab</div>
     <div class="nav-item" onclick="nav('queue')" data-page="queue"><span class="icon">📋</span>Content Queue</div>
     <div class="nav-item" onclick="nav('filming')" data-page="filming"><span class="icon">🎥</span>Filming Planner</div>
@@ -574,11 +575,12 @@ tbody tr.expanded td{background:var(--goldbg)!important}
       </div>
 
       <div class="guide-card">
-        <div class="guide-title">🎯 Automatic Decision Logic</div>
+        <div class="guide-title">🎯 Automatic Decision Logic — Why Each Action</div>
         <div class="rule-row"><span class="rule-label">CTR below avg AND AVD below avg</span><span class="rule-val" style="color:var(--red)">→ Change Thumbnail first</span></div>
         <div class="rule-row"><span class="rule-label">CTR below avg AND AVD above avg</span><span class="rule-val" style="color:var(--orange)">→ Thumbnail problem only — change it</span></div>
         <div class="rule-row"><span class="rule-label">CTR above avg AND AVD below avg</span><span class="rule-val" style="color:var(--blue)">→ Hook/content problem — check first 5 seconds</span></div>
-        <div class="rule-row"><span class="rule-label">CTR above avg AND AVD above avg</span><span class="rule-val" style="color:var(--green)">→ Strong — mark Repost Candidate</span></div>
+        <div style="font-size:.82rem;color:var(--text3);margin-bottom:1rem;line-height:1.7">The app compares each video against the average of its category (High-Energy, Healing, or Hour-Long). These are the only two numbers that matter in the first 48 hours:</div>
+        <div class="rule-row"><span class="rule-label">✅ CTR above avg AND AVD above avg</span><span class="rule-val" style="color:var(--green)">→ Repost Candidate — it hooks AND holds. Add to repost queue.</span></div>
         <div class="callout"><strong>Why CTR + AVD together?</strong> CTR tells you if the thumbnail/title makes people click. AVD tells you if the content keeps them watching. You need both to diagnose the problem correctly.</div>
       </div>
 
@@ -640,6 +642,17 @@ tbody tr.expanded td{background:var(--goldbg)!important}
 </div><!-- end app -->
 
 <!-- MODAL: 48H DATA -->
+
+<div class="page-content" id="page-decisions" style="display:none">
+  <div class="page-grid">
+    <div style="margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
+      <div style="font-size:.82rem;color:var(--text3)">Every 48h data entry and its auto-decision. Click any row to see full details.</div>
+      <button class="btn btn-outline btn-sm" onclick="showModal('modal48h')">+ New 48h Entry</button>
+    </div>
+    <div id="decisionsList"></div>
+  </div>
+</div>
+
 <div class="modal-bg" id="modal48h">
   <div class="modal">
     <div class="modal-hd"><span class="modal-title">Enter 48-Hour Data</span><button class="modal-close" onclick="closeModal('modal48h')">✕</button></div>
@@ -902,8 +915,8 @@ function runway(){
 function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';setTimeout(function(){t.style.opacity='0';t.style.transform='translateX(-50%) translateY(10px)';},2500);}
 
 // ═══ NAV ═════════════════════════════════════════════════════════════════
-var PAGE_TITLES={home:'Command Center',repost:'Repost Queue',tracker:'Video Tracker',titles:'Title Lab',queue:'Content Queue',filming:'Filming Planner',editing:'Edit Queue',instruments:'Instruments — Lydia',sales:'Sales — Shopify',ads:'Campaigns — Gal',vertical:'Vertical Content',chat:'Ask Claude',guide:'Decision Guide',integrations:'Integrations & API'};
-var RENDERS={repost:renderRepost,tracker:renderTracker,titles:renderTitles,queue:renderQueue,filming:renderFilming,editing:renderEdit,instruments:renderInstr,vertical:renderVertical,integrations:renderIntegrations};
+var PAGE_TITLES={home:'Command Center',repost:'Repost Queue',tracker:'Video Tracker',decisions:'Decisions Log',titles:'Title Lab',queue:'Content Queue',filming:'Filming Planner',editing:'Edit Queue',instruments:'Instruments — Lydia',sales:'Sales — Shopify',ads:'Campaigns — Gal',vertical:'Vertical Content',chat:'Ask Claude',guide:'Decision Guide',integrations:'Integrations & API'};
+var RENDERS={repost:renderRepost,tracker:renderTracker,decisions:renderDecisions,titles:renderTitles,queue:renderQueue,filming:renderFilming,editing:renderEdit,instruments:renderInstr,vertical:renderVertical,integrations:renderIntegrations};
 
 function nav(page){
   document.querySelectorAll('[id^="page-"]').forEach(function(p){p.style.display='none';});
@@ -1095,6 +1108,7 @@ function expRow(v){
     +'</div><div style="margin-top:1rem;display:flex;flex-direction:column;gap:.4rem">'
     +'<a class="btn btn-outline btn-sm" href="https://youtube.com/watch?v='+v.id+'" target="_blank">▶ YouTube</a>'
     +'<a class="btn btn-outline btn-sm" href="https://studio.youtube.com/video/'+v.id+'/edit" target="_blank">⚙ Studio</a>'
+    +'<button class="btn btn-gold btn-sm" onclick="prefill48h(\''+v.id+'\')">+ Update 48h Data</button>'
     +'<button class="gcal-btn" onclick="createGCalReminderForVideo(\''+v.id+'\',\''+v.title.replace(/'/g,"\\'")+'\')" style="margin-top:.2rem">📅 48h Reminder</button>'
     +'</div></div>'
     +'</div>';
@@ -1418,6 +1432,22 @@ function showModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.modal-bg').forEach(function(m){m.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});});
 
+// Global decisions log
+var DECISIONS = [];
+
+function prefill48h(id){
+  document.getElementById('m-id').value=id;
+  var v=VIDEOS.find(function(x){return x.id===id;});
+  if(v){
+    if(v.ctr)document.getElementById('m-ctr').value=v.ctr;
+    if(v.avd_sec)document.getElementById('m-avd').value=v.avd_sec;
+    if(v.avgpct)document.getElementById('m-avg').value=v.avgpct;
+    if(v.views)document.getElementById('m-views').value=v.views;
+    if(v.notes)document.getElementById('m-notes').value=v.notes;
+  }
+  showModal('modal48h');
+}
+
 function save48h(){
   var id=(document.getElementById('m-id')||{value:''}).value.trim();
   if(!id){alert('Enter a YouTube Video ID');return;}
@@ -1429,15 +1459,103 @@ function save48h(){
   v.views=parseInt(document.getElementById('m-views').value)||v.views;
   v.avd_sec=avd;
   v.avgpct=parseFloat(document.getElementById('m-avg').value)||v.avgpct;
+  v.imp48=parseInt(document.getElementById('m-imp').value)||0;
+  v.browse=parseFloat(document.getElementById('m-browse').value)||0;
+  v.subs48=parseInt(document.getElementById('m-subs').value)||0;
   v.notes=document.getElementById('m-notes').value||v.notes;
   v.decision=autoDecision(v);
+  v.lastEntry48=new Date().toISOString();
   saveV(v);
   pushUndo('48h data for "'+v.title.substring(0,20)+'…"',function(){Object.assign(v,oldV);saveV(v);});
+  // Store in decisions log
+  DECISIONS.unshift({
+    videoId:id, title:v.title, decision:v.decision,
+    score:calcScore(v), ctr:v.ctr, avd_sec:v.avd_sec,
+    avgpct:v.avgpct, views:v.views, imp48:v.imp48,
+    browse:v.browse, subs48:v.subs48, notes:v.notes,
+    date:new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}),
+    ts:Date.now()
+  });
+  try{localStorage.setItem('lsm_decisions',JSON.stringify(DECISIONS));}catch(e){}
+  updateDecisionsBadge();
   closeModal('modal48h');
-  var dec=v.decision;
-  var msg='📊 Saved! Auto decision: '+dec;
-  showToast(msg);
   reRender();
+  // Navigate to decisions page to show result
+  nav('decisions');
+}
+
+function loadDecisions(){
+  try{var d=localStorage.getItem('lsm_decisions');if(d)DECISIONS=JSON.parse(d);}catch(e){}
+  updateDecisionsBadge();
+}
+
+function updateDecisionsBadge(){
+  var el=document.getElementById('nb-decisions');
+  if(el)el.textContent=DECISIONS.length;
+}
+
+
+// ═══ DECISIONS LOG ═══════════════════════════════════════════════════════
+function renderDecisions(){
+  var el=document.getElementById('decisionsList');
+  if(!el)return;
+  if(!DECISIONS.length){
+    el.innerHTML='<div class="card" style="text-align:center;padding:2.5rem;color:var(--text3)"><div style="font-size:2rem;margin-bottom:.75rem">🎯</div><div style="font-size:.95rem;font-weight:600;margin-bottom:.5rem">No decisions yet</div><div style="font-size:.82rem">Enter 48h data after each upload and the decision will appear here.</div><button class="btn btn-gold" style="margin-top:1.25rem" onclick="showModal('modal48h')">+ Enter First 48h Data</button></div>';
+    return;
+  }
+  var html='';
+  DECISIONS.forEach(function(d,i){
+    var decClass=d.decision==='Repost Candidate'?'var(--green)':d.decision==='Monitor'?'var(--gold)':'var(--red)';
+    var decIcon=d.decision==='Repost Candidate'?'✅':d.decision==='Monitor'?'👁️':d.decision==='Change Thumbnail'?'🖼️':'🎣';
+    var why=decisionWhy(d);
+    html+='<div class="card" style="margin-bottom:.85rem;cursor:pointer" onclick="showDecisionDetail('+i+')">';
+    html+='<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap">';
+    html+='<div style="flex:1;min-width:0">';
+    html+='<div style="font-size:.88rem;font-weight:700;color:var(--text);margin-bottom:.3rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+d.title+'</div>';
+    html+='<div style="font-size:.75rem;color:var(--text3)">'+d.date+'</div>';
+    html+='</div>';
+    html+='<div style="text-align:right;flex-shrink:0">';
+    html+='<div style="font-size:.82rem;font-weight:700;color:'+decClass+'">'+decIcon+' '+d.decision+'</div>';
+    html+='<div style="font-size:.78rem;color:var(--text3);margin-top:.15rem">Score: <strong style="color:'+scoreColor(d.score)+'">'+d.score+'</strong></div>';
+    html+='</div></div>';
+    html+='<div style="margin-top:.75rem;padding:.65rem .85rem;background:var(--s1);border-radius:8px;font-size:.8rem;color:var(--text2);line-height:1.6"><strong style="color:var(--gold)">Why:</strong> '+why+'</div>';
+    html+='<div style="display:flex;gap:1.5rem;margin-top:.75rem;flex-wrap:wrap">';
+    var stats=[['CTR',d.ctr+'%'],['AVD',avdStr(d.avd_sec)],['Avg%',d.avgpct+'%'],['Views',fmt(d.views)]];
+    if(d.imp48)stats.push(['Impressions',fmt(d.imp48)]);
+    if(d.subs48)stats.push(['Subs+','+'+d.subs48]);
+    stats.forEach(function(s){html+='<div style="font-size:.75rem"><div style="color:var(--text3)">'+s[0]+'</div><div style="font-weight:700;color:var(--text)">'+s[1]+'</div></div>';});
+    html+='</div>';
+    if(d.notes)html+='<div style="margin-top:.6rem;font-size:.78rem;color:var(--text3);font-style:italic">📝 '+d.notes+'</div>';
+    html+='</div>';
+  });
+  el.innerHTML=html;
+}
+
+function decisionWhy(d){
+  if(d.decision==='Repost Candidate')return'Both CTR and AVD are above your channel average — this video hooks viewers AND keeps them watching. High repost potential.';
+  if(d.decision==='Change Thumbnail')return'AVD is good (people watch once they click) but CTR is low — the content works, but not enough people are clicking. Try a new thumbnail or title.';
+  if(d.decision==='Check Hook')return'CTR is good (people click) but AVD is low — they're clicking but leaving early. The first 30 seconds aren't delivering on the thumbnail's promise. Fix the hook.';
+  return'Both CTR and AVD are below average. Try a new thumbnail first — that's the fastest lever to pull. Then review the hook if CTR improves.';
+}
+
+function showDecisionDetail(i){
+  var d=DECISIONS[i];
+  if(!d)return;
+  var why=decisionWhy(d);
+  var decClass=d.decision==='Repost Candidate'?'var(--green)':d.decision==='Monitor'?'var(--gold)':'var(--red)';
+  var msg='<div style="font-size:1.1rem;font-weight:700;color:'+decClass+';margin-bottom:.5rem">'+d.decision+'</div><div style="font-size:.85rem;color:var(--text2);line-height:1.7;margin-bottom:.75rem">'+why+'</div><div style="font-size:.8rem;color:var(--text3)">'+d.date+' · Score '+d.score+'</div>';
+  var modal=document.getElementById('modal-decision-detail');
+  if(!modal){
+    modal=document.createElement('div');
+    modal.id='modal-decision-detail';
+    modal.className='modal-bg';
+    modal.innerHTML='<div class="modal"><div class="modal-hd"><span class="modal-title" id="mdd-title"></span><button class="modal-close" onclick="closeModal('modal-decision-detail')">✕</button></div><div class="modal-body" id="mdd-body"></div><div class="modal-ft"><button class="btn btn-outline" onclick="closeModal('modal-decision-detail')">Close</button></div></div>';
+    modal.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+    document.body.appendChild(modal);
+  }
+  document.getElementById('mdd-title').textContent=d.title.substring(0,40)+(d.title.length>40?'…':'');
+  document.getElementById('mdd-body').innerHTML=msg;
+  showModal('modal-decision-detail');
 }
 
 // ═══ YOUTUBE ANALYTICS SYNC ════════════════════════════════════════════
@@ -1497,6 +1615,7 @@ async function init(){
   renderVertical();
   // Sync YouTube Analytics in background — updates CTR/AVD automatically
   syncYouTubeAnalytics();
+  loadDecisions();
   // Handle OAuth redirect back to app
   var params=new URLSearchParams(window.location.search);
   if(params.get('auth_success')){showToast('✅ YouTube connected! Syncing data…');window.history.replaceState({},'','/lsm-os.html');setTimeout(syncYouTubeAnalytics,1500);}
