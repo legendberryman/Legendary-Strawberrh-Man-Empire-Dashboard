@@ -37,7 +37,7 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 .planner-chip.repost{background:rgba(74,222,128,.15);color:var(--green)}
 .planner-chip.suggested{background:rgba(96,165,250,.1);color:var(--blue);border:1px dashed var(--blue)}
 .planner-day-hd{font-size:.65rem;font-weight:700;color:var(--text3);padding:.2rem .35rem;background:var(--s1);text-align:center;border-radius:4px;margin-bottom:4px}
-/* ── AUTH ── */
+/* ── AUTH (removed) ── */
 #authScreen{position:fixed;inset:0;background:var(--bg);z-index:9000;display:flex;align-items:center;justify-content:center}
 .auth-box{background:var(--s1);border:1px solid var(--border);padding:2.5rem;width:380px;text-align:center}
 .auth-logo{font-size:2rem;font-weight:800;color:var(--gold2);margin-bottom:.4rem}
@@ -320,16 +320,7 @@ tbody tr.expanded td{background:var(--goldbg)!important}
 </head>
 <body>
 
-<!-- AUTH -->
-<div id="authScreen">
-  <div class="auth-box">
-    <div class="auth-logo">LSM</div>
-    <div style="font-size:.72rem;color:var(--text3);margin-bottom:1.5rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase">Empire Operating System</div>
-    <input class="auth-input" type="password" id="authPin" placeholder="ENTER PASSWORD" onkeydown="if(event.key==='Enter')checkAuth()"/>
-    <button class="auth-btn" onclick="checkAuth()">Enter</button>
-    <div class="auth-error" id="authErr">Incorrect password. Try again.</div>
-  </div>
-</div>
+
 
 <!-- TOAST -->
 <div id="toast"></div>
@@ -725,27 +716,7 @@ tbody tr.expanded td{background:var(--goldbg)!important}
 </div>
 
 <script>
-// ═══ AUTH ════════════════════════════════════════════════════════════════
-var PASSWORD = 'lsm2026';
-function checkAuth(){
-  var pin=document.getElementById('authPin').value;
-  if(pin===PASSWORD){
-    localStorage.setItem('lsm_auth','1');
-    document.getElementById('authScreen').style.display='none';
-    document.getElementById('app').style.display='block';
-    init();
-  } else {
-    document.getElementById('authErr').style.display='block';
-    document.getElementById('authPin').value='';
-    document.getElementById('authPin').focus();
-  }
-}
-function logout(){localStorage.removeItem('lsm_auth');location.reload();}
-if(localStorage.getItem('lsm_auth')==='1'){
-  document.getElementById('authScreen').style.display='none';
-  document.getElementById('app').style.display='block';
-  // init() called after all scripts load via window.onload below
-}
+function logout(){try{localStorage.removeItem('lsm_auth');}catch(e){}location.reload();}
 
 // ═══ SIDEBAR TOGGLE ════════════════════════════════════════════════════
 var sidebarOpen=true;
@@ -1216,14 +1187,33 @@ function renderTitles(){
   renderThumbGrid();
 }
 
+function copySug(el){
+  var t=el.getAttribute('data-title');
+  navigator.clipboard.writeText(t).then(function(){
+    var orig=el.style.background;
+    el.style.background='var(--goldbg)';
+    setTimeout(function(){el.style.background=orig;},600);
+  }).catch(function(){});
+}
 function renderSugs(){
-  document.getElementById('titleSugs').innerHTML=SUGS.map(function(t){
+  var el=document.getElementById('titleSugs');
+  el.innerHTML='';
+  SUGS.forEach(function(t,i){
     var entry=TITLE_BANK.find(function(x){return x.t===t;})||{score:80,cat:'High-Energy'};
     var catIcon=entry.cat==='Healing'?'🌿':entry.cat==='Healing 1 Hour'?'🧘':'⚡';
-    return'<div class="sug-card" onclick="navigator.clipboard.writeText(\''+t.replace(/\'/g,\"\\\'\")+'\')\'" title="Click to copy">'
-      +'<div style="display:flex;align-items:center;gap:.5rem;flex:1"><span style="font-size:.8rem">'+catIcon+'</span><span style="flex:1">'+t+'</span></div>'
-      +'<div style="display:flex;align-items:center;gap:.5rem;flex-shrink:0"><span style="font-size:.72rem;font-weight:700;color:'+scoreColor(entry.score)+'">'+entry.score+'</span><span style="font-size:.75rem;color:var(--text3)">⎘</span></div></div>';
-  }).join('');
+    var div=document.createElement('div');
+    div.className='sug-card';
+    div.title='Click to copy';
+    div.innerHTML='<div style="display:flex;align-items:center;gap:.5rem;flex:1"><span style="font-size:.8rem">'+catIcon+'</span><span style="flex:1">'+t+'</span></div>'
+      +'<div style="display:flex;align-items:center;gap:.5rem;flex-shrink:0"><span style="font-size:.72rem;font-weight:700;color:'+scoreColor(entry.score)+'">'+entry.score+'</span><span style="font-size:.75rem;color:var(--text3)">⎘</span></div>';
+    div.onclick=function(){
+      navigator.clipboard.writeText(t).then(function(){
+        div.style.background='var(--goldbg)';
+        setTimeout(function(){div.style.background='';},600);
+      }).catch(function(){});
+    };
+    el.appendChild(div);
+  });
 }
 
 // Curated title bank scored by formula strength (1-100)
@@ -1944,11 +1934,7 @@ async function init(){
   if(params.get('auth_error')){showToast('❌ YouTube error: '+params.get('auth_error'));window.history.replaceState({},'','/lsm-os.html');}
 }
 if(localStorage.getItem('lsm_auth')==='1') init();
-window.addEventListener('load', function(){
-  if(localStorage.getItem('lsm_auth')==='1'){
-    if(typeof init === 'function') init();
-  }
-});
+window.addEventListener('load', function(){ if(typeof init === 'function') init(); });
 </script>
 </body>
 </html>
