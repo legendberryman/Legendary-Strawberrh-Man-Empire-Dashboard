@@ -774,17 +774,56 @@ var INSTRUMENTS=[
 ];
 
 // Load persisted data
-var saved=JSON.parse(localStorage.getItem('lsm_v3')||'{}');
-VIDEOS.forEach(function(v){if(saved[v.id])Object.assign(v,saved[v.id]);});
-var savedQ=JSON.parse(localStorage.getItem('lsm_queue_v3')||'{}');
-QUEUE.forEach(function(q){if(savedQ[q.id])Object.assign(q,savedQ[q.id]);});
-var savedInstr=JSON.parse(localStorage.getItem('lsm_instr_v3')||'{}');
-INSTRUMENTS.forEach(function(i){if(savedInstr[i.id])Object.assign(i,savedInstr[i.id]);});
+// ═══ SUPABASE SYNC ══════════════════════════════════════════════════════
+// Reads live data from Supabase on load, writes back on every change
+// Falls back to hardcoded data if API unavailable
 
-// ═══ PERSIST ═══════════════════════════════════════════════════════════
-function saveV(v){var d=JSON.parse(localStorage.getItem('lsm_v3')||'{}');d[v.id]=v;localStorage.setItem('lsm_v3',JSON.stringify(d));}
-function saveQ(q){var d=JSON.parse(localStorage.getItem('lsm_queue_v3')||'{}');d[q.id]=q;localStorage.setItem('lsm_queue_v3',JSON.stringify(d));}
-function saveI(instr){var d=JSON.parse(localStorage.getItem('lsm_instr_v3')||'{}');d[instr.id]=instr;localStorage.setItem('lsm_instr_v3',JSON.stringify(d));}
+async function loadFromSupabase(){
+  try{
+    var [vRes,qRes,iRes]=await Promise.all([
+      fetch('/api/data?table=videos').then(function(r){return r.json();}),
+      fetch('/api/data?table=queue').then(function(r){return r.json();}),
+      fetch('/api/data?table=instruments').then(function(r){return r.json();})
+    ]);
+    if(Array.isArray(vRes)&&vRes.length){
+      vRes.forEach(function(row){
+        var v=VIDEOS.find(function(x){return x.id===row.id;});
+        if(v)Object.assign(v,row);
+        else VIDEOS.push(row);
+      });
+    }
+    if(Array.isArray(qRes)&&qRes.length){
+      qRes.forEach(function(row){
+        var q=QUEUE.find(function(x){return x.id===row.id;});
+        if(q)Object.assign(q,row);
+        else QUEUE.push(row);
+      });
+    }
+    if(Array.isArray(iRes)&&iRes.length){
+      iRes.forEach(function(row){
+        var i=INSTRUMENTS.find(function(x){return x.id===row.id;});
+        if(i)Object.assign(i,row);
+        else INSTRUMENTS.push(row);
+      });
+    }
+    console.log('Loaded from Supabase ✓');
+  }catch(e){
+    console.warn('Supabase load failed, using local data:',e);
+  }
+}
+
+function saveV(v){
+  fetch('/api/data?table=videos&id='+v.id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(v)}).catch(function(e){console.warn('saveV failed',e);});
+}
+function saveQ(q){
+  var method=q._new?'POST':'PATCH';
+  var url=q._new?'/api/data?table=queue':'/api/data?table=queue&id='+q.id;
+  delete q._new;
+  fetch(url,{method:method,headers:{'Content-Type':'application/json'},body:JSON.stringify(q)}).catch(function(e){console.warn('saveQ failed',e);});
+}
+function saveI(instr){
+  fetch('/api/data?table=instruments&id='+instr.id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(instr)}).catch(function(e){console.warn('saveI failed',e);});
+}
 
 // ═══ UNDO ════════════════════════════════════════════════════════════════
 function pushUndo(label,undo){
@@ -1174,7 +1213,7 @@ function addQueueCard(){
   var type=prompt('Type (High-Energy / Healing / Healing 1 Hour):','Healing');
   var id='q'+Date.now();
   QUEUE.push({id:id,title:title,stage:'Need Sound',type:type||'Healing',priority:'med',notes:''});
-  saveQ({id:id,title:title,stage:'Need Sound',type:type||'Healing',priority:'med',notes:''});
+  saveQ({id:id,title:title,stage:'Need Sound',type:type||'Healing',priority:'med',notes:'',_new:true});
   renderQueue();showToast('Added: '+title);
 }
 
@@ -1397,7 +1436,8 @@ function save48h(){
 }
 
 // ═══ INIT ════════════════════════════════════════════════════════════
-function init(){
+async function init(){
+  await loadFromSupabase();
   renderHome();
   renderRepost();
   renderTitles();
