@@ -694,6 +694,7 @@ function logout(){localStorage.removeItem('lsm_auth');location.reload();}
 if(localStorage.getItem('lsm_auth')==='1'){
   document.getElementById('authScreen').style.display='none';
   document.getElementById('app').style.display='block';
+  // init() called after all scripts load via window.onload below
 }
 
 // ═══ SIDEBAR TOGGLE ════════════════════════════════════════════════════
@@ -1500,7 +1501,7 @@ function renderDecisions(){
   var el=document.getElementById('decisionsList');
   if(!el)return;
   if(!DECISIONS.length){
-    el.innerHTML='<div class="card" style="text-align:center;padding:2.5rem;color:var(--text3)"><div style="font-size:2rem;margin-bottom:.75rem">🎯</div><div style="font-size:.95rem;font-weight:600;margin-bottom:.5rem">No decisions yet</div><div style="font-size:.82rem">Enter 48h data after each upload and the decision will appear here.</div><button class="btn btn-gold" style="margin-top:1.25rem" onclick="showModal('modal48h')">+ Enter First 48h Data</button></div>';
+    el.innerHTML='<div class="card" style="text-align:center;padding:2.5rem;color:var(--text3)"><div style="font-size:2rem;margin-bottom:.75rem">🎯</div><div style="font-size:.95rem;font-weight:600;margin-bottom:.5rem">No decisions yet</div><div style="font-size:.82rem">Enter 48h data after each upload and the decision will appear here.</div><button class="btn btn-gold" style="margin-top:1.25rem" onclick="showModal(&quot;modal48h&quot;)">+ Enter First 48h Data</button></div>';
     return;
   }
   var html='';
@@ -1533,9 +1534,9 @@ function renderDecisions(){
 
 function decisionWhy(d){
   if(d.decision==='Repost Candidate')return'Both CTR and AVD are above your channel average — this video hooks viewers AND keeps them watching. High repost potential.';
-  if(d.decision==='Change Thumbnail')return'AVD is good (people watch once they click) but CTR is low — the content works, but not enough people are clicking. Try a new thumbnail or title.';
-  if(d.decision==='Check Hook')return'CTR is good (people click) but AVD is low — they're clicking but leaving early. The first 30 seconds aren't delivering on the thumbnail's promise. Fix the hook.';
-  return'Both CTR and AVD are below average. Try a new thumbnail first — that's the fastest lever to pull. Then review the hook if CTR improves.';
+  if(d.decision==='Change Thumbnail')return'AVD is good (people watch once they click) but CTR is low. The content works but not enough people are clicking. Try a new thumbnail or title.';
+  if(d.decision==='Check Hook')return'CTR is good (people click) but AVD is low. They click but leave early. The first 30 seconds are not delivering on the promise. Fix the hook.';
+  return'Both CTR and AVD are below average. Try a new thumbnail first - the fastest lever. Then review the hook if CTR improves.';
 }
 
 function showDecisionDetail(i){
@@ -1549,7 +1550,7 @@ function showDecisionDetail(i){
     modal=document.createElement('div');
     modal.id='modal-decision-detail';
     modal.className='modal-bg';
-    modal.innerHTML='<div class="modal"><div class="modal-hd"><span class="modal-title" id="mdd-title"></span><button class="modal-close" onclick="closeModal('modal-decision-detail')">✕</button></div><div class="modal-body" id="mdd-body"></div><div class="modal-ft"><button class="btn btn-outline" onclick="closeModal('modal-decision-detail')">Close</button></div></div>';
+    modal.innerHTML='<div class="modal"><div class="modal-hd"><span class="modal-title" id="mdd-title"></span><button class="modal-close" onclick="closeModal(&quot;modal-decision-detail&quot;)">✕</button></div><div class="modal-body" id="mdd-body"></div><div class="modal-ft"><button class="btn btn-outline" onclick="closeModal(&quot;modal-decision-detail&quot;)">Close</button></div></div>';
     modal.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
     document.body.appendChild(modal);
   }
@@ -1622,6 +1623,11 @@ async function init(){
   if(params.get('auth_error')){showToast('❌ YouTube error: '+params.get('auth_error'));window.history.replaceState({},'','/lsm-os.html');}
 }
 if(localStorage.getItem('lsm_auth')==='1') init();
+window.addEventListener('load', function(){
+  if(localStorage.getItem('lsm_auth')==='1'){
+    if(typeof init === 'function') init();
+  }
+});
 </script>
 </body>
 </html>
