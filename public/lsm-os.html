@@ -7,22 +7,36 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
 :root{
-  --bg:#0c0c0e;--s1:#131316;--s2:#1a1a1f;--s3:#222228;
-  --border:#2e2e38;--border2:#3e3e4a;
-  --gold:#e8b84b;--gold2:#f5d070;--goldbg:rgba(232,184,75,.1);
-  --green:#34d399;--red:#f87171;--blue:#60a5fa;--purple:#a78bfa;--orange:#fb923c;
+  --bg:#111113;--s1:#18181b;--s2:#1f1f24;--s3:#27272d;
+  --border:#2d2d35;--border2:#3a3a44;
+  --gold:#e0453a;--gold2:#f06b62;--goldbg:rgba(224,69,58,.1);
+  --green:#4ade80;--red:#f87171;--blue:#60a5fa;--purple:#a78bfa;--orange:#fb923c;
   --heal:#6ee7b7;--energy:#fb923c;--hour:#93c5fd;
-  --text:#f0f0f4;--text2:#9898aa;--text3:#55555f;
+  --text:#ebebef;--text2:#8e8ea0;--text3:#52525e;
   --fw:600;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{font-size:15px}
 body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh;overflow-x:hidden}
-::selection{background:var(--goldbg);color:var(--gold2)}
+::selection{background:rgba(224,69,58,.15);color:var(--gold2)}
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:10px}
 
+
+/* ── PLANNER ── */
+.planner-day{background:var(--s2);border:1px solid var(--border);border-radius:6px;min-height:80px;padding:.4rem;cursor:pointer;transition:border-color .15s}
+.planner-day:hover{border-color:var(--border2)}
+.planner-day.today{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+.planner-day.posting{background:var(--goldbg)}
+.planner-day.empty-slot{border-style:dashed}
+.planner-day-num{font-size:.7rem;font-weight:700;color:var(--text3);margin-bottom:.25rem}
+.planner-day.today .planner-day-num{color:var(--gold)}
+.planner-chip{font-size:.6rem;font-weight:700;padding:.15rem .35rem;border-radius:3px;margin-bottom:.2rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.planner-chip.upload{background:rgba(224,69,58,.2);color:var(--gold2)}
+.planner-chip.repost{background:rgba(74,222,128,.15);color:var(--green)}
+.planner-chip.suggested{background:rgba(96,165,250,.1);color:var(--blue);border:1px dashed var(--blue)}
+.planner-day-hd{font-size:.65rem;font-weight:700;color:var(--text3);padding:.2rem .35rem;background:var(--s1);text-align:center;border-radius:4px;margin-bottom:4px}
 /* ── AUTH ── */
 #authScreen{position:fixed;inset:0;background:var(--bg);z-index:9000;display:flex;align-items:center;justify-content:center}
 .auth-box{background:var(--s1);border:1px solid var(--border);padding:2.5rem;width:380px;text-align:center}
@@ -39,7 +53,7 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 .layout{display:flex;min-height:100vh}
 .sidebar{width:240px;background:var(--s1);border-right:1px solid var(--border);position:fixed;left:0;top:0;bottom:0;z-index:100;transition:transform .25s ease;overflow-y:auto;display:flex;flex-direction:column}
 .sidebar.collapsed{transform:translateX(-240px)}
-.main{margin-left:240px;min-height:100vh;width:calc(100vw - 240px);max-width:calc(100vw - 240px);overflow-x:hidden;transition:margin-left .25s ease;display:flex;flex-direction:column}
+.main{margin-left:240px;min-height:100vh;width:calc(100vw - 240px);max-width:calc(100vw - 240px);overflow-x:hidden;transition:margin-left .25s ease;display:flex;flex-direction:column;box-sizing:border-box}
 .main.expanded{margin-left:0}
 
 /* ── SIDEBAR ── */
@@ -62,7 +76,7 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 .sb-user{font-size:.75rem;color:var(--text3);display:flex;align-items:center;gap:.5rem}
 
 /* ── TOPBAR ── */
-.topbar{background:var(--s1);border-bottom:1px solid var(--border);padding:.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;gap:1rem}
+.topbar{background:var(--s1);border-bottom:1px solid var(--border);padding:.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;gap:1rem;flex-wrap:wrap}
 .topbar-left{display:flex;align-items:center;gap:.75rem}
 .page-heading{font-size:1.1rem;font-weight:800;color:var(--text)}
 .topbar-right{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
@@ -85,7 +99,7 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 .btn-red{background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.2);color:var(--red);font-size:.72rem;padding:.35rem .75rem;border-radius:6px}.btn-red:hover{background:rgba(248,113,113,.2)}
 
 /* ── CONTENT ── */
-.page-content{padding:1.5rem;max-width:1400px}
+.page-content{padding:1.5rem;max-width:1400px;width:100%;box-sizing:border-box;overflow-x:hidden}
 
 /* ── CARDS ── */
 .card{background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:1.25rem}
@@ -328,7 +342,7 @@ tbody tr.expanded td{background:var(--goldbg)!important}
 <div class="sidebar" id="sidebar">
   <div class="sb-header">
     <div class="sb-logo">⚡ LSM<span style="color:var(--text3);font-weight:400;font-size:.75rem;margin-left:.3rem">Empire OS</span></div>
-    <div class="sb-version">v2.1 · Wed 4 Mar 2026</div>
+    <div class="sb-version">v2.2 · Wed 4 Mar 2026</div>
   </div>
 
   <div class="sb-section">
@@ -341,6 +355,7 @@ tbody tr.expanded td{background:var(--goldbg)!important}
     <div class="nav-item" onclick="nav('repost')" data-page="repost"><span class="icon">♻️</span>Repost Queue<span class="nav-badge nb-gold" id="nb-repost">–</span></div>
     <div class="nav-item" onclick="nav('tracker')" data-page="tracker"><span class="icon">📊</span>Video Tracker<span class="nav-badge nb-red" id="nb-tracker">–</span></div>
     <div class="nav-item" onclick="nav('decisions')" data-page="decisions"><span class="icon">🎯</span>Decisions Log<span class="nav-badge nb-blue" id="nb-decisions">0</span></div>
+    <div class="nav-item" onclick="nav('planner')" data-page="planner"><span class="icon">📅</span>Monthly Planner</div>
     <div class="nav-item" onclick="nav('titles')" data-page="titles"><span class="icon">💡</span>Title Lab</div>
     <div class="nav-item" onclick="nav('queue')" data-page="queue"><span class="icon">📋</span>Content Queue</div>
     <div class="nav-item" onclick="nav('filming')" data-page="filming"><span class="icon">🎥</span>Filming Planner</div>
@@ -427,7 +442,10 @@ tbody tr.expanded td{background:var(--goldbg)!important}
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:.85rem;flex-wrap:wrap;margin-bottom:1rem">
-    <div class="tgl-group"><button class="tgl on" onclick="setBL(30,this)">30d</button><button class="tgl" onclick="setBL(60,this)">60d</button><button class="tgl" onclick="setBL(90,this)">90d</button><button class="tgl" onclick="setBL(0,this)">All</button></div>
+    <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+      <div class="tgl-group"><button class="tgl on" onclick="setBL(30,this)">30d</button><button class="tgl" onclick="setBL(60,this)">60d</button><button class="tgl" onclick="setBL(90,this)">90d</button><button class="tgl" onclick="setBL(0,this)">All</button></div>
+      <span style="font-size:.72rem;color:var(--text3)" title="Compare each video against your own channel averages from this time window. Use 30d for current trends, All for all-time benchmark.">Compare against your last N days of uploads ⓘ</span>
+    </div>
     <label style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:var(--text3);cursor:pointer"><input type="checkbox" id="excOut1" checked onchange="renderRepost()" style="accent-color:var(--gold)"/>Exclude viral outliers</label>
     <div class="filter-bar" style="margin:0">
       <button class="flt-btn on" data-rc="all" onclick="setRC('all',this)">All</button>
@@ -643,11 +661,37 @@ tbody tr.expanded td{background:var(--goldbg)!important}
 
 <!-- MODAL: 48H DATA -->
 
+<div class="page-content" id="page-planner" style="display:none">
+  <div class="page-grid">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:.75rem">
+      <div style="display:flex;align-items:center;gap:.75rem">
+        <button class="btn btn-outline btn-sm" onclick="plannerPrevMonth()">← Prev</button>
+        <span style="font-size:1rem;font-weight:700;color:var(--text)" id="plannerMonthLabel">March 2026</span>
+        <button class="btn btn-outline btn-sm" onclick="plannerNextMonth()">Next →</button>
+      </div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+        <span style="display:flex;align-items:center;gap:.35rem;font-size:.75rem;color:var(--text2)"><span style="width:10px;height:10px;border-radius:2px;background:var(--gold);display:inline-block"></span>New upload</span>
+        <span style="display:flex;align-items:center;gap:.35rem;font-size:.75rem;color:var(--text2)"><span style="width:10px;height:10px;border-radius:2px;background:var(--green);display:inline-block"></span>Repost</span>
+        <span style="display:flex;align-items:center;gap:.35rem;font-size:.75rem;color:var(--text2)"><span style="width:10px;height:10px;border-radius:2px;background:var(--s3);border:1px dashed var(--border2);display:inline-block"></span>Empty slot</span>
+      </div>
+    </div>
+    <div id="plannerGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px"></div>
+    <div style="margin-top:1.5rem" id="plannerUpcoming">
+      <div style="font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:.75rem">Upcoming Repost Suggestions</div>
+      <div id="plannerSuggestions"></div>
+    </div>
+  </div>
+</div>
+
+
 <div class="page-content" id="page-decisions" style="display:none">
   <div class="page-grid">
-    <div style="margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
-      <div style="font-size:.82rem;color:var(--text3)">Every 48h data entry and its auto-decision. Click any row to see full details.</div>
-      <button class="btn btn-outline btn-sm" onclick="showModal('modal48h')">+ New 48h Entry</button>
+    <div style="margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
+      <div>
+        <div style="font-size:.95rem;font-weight:700;color:var(--text);margin-bottom:.25rem">Decisions Log</div>
+        <div style="font-size:.78rem;color:var(--text3)">Every 48h data entry and its auto-decision. Saved permanently.</div>
+      </div>
+      <button class="btn btn-gold btn-sm" onclick="showModal('modal48h')">+ New 48h Entry</button>
     </div>
     <div id="decisionsList"></div>
   </div>
@@ -916,8 +960,8 @@ function runway(){
 function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';setTimeout(function(){t.style.opacity='0';t.style.transform='translateX(-50%) translateY(10px)';},2500);}
 
 // ═══ NAV ═════════════════════════════════════════════════════════════════
-var PAGE_TITLES={home:'Command Center',repost:'Repost Queue',tracker:'Video Tracker',decisions:'Decisions Log',titles:'Title Lab',queue:'Content Queue',filming:'Filming Planner',editing:'Edit Queue',instruments:'Instruments — Lydia',sales:'Sales — Shopify',ads:'Campaigns — Gal',vertical:'Vertical Content',chat:'Ask Claude',guide:'Decision Guide',integrations:'Integrations & API'};
-var RENDERS={repost:renderRepost,tracker:renderTracker,decisions:renderDecisions,titles:renderTitles,queue:renderQueue,filming:renderFilming,editing:renderEdit,instruments:renderInstr,vertical:renderVertical,integrations:renderIntegrations};
+var PAGE_TITLES={home:'Command Center',repost:'Repost Queue',tracker:'Video Tracker',decisions:'Decisions Log',planner:'Monthly Planner',titles:'Title Lab',queue:'Content Queue',filming:'Filming Planner',editing:'Edit Queue',instruments:'Instruments — Lydia',sales:'Sales — Shopify',ads:'Campaigns — Gal',vertical:'Vertical Content',chat:'Ask Claude',guide:'Decision Guide',integrations:'Integrations & API'};
+var RENDERS={repost:renderRepost,tracker:renderTracker,decisions:renderDecisions,planner:renderPlanner,titles:renderTitles,queue:renderQueue,filming:renderFilming,editing:renderEdit,instruments:renderInstr,vertical:renderVertical,integrations:renderIntegrations};
 
 function nav(page){
   document.querySelectorAll('[id^="page-"]').forEach(function(p){p.style.display='none';});
@@ -933,10 +977,21 @@ function renderHome(){
   var rw=runway();
   var cls=rw.days<=7?'runway-crit':rw.days<=14?'runway-warn':'runway-ok';
   var icon=rw.days<=7?'🚨':rw.days<=14?'⚠️':'✅';
-  document.getElementById('runwayChip').innerHTML='<div class="runway-chip '+cls+'">'+icon+' '+rw.days+'d runway</div>';
+  document.getElementById('runwayChip').innerHTML='<div class="runway-chip '+cls+'" title="Content runway = days until you run out of queued videos to post. Below 14d = danger zone.">'+icon+' '+rw.days+'d runway <span style="font-size:.6rem;opacity:.6">ⓘ</span></div>';
+  var alertHtml = '';
   if(rw.days<=14){
-    document.getElementById('homeAlert').innerHTML='<div class="alert-box">🚨 Content runs out in '+rw.days+' days — film session needed NOW. You need 3 weeks lead time (film → sound → edit → SEO).</div>';
-  } else { document.getElementById('homeAlert').innerHTML=''; }
+    alertHtml += '<div class="alert-box">🚨 Content runs out in '+rw.days+' days — film session needed NOW. You need 3 weeks lead time (film → sound → edit → SEO).</div>';
+  }
+  // Check for videos needing 48h data (posted 40-96h ago, no entry yet)
+  var now48 = Date.now();
+  VIDEOS.filter(function(v){
+    if(!v.posted) return false;
+    var hoursOld = (now48 - new Date(v.posted).getTime()) / 3600000;
+    return hoursOld >= 40 && hoursOld <= 120 && !v.lastEntry48;
+  }).forEach(function(v){
+    alertHtml += '<div class="alert-box" style="background:rgba(224,69,58,.12);border-color:var(--gold);display:flex;align-items:center;justify-content:space-between;gap:1rem"><span>⚡ <strong>'+v.title.substring(0,35)+'…</strong> was posted '+Math.floor((now48-new Date(v.posted).getTime())/3600000)+'h ago — enter 48h data now</span><button class="btn btn-gold btn-sm" onclick="prefill48h(\''+v.id+'\')" style="flex-shrink:0">Enter Now</button></div>';
+  });
+  document.getElementById('homeAlert').innerHTML = alertHtml;
 
   var repReady=VIDEOS.filter(function(v){return v.decision==='Repost Candidate';}).length;
   var needsAtt=VIDEOS.filter(function(v){return v.decision==='Monitor'||v.decision==='Change Thumbnail'||v.decision==='Check Hook';}).length;
@@ -1469,15 +1524,18 @@ function save48h(){
   saveV(v);
   pushUndo('48h data for "'+v.title.substring(0,20)+'…"',function(){Object.assign(v,oldV);saveV(v);});
   // Store in decisions log
-  DECISIONS.unshift({
+  var newDec={
     videoId:id, title:v.title, decision:v.decision,
     score:calcScore(v), ctr:v.ctr, avd_sec:v.avd_sec,
     avgpct:v.avgpct, views:v.views, imp48:v.imp48,
     browse:v.browse, subs48:v.subs48, notes:v.notes,
     date:new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}),
     ts:Date.now()
-  });
+  };
+  DECISIONS.unshift(newDec);
   try{localStorage.setItem('lsm_decisions',JSON.stringify(DECISIONS));}catch(e){}
+  // Also persist to Supabase
+  saveDecisionToSupabase(newDec);
   updateDecisionsBadge();
   closeModal('modal48h');
   reRender();
@@ -1485,9 +1543,38 @@ function save48h(){
   nav('decisions');
 }
 
+async function saveDecisionToSupabase(dec){
+  try{
+    await fetch('/api/data',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({table:'decisions',record:dec})
+    });
+  }catch(e){console.warn('Decision not saved to DB:',e);}
+}
+
+async function loadDecisionsFromSupabase(){
+  try{
+    var res=await fetch('/api/data?table=decisions&order=ts.desc&limit=100');
+    var data=await res.json();
+    if(data&&data.length){
+      DECISIONS=data;
+      try{localStorage.setItem('lsm_decisions',JSON.stringify(DECISIONS));}catch(e){}
+      updateDecisionsBadge();
+      return true;
+    }
+  }catch(e){console.warn('Could not load decisions from DB');}
+  return false;
+}
+
 function loadDecisions(){
+  // Try localStorage first for instant load
   try{var d=localStorage.getItem('lsm_decisions');if(d)DECISIONS=JSON.parse(d);}catch(e){}
   updateDecisionsBadge();
+  // Then sync from Supabase (authoritative source)
+  loadDecisionsFromSupabase().then(function(loaded){
+    if(loaded)renderDecisions();
+  });
 }
 
 function updateDecisionsBadge(){
@@ -1557,6 +1644,156 @@ function showDecisionDetail(i){
   document.getElementById('mdd-title').textContent=d.title.substring(0,40)+(d.title.length>40?'…':'');
   document.getElementById('mdd-body').innerHTML=msg;
   showModal('modal-decision-detail');
+}
+
+
+// ═══ MONTHLY PLANNER ════════════════════════════════════════════════════
+var plannerDate = new Date();
+
+function plannerPrevMonth(){ plannerDate.setMonth(plannerDate.getMonth()-1); renderPlanner(); }
+function plannerNextMonth(){ plannerDate.setMonth(plannerDate.getMonth()+1); renderPlanner(); }
+
+function getEligibleReposts(){
+  var now = Date.now();
+  return VIDEOS.filter(function(v){
+    if(v.era !== 'serious') return false;
+    var score = calcScore(v);
+    if(score < 55) return false;
+    var minDays = score >= 75 ? 60 : 90;
+    // Check last repost date
+    var lastRep = v.lastReposted ? new Date(v.lastReposted).getTime() : 0;
+    var daysSince = (now - lastRep) / 86400000;
+    if(lastRep && daysSince < minDays) return false;
+    if(v.decision === 'Reposted' && daysSince < minDays) return false;
+    return true;
+  }).sort(function(a,b){ return calcScore(b) - calcScore(a); });
+}
+
+function getCategoryForSlot(slotIndex){
+  // Alternate: Healing, High-Energy, Healing, High-Energy...
+  // Every 5th slot = Healing 1 Hour
+  if(slotIndex % 5 === 4) return 'Healing';
+  return slotIndex % 2 === 0 ? 'Healing' : 'High-Energy';
+}
+
+function renderPlanner(){
+  var el = document.getElementById('plannerGrid');
+  var sugEl = document.getElementById('plannerSuggestions');
+  if(!el) return;
+
+  var year = plannerDate.getFullYear();
+  var month = plannerDate.getMonth();
+  var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('plannerMonthLabel').textContent = months[month] + ' ' + year;
+
+  var today = new Date();
+  var firstDay = new Date(year, month, 1).getDay();
+  var daysInMonth = new Date(year, month+1, 0).getDate();
+
+  // Build posting schedule - every 2 days starting from channel start
+  // Use actual video dates if available
+  var postedDates = {};
+  VIDEOS.forEach(function(v){
+    if(v.posted){
+      var d = new Date(v.posted);
+      if(d.getFullYear() === year && d.getMonth() === month){
+        var key = d.getDate();
+        postedDates[key] = postedDates[key] || [];
+        postedDates[key].push(v);
+      }
+    }
+  });
+
+  // Determine which days are "posting days" (every 2 days)
+  // Find the cadence anchor - use today or first of month
+  var anchor = new Date(year, month, 1);
+  var postingDays = {};
+  var slotIdx = 0;
+  for(var d = 1; d <= daysInMonth; d++){
+    var dayDate = new Date(year, month, d);
+    var diffFromToday = Math.floor((dayDate - today) / 86400000);
+    // Every 2 days from today
+    if(Math.abs(diffFromToday) % 2 === 0){
+      postingDays[d] = {slotIdx: slotIdx, isFuture: diffFromToday > 0};
+      slotIdx++;
+    }
+  }
+
+  var eligible = getEligibleReposts();
+  var usedInPlanner = {};
+
+  // Day headers
+  var dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  var html = dayNames.map(function(d){
+    return '<div class="planner-day-hd">'+d+'</div>';
+  }).join('');
+
+  // Empty cells before month start
+  for(var i = 0; i < firstDay; i++){
+    html += '<div style="min-height:80px"></div>';
+  }
+
+  // Day cells
+  for(var day = 1; day <= daysInMonth; day++){
+    var isToday = today.getDate() === day && today.getMonth() === month && today.getFullYear() === year;
+    var dayClass = 'planner-day';
+    if(isToday) dayClass += ' today';
+
+    var chips = '';
+    var hasPosted = postedDates[day];
+    var slot = postingDays[day];
+
+    if(hasPosted){
+      hasPosted.forEach(function(v){
+        var isRep = v.decision === 'Reposted';
+        chips += '<div class="planner-chip '+(isRep?'repost':'upload')+'" title="'+v.title+'">'+(isRep?'♻':'🆕')+' '+v.title.substring(0,18)+'</div>';
+      });
+      dayClass += ' posting';
+    } else if(slot && slot.isFuture){
+      // Suggest best eligible repost for this category
+      var cat = getCategoryForSlot(slot.slotIdx);
+      var suggested = eligible.filter(function(v){
+        return v.cat === cat && !usedInPlanner[v.id];
+      })[0];
+      if(!suggested) suggested = eligible.filter(function(v){ return !usedInPlanner[v.id]; })[0];
+      if(suggested){
+        usedInPlanner[suggested.id] = true;
+        chips += '<div class="planner-chip suggested" title="'+suggested.title+'">'+tci(suggested.cat)+' '+suggested.title.substring(0,16)+'</div>';
+        chips += '<div style="font-size:.58rem;color:var(--text3)">Score '+calcScore(suggested)+'</div>';
+        dayClass += ' empty-slot';
+      } else {
+        chips += '<div style="font-size:.62rem;color:var(--text3)">No eligible repost</div>';
+        dayClass += ' empty-slot';
+      }
+    }
+
+    html += '<div class="'+dayClass+'">';
+    html += '<div class="planner-day-num">'+day+'</div>';
+    html += chips;
+    html += '</div>';
+  }
+
+  el.innerHTML = html;
+
+  // Upcoming suggestions list
+  var upcomingHtml = '';
+  var futureSlots = Object.keys(postingDays).filter(function(d){ return postingDays[d].isFuture; }).slice(0,6);
+  var usedSugg = {};
+  futureSlots.forEach(function(d, i){
+    var cat = getCategoryForSlot(postingDays[d].slotIdx);
+    var v = eligible.filter(function(x){ return x.cat===cat && !usedSugg[x.id]; })[0]
+         || eligible.filter(function(x){ return !usedSugg[x.id]; })[0];
+    if(!v) return;
+    usedSugg[v.id] = true;
+    var score = calcScore(v);
+    upcomingHtml += '<div style="display:flex;align-items:center;gap:.75rem;padding:.65rem .85rem;background:var(--s2);border-radius:8px;margin-bottom:.5rem">';
+    upcomingHtml += '<div style="font-size:1.1rem">'+tci(v.cat)+'</div>';
+    upcomingHtml += '<div style="flex:1;min-width:0"><div style="font-size:.82rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+v.title+'</div>';
+    upcomingHtml += '<div style="font-size:.72rem;color:var(--text3)">'+v.cat+' · Score <span style="color:'+scoreColor(score)+'">'+score+'</span> · Post on '+months[month]+' '+d+'</div></div>';
+    upcomingHtml += '<a href="https://youtube.com/watch?v='+v.id+'" target="_blank" style="font-size:.75rem;color:var(--text3);text-decoration:none">▶</a>';
+    upcomingHtml += '</div>';
+  });
+  sugEl.innerHTML = upcomingHtml || '<div style="color:var(--text3);font-size:.82rem">No eligible repost candidates yet. Videos need score 55+ and 60-90 days since last repost.</div>';
 }
 
 // ═══ YOUTUBE ANALYTICS SYNC ════════════════════════════════════════════

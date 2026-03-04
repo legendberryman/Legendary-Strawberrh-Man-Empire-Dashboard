@@ -35,12 +35,20 @@ export default async function handler(req, res) {
 
   try {
     if (req.method === 'GET') {
-      const query = id ? `?id=eq.${id}` : '?order=created_at.desc';
+      let query;
+      if (id) {
+        query = `?id=eq.${id}`;
+      } else {
+        const order = req.query.order || 'created_at.desc';
+        const limit = req.query.limit ? `&limit=${req.query.limit}` : '';
+        query = `?order=${order}${limit}`;
+      }
       const result = await supabase('GET', table, null, query);
       return res.status(result.status).json(result.data);
     }
 
     if (req.method === 'POST') {
+      const headers_extra = table === 'decisions' ? 'resolution=merge-duplicates,' : '';
       const result = await supabase('POST', table, req.body);
       return res.status(result.status).json(result.data);
     }
