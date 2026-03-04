@@ -32,17 +32,17 @@ export default async function handler(req, res) {
       return res.redirect('/lsm-os.html?auth_error=' + tokens.error);
     }
 
-    // Store tokens in Supabase
+    // Store tokens in Supabase (upsert — insert or update if exists)
     const SUPABASE_URL = process.env.SUPABASE_URL;
     const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
 
-    await fetch(`${SUPABASE_URL}/rest/v1/config`, {
+    const saveRes = await fetch(`${SUPABASE_URL}/rest/v1/config`, {
       method: 'POST',
       headers: {
         'apikey': SUPABASE_KEY,
         'Authorization': `Bearer ${SUPABASE_KEY}`,
         'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates',
+        'Prefer': 'resolution=merge-duplicates,return=representation',
       },
       body: JSON.stringify({
         key: 'youtube_tokens',
@@ -53,6 +53,11 @@ export default async function handler(req, res) {
         }),
       }),
     });
+
+    if (!saveRes.ok) {
+      const errText = await saveRes.text();
+      return res.redirect('/lsm-os.html?auth_error=' + encodeURIComponent('DB save failed: ' + errText));
+    }
 
     // Redirect back to app with success
     res.redirect('/lsm-os.html?auth_success=1');
