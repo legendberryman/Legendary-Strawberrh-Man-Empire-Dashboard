@@ -382,6 +382,11 @@ tbody tr.expanded td{background:var(--goldbg)!important}
         <span id="undoText" style="font-size:.72rem"></span>
         <button class="undo-btn" onclick="doUndo()">↩ Undo</button>
       </div>
+      <div id="ytConnectBanner" style="display:none;align-items:center;gap:.5rem;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);padding:.28rem .75rem;border-radius:6px">
+        <span style="font-size:.7rem;color:var(--red)">YouTube not connected</span>
+        <button onclick="window.location.href=this.closest('#ytConnectBanner').dataset.url" style="background:var(--red);border:none;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:.65rem;font-weight:700;padding:.18rem .55rem;border-radius:4px;cursor:pointer">Connect →</button>
+      </div>
+      <span id="ytStatus" style="font-size:.68rem;color:var(--text3)"></span>
       <div id="runwayChip"></div>
       <button class="btn btn-outline btn-sm" onclick="nav('guide')">📚 Guide</button>
       <button class="btn btn-gold btn-sm" onclick="showModal('modal48h')">+ 48h Data</button>
@@ -1435,13 +1440,67 @@ function save48h(){
   reRender();
 }
 
-// ═══ INIT ════════════════════════════════════════════════════════════
+// ═══ YOUTUBE ANALYTICS SYNC ════════════════════════════════════════════
+var YT_CONNECTED = false;
+
+async function syncYouTubeAnalytics() {
+  try {
+    var ids = VIDEOS.filter(function(v){return v.era==='serious';}).map(function(v){return v.id;}).join(',');
+    var res = await fetch('/api/youtube-analytics?videoIds='+ids+'&days=30');
+    var data = await res.json();
+
+    if (data.error === 'not_authenticated') {
+      // Show connect button
+      showYTConnectBanner(data.authUrl);
+      return;
+    }
+
+    if (data.videos) {
+      YT_CONNECTED = true;
+      var updated = 0;
+      data.videos.forEach(function(row) {
+        if (row.noData) return;
+        var v = VIDEOS.find(function(x){return x.id === row.id;});
+        if (!v) return;
+        // Only update if we got real data
+        if (row.ctr > 0) v.ctr = row.ctr;
+        if (row.avd_sec > 0) v.avd_sec = row.avd_sec;
+        if (row.avgpct > 0) v.avgpct = row.avgpct;
+        if (row.views > 0) v.views = row.views;
+        // Auto-update decision based on fresh data
+        v.decision = autoDecision(v);
+        saveV(v);
+        updated++;
+      });
+      updateYTStatus('✅ YouTube data live · '+updated+' videos · '+data.period);
+      reRender();
+    }
+  } catch(e) {
+    updateYTStatus('⚠️ YouTube sync failed');
+  }
+}
+
+function showYTConnectBanner(authUrl) {
+  var banner = document.getElementById('ytConnectBanner');
+  if (banner) { banner.style.display = 'flex'; banner.dataset.url = authUrl; }
+}
+
+function updateYTStatus(msg) {
+  var el = document.getElementById('ytStatus');
+  if (el) el.textContent = msg;
+}
 async function init(){
   await loadFromSupabase();
   renderHome();
   renderRepost();
   renderTitles();
   renderVertical();
+  // Sync YouTube Analytics in background — updates CTR/AVD automatically
+  syncYouTubeAnalytics();
+  // Handle OAuth redirect back to app
+  var params=new URLSearchParams(window.location.search);
+  if(params.get('auth_success')){showToast('✅ YouTube connected! Syncing data…');window.history.replaceState({},'','/lsm-os.html');setTimeout(syncYouTubeAnalytics,1500);}
+  if(params.get('auth_error')){showToast('❌ YouTube error: '+params.get('auth_error'));window.history.replaceState({},'','/lsm-os.html');}
 }
 if(localStorage.getItem('lsm_auth')==='1') init();
 </script>
