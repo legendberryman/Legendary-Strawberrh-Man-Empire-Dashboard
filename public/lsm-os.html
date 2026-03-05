@@ -331,7 +331,7 @@ tbody tr.expanded td{background:var(--goldbg)!important}
 <div class="sidebar" id="sidebar">
   <div class="sb-header">
     <div class="sb-logo">⚡ LSM<span style="color:var(--text3);font-weight:400;font-size:.75rem;margin-left:.3rem">Empire OS</span></div>
-    <div class="sb-version">v2.6 · Thu 5 Mar 2026</div>
+    <div class="sb-version">v2.7 · Thu 5 Mar 2026</div>
   </div>
 
   <div class="sb-section">
@@ -824,8 +824,8 @@ var VIDEOS=[
 ];
 
 var QUEUE=[
-  {id:'q1',title:'3 Elephant Anyuta C - Healing 1 Hour Loop',stage:'Need Sound',type:'Healing 1 Hour',priority:'high',notes:''},
-  {id:'q2',title:'8 Elephant Anyuta C - Moritzplatz',stage:'Need Sound',type:'High-Energy',priority:'med',notes:''},
+  {id:'q1',title:'3 Elephant Anyuta C - Healing 1 Hour Loop',stage:'Ready',type:'Healing 1 Hour',priority:'high',notes:''},
+  {id:'q2',title:'8 Elephant Anyuta C - Moritzplatz',stage:'Ready',type:'High-Energy',priority:'med',notes:''},
   {id:'q3',title:'3 Elephant Anyuta C - Healing 1',stage:'Ready',type:'Healing',priority:'high',notes:''},
   {id:'q4',title:'4 Elephant Anyuta C - Healing 2',stage:'Ready',type:'Healing',priority:'high',notes:''},
   {id:'q5',title:'9 Elephant Major D - Dragon',stage:'Ready',type:'High-Energy',priority:'med',notes:''},
@@ -842,20 +842,20 @@ var QUEUE=[
 ];
 
 var INSTRUMENTS=[
-  {id:6,model:'Anyuta',note:'C',color:'Purple Matte',stage:'Built',location:'Roni',assignee:'Roni',deadline:'2026-03-27',client:'Markus Gfatterhofer',type:'Client',comments:''},
-  {id:21,model:'Gypsy',note:'C#',color:'Purple',stage:'Painted',location:'Workshop',assignee:'Eldar',deadline:'—',client:'LSM',type:'LSM',comments:'Few color imperfections'},
-  {id:7,model:'Gypsy',note:'C',color:'Dark Blue',stage:'Painting',location:'Martinho',assignee:'Martinho',deadline:'2026-02-27',client:'Steve Weis',type:'Client',comments:''},
-  {id:2,model:'Gypsy',note:'C#',color:'Imitate Bones',stage:'Painting',location:'Workshop',assignee:'Eldar',deadline:'2026-02-27',client:'Michael Hannon',type:'Client',comments:'Eldar sanding/after rone varnish'},
-  {id:1,model:'Lucky',note:'D',color:'Dark Blue',stage:'Painting',location:'Martinho',assignee:'Martinho',deadline:'2026-02-27',client:'William Stoltenberg',type:'Client',comments:'Fix Varnish'},
-  {id:3,model:'Lucky',note:'D',color:'Dark Green',stage:'Painting',location:'Roni',assignee:'Roni',deadline:'2026-02-27',client:'Christina Hagemann',type:'Client',comments:''},
-  {id:4,model:'Gypsy',note:'C',color:'Dark Green',stage:'Painting',location:'Roni',assignee:'Roni',deadline:'2026-02-27',client:'Carter Chamberlain',type:'Client',comments:''},
-  {id:8,model:'Major',note:'C#',color:'Red Gold',stage:'Ready for Paint',location:'Workshop',assignee:'Martinho',deadline:'2026-03-06',client:'LSM',type:'LSM',comments:''},
-  {id:17,model:'Major',note:'D',color:'—',stage:'Ready for Paint',location:'Roni',assignee:'Roni',deadline:'2026-03-06',client:'Stock',type:'Stock',comments:''},
-  {id:22,model:'Major',note:'D',color:'Green',stage:'Painting',location:'Workshop',assignee:'Martinho',deadline:'2026-03-06',client:'LSM',type:'LSM',comments:'Repaired bottom — handle carefully'},
-  {id:11,model:'Gypsy',note:'C',color:'—',stage:'Printed',location:'Workshop',assignee:'Eldar',deadline:'2026-03-04',client:'Stock',type:'Stock',comments:''},
-  {id:12,model:'Major',note:'D',color:'—',stage:'Built',location:'Workshop',assignee:'Eldar',deadline:'2026-03-04',client:'Stock',type:'Stock',comments:''},
-  {id:16,model:'Gypsy',note:'C',color:'—',stage:'Built',location:'Roni',assignee:'Roni',deadline:'2026-03-06',client:'Stock',type:'Stock',comments:''},
-  {id:18,model:'Lucky',note:'D',color:'—',stage:'Built',location:'Roni',assignee:'Roni',deadline:'2026-03-06',client:'Stock',type:'Stock',comments:''},
+  {id:6,model:'Anyuta',note:'C',color:'Purple Matte',stage:'Ready',location:'Roni',assignee:'Roni',deadline:'2026-03-27',client:'Markus Gfatterhofer',type:'Client',comments:''},
+  {id:21,model:'Gypsy',note:'C#',color:'Purple',stage:'Scheduled',location:'Workshop',assignee:'Eldar',deadline:'—',client:'LSM',type:'LSM',comments:'Few color imperfections'},
+  {id:7,model:'Gypsy',note:'C',color:'Dark Blue',stage:'Ready',location:'Martinho',assignee:'Martinho',deadline:'2026-02-27',client:'Steve Weis',type:'Client',comments:''},
+  {id:2,model:'Gypsy',note:'C#',color:'Imitate Bones',stage:'Ready',location:'Workshop',assignee:'Eldar',deadline:'2026-02-27',client:'Michael Hannon',type:'Client',comments:'Eldar sanding/after rone varnish'},
+  {id:1,model:'Lucky',note:'D',color:'Dark Blue',stage:'Ready',location:'Martinho',assignee:'Martinho',deadline:'2026-02-27',client:'William Stoltenberg',type:'Client',comments:'Fix Varnish'},
+  {id:3,model:'Lucky',note:'D',color:'Dark Green',stage:'Ready',location:'Roni',assignee:'Roni',deadline:'2026-02-27',client:'Christina Hagemann',type:'Client',comments:''},
+  {id:4,model:'Gypsy',note:'C',color:'Dark Green',stage:'Ready',location:'Roni',assignee:'Roni',deadline:'2026-02-27',client:'Carter Chamberlain',type:'Client',comments:''},
+  {id:8,model:'Major',note:'C#',color:'Red Gold',stage:'Ready',location:'Workshop',assignee:'Martinho',deadline:'2026-03-06',client:'LSM',type:'LSM',comments:''},
+  {id:17,model:'Major',note:'D',color:'—',stage:'Ready',location:'Roni',assignee:'Roni',deadline:'2026-03-06',client:'Stock',type:'Stock',comments:''},
+  {id:22,model:'Major',note:'D',color:'Green',stage:'Ready',location:'Workshop',assignee:'Martinho',deadline:'2026-03-06',client:'LSM',type:'LSM',comments:'Repaired bottom — handle carefully'},
+  {id:11,model:'Gypsy',note:'C',color:'—',stage:'Scheduled',location:'Workshop',assignee:'Eldar',deadline:'2026-03-04',client:'Stock',type:'Stock',comments:''},
+  {id:12,model:'Major',note:'D',color:'—',stage:'Ready',location:'Workshop',assignee:'Eldar',deadline:'2026-03-04',client:'Stock',type:'Stock',comments:''},
+  {id:16,model:'Gypsy',note:'C',color:'—',stage:'Ready',location:'Roni',assignee:'Roni',deadline:'2026-03-06',client:'Stock',type:'Stock',comments:''},
+  {id:18,model:'Lucky',note:'D',color:'—',stage:'Ready',location:'Roni',assignee:'Roni',deadline:'2026-03-06',client:'Stock',type:'Stock',comments:''},
 ];
 
 // Load persisted data
@@ -1048,8 +1048,8 @@ function renderHome(){
       +'</div></div>';
   }
 
-  var stages=['Need Sound','Ready','Scheduled','Live'];
-  var stageCols={'Need Sound':'var(--red)','Ready':'var(--gold)','Scheduled':'var(--blue)','Live':'var(--green)'};
+  var stages=['Ready','Scheduled','Live','Repost'];
+  var stageCols={'Ready':'var(--gold)','Scheduled':'var(--blue)','Live':'var(--green)','Repost':'var(--purple)'};
   document.getElementById('homePipeline').innerHTML=stages.map(function(st){
     var n=QUEUE.filter(function(q){return q.stage===st;}).length;
     return'<div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.85rem">'
@@ -1133,7 +1133,7 @@ function renderRepost(){
 // ═══ TRACKER ══════════════════════════════════════════════════════════
 function setTC(c,btn){tcFilter=c;document.querySelectorAll('[data-tc]').forEach(function(b){b.classList.toggle('on',b.dataset.tc===c);});renderTracker();}
 
-var trackerSort='score', trackerSortDir='desc', tcEraFilter='all';
+var trackerSort='score', trackerSortDir='desc', tcStageFilter='all', tcEraFilter='all';
 
 function setTrackerSort(col){
   if(trackerSort===col) trackerSortDir=trackerSortDir==='desc'?'asc':'desc';
@@ -1169,7 +1169,12 @@ function renderTracker(){
     if(search&&!v.title.toLowerCase().includes(search))return false;
     return true;
   }).map(function(v){return Object.assign({},v,{s:calcScore(v)});});
-  list.sort(function(a,b){if(sort==='ctr-desc')return b.ctr-a.ctr;if(sort==='avd-desc')return b.avd_sec-a.avd_sec;if(sort==='days-asc')return a.days-b.days;return b.s-a.s;});
+  list.sort(function(a,b){
+    var d=trackerSortDir==='asc'?1:-1;
+    var av=trackerSort==='ctr'?a.ctr:trackerSort==='avd'?a.avd_sec:trackerSort==='avgpct'?a.avgpct:trackerSort==='views'?a.views:trackerSort==='days'?a.days:a.s;
+    var bv=trackerSort==='ctr'?b.ctr:trackerSort==='avd'?b.avd_sec:trackerSort==='avgpct'?b.avgpct:trackerSort==='views'?b.views:trackerSort==='days'?b.days:b.s;
+    return (bv-av)*d;
+  });
 
   var ser=list.filter(function(v){return v.era==='serious';});
   if(ser.length){
@@ -1461,7 +1466,6 @@ function renderQueue(){
     +'</div>';
 
   var stages=[
-    {key:'Need Sound',label:'Need Sound Update',color:'var(--red)'},
     {key:'Ready',label:'Ready to Schedule',color:'var(--gold)'},
     {key:'Scheduled',label:'Scheduled with SEO',color:'var(--blue)'},
     {key:'Live',label:'Live (Recent)',color:'var(--green)'},
@@ -1507,8 +1511,8 @@ function addQueueCard(){
   if(!title)return;
   var type=prompt('Type (High-Energy / Healing / Healing 1 Hour):','Healing');
   var id='q'+Date.now();
-  QUEUE.push({id:id,title:title,stage:'Need Sound',type:type||'Healing',priority:'med',notes:''});
-  saveQ({id:id,title:title,stage:'Need Sound',type:type||'Healing',priority:'med',notes:'',_new:true});
+  QUEUE.push({id:id,title:title,stage:'Ready',type:type||'Healing',priority:'med',notes:''});
+  saveQ({id:id,title:title,stage:'Ready',type:type||'Healing',priority:'med',notes:'',_new:true});
   renderQueue();showToast('Added: '+title);
 }
 
@@ -2181,12 +2185,12 @@ function renderPlanner(){
           sugChip.title='Suggested repost: '+sug.title;
           sugChip.textContent='↩ '+sug.title.substring(0,14);
           (function(sid){sugChip.onclick=function(e){e.stopPropagation();showPlannerDetail(sid);};})(sug.id);
-          // Add thumbnail to sug chip
+          // Add thumbnail then chip
           var sugThumb=document.createElement('img');
           sugThumb.src='https://img.youtube.com/vi/'+sug.id+'/mqdefault.jpg';
           sugThumb.style.cssText='width:28px;height:16px;object-fit:cover;border-radius:2px;flex-shrink:0;display:block;margin-bottom:2px';
           sugThumb.onerror=function(){this.style.opacity=0;};
-          cell.insertBefore(sugThumb, sugChip);
+          cell.appendChild(sugThumb);
           cell.appendChild(sugChip);
           var scLabel=document.createElement('div');
           scLabel.style.cssText='font-size:.55rem;color:var(--text3);margin-top:1px';
