@@ -37,16 +37,6 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 .planner-chip.repost{background:rgba(74,222,128,.15);color:var(--green)}
 .planner-chip.suggested{background:rgba(96,165,250,.1);color:var(--blue);border:1px dashed var(--blue)}
 .planner-day-hd{font-size:.65rem;font-weight:700;color:var(--text3);padding:.2rem .35rem;background:var(--s1);text-align:center;border-radius:4px;margin-bottom:4px}
-/* ── AUTH (removed) ── */
-#authScreen{position:fixed;inset:0;background:var(--bg);z-index:9000;display:flex;align-items:center;justify-content:center}
-.auth-box{background:var(--s1);border:1px solid var(--border);padding:2.5rem;width:380px;text-align:center}
-.auth-logo{font-size:2rem;font-weight:800;color:var(--gold2);margin-bottom:.4rem}
-.auth-sub{font-size:.85rem;color:var(--text3);margin-bottom:2rem}
-.auth-input{width:100%;background:var(--s2);border:1px solid var(--border);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:1rem;padding:.75rem 1rem;outline:none;margin-bottom:.75rem;letter-spacing:.15em;text-align:center}
-.auth-input:focus{border-color:var(--gold)}
-.auth-btn{width:100%;background:var(--gold);color:#000;border:none;font-family:'Plus Jakarta Sans',sans-serif;font-size:.9rem;font-weight:700;padding:.75rem;cursor:pointer}
-.auth-btn:hover{background:var(--gold2)}
-.auth-error{color:var(--red);font-size:.8rem;margin-top:.5rem;display:none}
 
 /* ── LAYOUT ── */
 #app{display:none}
@@ -318,7 +308,7 @@ tbody tr.expanded td{background:var(--goldbg)!important}
 }
 </style>
 </head>
-<body>
+<body style="visibility:visible;opacity:1">
 
 
 
@@ -1920,14 +1910,19 @@ function updateYTStatus(msg) {
   if (el) el.textContent = msg;
 }
 async function init(){
-  await loadFromSupabase();
-  renderHome();
-  renderRepost();
-  renderTitles();
-  renderVertical();
-  // Sync YouTube Analytics in background — updates CTR/AVD automatically
-  syncYouTubeAnalytics();
-  loadDecisions();
+  try{
+    // Show sidebar immediately so page isn't blank during load
+    document.getElementById('app').style.display='block';
+    document.querySelector('.layout').style.opacity='1';
+  }catch(e){}
+  
+  try{ await loadFromSupabase(); }catch(e){ console.warn('Supabase load failed',e); }
+  try{ renderHome(); }catch(e){ console.error('renderHome failed',e); }
+  try{ renderRepost(); }catch(e){ console.error('renderRepost failed',e); }
+  try{ renderTitles(); }catch(e){ console.error('renderTitles failed',e); }
+  try{ renderVertical(); }catch(e){ console.error('renderVertical failed',e); }
+  try{ syncYouTubeAnalytics(); }catch(e){ console.warn('YT sync failed',e); }
+  try{ loadDecisions(); }catch(e){ console.warn('loadDecisions failed',e); }
   // Handle OAuth redirect back to app
   var params=new URLSearchParams(window.location.search);
   if(params.get('auth_success')){showToast('✅ YouTube connected! Syncing data…');window.history.replaceState({},'','/lsm-os.html');setTimeout(syncYouTubeAnalytics,1500);}
