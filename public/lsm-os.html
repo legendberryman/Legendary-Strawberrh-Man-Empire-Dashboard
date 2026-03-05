@@ -939,13 +939,22 @@ function calcScore(v){
   var avg=catAvg(v.cat);
   var isLong=v.dur>1800;
   var avdPct=v.dur>0?(v.avd_sec/v.dur)*100:v.avgpct;
-  return Math.round(Math.min(avdPct*(isLong?4:1.5),100)*.35+Math.min((v.ctr/avg.ctr)*50,100)*.25+Math.min(v.avgpct*1.5,100)*.25+Math.min(Math.log10(v.views+1)*20,100)*.15);
+  var hasAnalytics=v.ctr>0||v.avd_sec>0;
+  if(!hasAnalytics){
+    // No analytics yet — score based on views only
+    return Math.round(Math.min(Math.log10(v.views+1)*20,100));
+  }
+  var ctrAvg=avg.ctr>0?avg.ctr:4;
+  return Math.round(Math.min(avdPct*(isLong?4:1.5),100)*.35+Math.min((v.ctr/ctrAvg)*50,100)*.25+Math.min(v.avgpct*1.5,100)*.25+Math.min(Math.log10(v.views+1)*20,100)*.15);
 }
 
 function autoDecision(v){
+  if(!v.ctr&&!v.avd_sec) return v.days<=2?'Needs 48h Data':'Monitor';
   var avg=catAvg(v.cat);
-  var ctrOk=v.ctr>=avg.ctr*.9;
-  var avdOk=v.avd_sec>=avg.avd*.9;
+  var ctrAvg=avg.ctr>0?avg.ctr:4;
+  var avdAvg=avg.avd>0?avg.avd:60;
+  var ctrOk=v.ctr>=ctrAvg*.9;
+  var avdOk=v.avd_sec>=avdAvg*.9;
   if(ctrOk&&avdOk)return'Repost Candidate';
   if(!ctrOk&&avdOk)return'Change Thumbnail';
   if(ctrOk&&!avdOk)return'Check Hook';
@@ -2263,6 +2272,30 @@ function renderPlanner(){
 // ═══ YOUTUBE ANALYTICS SYNC ════════════════════════════════════════════
 var YT_CONNECTED = false;
 
+async function forceYTRefresh() {
+  updateYTStatus('⏳ Force refreshing from YouTube…');
+  try {
+    var controller = new AbortController();
+    var timeout = setTimeout(function(){ controller.abort(); }, 55000);
+    var res = await fetch('/api/youtube-analytics?refresh=1', { signal: controller.signal });
+    clearTimeout(timeout);
+    var data = await res.json();
+    if (data.videos && data.videos.length) {
+      VIDEOS = data.videos.filter(function(row) {
+        var title = (row.title||'').toLowerCase();
+        return !title.includes('#shorts') && !title.includes('#short') && (row.dur||0) >= 60;
+      }).map(function(row) {
+        var v = { id:row.id, title:row.title, file:row.file||row.title, cat:guessCategory(row.title,row.dur), posted:row.posted, days:row.days, dur:row.dur||0, ctr:row.ctr||0, views:row.views||0, avd_sec:row.avd_sec||0, avgpct:row.avgpct||0, format:(row.dur||0)>3000?'Static':'Edited', era:row.era||'serious', decision:'Monitor', notes:'' };
+        v.score = calcScore(v); v.decision = autoDecision(v); return v;
+      });
+      updateYTStatus('✅ YouTube live · ' + VIDEOS.length + ' videos · just refreshed');
+      reRender();
+    }
+  } catch(e) {
+    updateYTStatus('⚠️ Refresh failed: ' + e.message);
+  }
+}
+
 async function syncYouTubeAnalytics() {
   updateYTStatus('⏳ Syncing YouTube…');
   try {
@@ -2314,7 +2347,11 @@ async function syncYouTubeAnalytics() {
         return v;
       });
 
-      updateYTStatus('✅ YouTube live · ' + VIDEOS.length + ' videos · all time');
+      var statusMsg = '✅ YouTube live · ' + VIDEOS.length + ' videos';
+      if (data.cached) statusMsg += ' · cached ' + (data.cacheAge||0) + 'h ago';
+      if (data.stale) statusMsg += ' · ⚠️ stale';
+      statusMsg += ' · <a href="#" onclick="forceYTRefresh();return false;" style="color:var(--gold)">↻ refresh</a>';
+      updateYTStatus(statusMsg);
       reRender();
     }
   } catch(e) {
@@ -2343,7 +2380,7 @@ function showYTConnectBanner(authUrl) {
 
 function updateYTStatus(msg) {
   var el = document.getElementById('ytStatus');
-  if (el) el.textContent = msg;
+  if (el) el.innerHTML = msg;
 }
 async function init(){
   try{
