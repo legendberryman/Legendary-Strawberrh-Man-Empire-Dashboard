@@ -52,13 +52,13 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 .sidebar{width:240px;background:var(--s1);border-right:1px solid var(--border);position:fixed;left:0;top:0;bottom:0;z-index:100;transition:transform .25s ease;overflow-y:auto;display:flex;flex-direction:column}
 .sidebar.collapsed{transform:translateX(-240px)}
 .main{margin-left:240px;min-height:100vh;width:calc(100vw - 240px);max-width:calc(100vw - 240px);overflow-x:hidden;transition:margin-left .25s ease;display:flex;flex-direction:column;box-sizing:border-box;padding-top:52px}
-.main.expanded{margin-left:0}
+.main.expanded{margin-left:0;width:100vw;max-width:100vw}
 
 /* ── SIDEBAR ── */
 .sb-header{padding:1.25rem 1.25rem .75rem;border-bottom:1px solid var(--border)}
 .sb-logo{font-size:1.1rem;font-weight:800;color:var(--gold2);display:flex;align-items:center;gap:.5rem}
 .sb-version{font-size:.65rem;color:var(--text3);margin-top:.15rem;font-family:'JetBrains Mono',monospace}
-.sb-toggle{position:fixed;left:240px;top:14px;z-index:101;background:var(--s1);border:1px solid var(--border);border-left:none;width:24px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--text3);transition:left .25s ease}
+
 .sb-toggle.collapsed{left:0}
 .sb-toggle:hover{color:var(--gold);background:var(--s2)}
 .sb-section{padding:.5rem 0}
@@ -195,7 +195,7 @@ tbody tr.expanded td{background:var(--goldbg)!important}
 
 /* ── KANBAN ── */
 .kanban{display:grid;grid-template-columns:repeat(5,minmax(200px,1fr));gap:.85rem;overflow-x:auto;padding-bottom:.5rem}
-.k-col{background:var(--s1);border:1px solid var(--border);border-radius:8px;min-height:400px;display:flex;flex-direction:column}
+.k-col{flex:1;min-width:200px;background:var(--s1);border:1px solid var(--border);border-radius:8px;min-height:400px;display:flex;flex-direction:column}
 .k-col-hd{padding:.7rem 1rem;font-size:.75rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
 .k-count{background:var(--s3);padding:.1rem .5rem;border-radius:20px;font-size:.65rem;font-family:'JetBrains Mono',monospace}
 .k-cards{padding:.5rem;flex:1;display:flex;flex-direction:column;gap:.4rem}
@@ -331,7 +331,7 @@ tbody tr.expanded td{background:var(--goldbg)!important}
 <div class="sidebar" id="sidebar">
   <div class="sb-header">
     <div class="sb-logo">⚡ LSM<span style="color:var(--text3);font-weight:400;font-size:.75rem;margin-left:.3rem">Empire OS</span></div>
-    <div class="sb-version">v2.7 · Thu 5 Mar 2026</div>
+    <div class="sb-version">v2.9 · Thu 5 Mar 2026</div>
   </div>
 
   <div class="sb-section">
@@ -371,15 +371,13 @@ tbody tr.expanded td{background:var(--goldbg)!important}
   </div>
 </div>
 
-<!-- SIDEBAR TOGGLE -->
-<div class="sb-toggle" id="sbToggle" onclick="toggleSidebar()">◀</div>
-
 <!-- MAIN -->
 <div class="main" id="mainArea">
 
   <!-- TOPBAR -->
   <div class="topbar">
     <div class="topbar-left">
+      <button id="sbToggle" onclick="toggleSidebar()" style="background:none;border:1px solid var(--border);color:var(--text2);width:28px;height:28px;border-radius:5px;cursor:pointer;font-size:.8rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s" onmouseenter="this.style.background='var(--s3)'" onmouseleave="this.style.background='none'">☰</button>
       <span class="page-heading" id="pageHeading">Command Center</span>
     </div>
     <div class="topbar-right">
@@ -672,12 +670,2416 @@ tbody tr.expanded td{background:var(--goldbg)!important}
   </div>
 </div>
 
-  </div><!-- end page scroll area -->
+  
+
+<div class="page-content" id="page-planner" style="display:none;padding:0">
+  <!-- PLANNER TOPBAR -->
+  <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);background:var(--s1);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;position:sticky;top:52px;z-index:30">
+    <div style="display:flex;align-items:center;gap:.75rem">
+      <button class="btn btn-outline btn-sm" onclick="plannerPrevMonth()">←</button>
+      <span style="font-size:1rem;font-weight:700;min-width:130px;text-align:center" id="plannerMonthLabel">March 2026</span>
+      <button class="btn btn-outline btn-sm" onclick="plannerNextMonth()">→</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+      <div class="tgl-group">
+        <button class="tgl on" id="plannerToggleAll" onclick="setPlannerFilter('all',this)">All videos</button>
+        <button class="tgl" id="plannerToggleNew" onclick="setPlannerFilter('new',this)">After Oct 2025</button>
+        <button class="tgl" id="plannerToggleOld" onclick="setPlannerFilter('old',this)">Before Oct 2025</button>
+      </div>
+      <span style="font-size:.72rem;color:var(--text3)" title="Filter videos by era to compare performance before vs after channel relaunch">Era filter ⓘ</span>
+    </div>
+    <div style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:center">
+      <span style="display:flex;align-items:center;gap:.35rem;font-size:.72rem;color:var(--text2)"><span style="width:9px;height:9px;border-radius:2px;background:var(--gold);display:inline-block"></span>Posted</span>
+      <span style="display:flex;align-items:center;gap:.35rem;font-size:.72rem;color:var(--text2)"><span style="width:9px;height:9px;border-radius:2px;background:rgba(251,146,60,.4);border:1px dashed var(--orange);display:inline-block"></span>48h due</span>
+      <span style="display:flex;align-items:center;gap:.35rem;font-size:.72rem;color:var(--text2)"><span style="width:9px;height:9px;border-radius:2px;background:rgba(96,165,250,.15);border:1px dashed var(--blue);display:inline-block"></span>Suggested repost</span>
+    </div>
+  </div>
+
+  <!-- CALENDAR GRID -->
+  <div style="padding:1rem 1.5rem">
+    <div id="plannerGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;width:100%;box-sizing:border-box"></div>
+  </div>
+
+  <!-- SELECTED VIDEO DETAIL PANEL -->
+  <div id="plannerDetail" style="display:none;margin:0 1.5rem 1rem;background:var(--s2);border:1px solid var(--border2);border-radius:10px;padding:1.4rem;box-shadow:0 2px 12px rgba(0,0,0,.3)"></div>
+
+  <!-- UPCOMING SUGGESTIONS -->
+  <div style="padding:0 1.5rem 1.5rem">
+    <div style="font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:.65rem">Next Repost Suggestions</div>
+    <div id="plannerSuggestions"></div>
+  </div>
+</div>
+
+<div class="page-content" id="page-decisions" style="display:none;padding-top:1.5rem">
+  <div class="page-grid">
+    <div style="margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
+      <div>
+        <div style="font-size:.95rem;font-weight:700;color:var(--text);margin-bottom:.25rem">Decisions Log</div>
+        <div style="font-size:.78rem;color:var(--text3)">Every 48h data entry and its auto-decision. Saved permanently.</div>
+      </div>
+      <button class="btn btn-gold btn-sm" onclick="showModal('modal48h')">+ New 48h Entry</button>
+    </div>
+    <div id="decisionsList"></div>
+  </div>
+</div>
+
+</div><!-- end page scroll area -->
 </div><!-- end main -->
 </div><!-- end layout -->
 </div><!-- end app -->
 
 <!-- MODAL: 48H DATA -->
+
+
+
+
+
+
+<div class="modal-bg" id="modal48h">
+  <div class="modal">
+    <div class="modal-hd"><span class="modal-title">Enter 48-Hour Data</span><button class="modal-close" onclick="closeModal('modal48h')">✕</button></div>
+    <div class="modal-body">
+      <!-- VIDEO SELECTOR -->
+      <div class="form-row" style="margin-bottom:1rem">
+        <label class="form-label">Select Video</label>
+        <select class="inp" id="m-video-select" onchange="prefill48h(this.value)" style="font-size:.82rem">
+          <option value="">— Choose a video —</option>
+        </select>
+      </div>
+      <!-- PREFILLED INFO CARD -->
+      <div id="m-prefill-card" style="display:none;background:var(--s3);border:1px solid var(--border);border-radius:6px;padding:.75rem;margin-bottom:1rem">
+        <div style="display:flex;gap:.75rem;align-items:center">
+          <img id="m-thumb" src="" style="width:64px;height:36px;border-radius:4px;object-fit:cover;flex-shrink:0"/>
+          <div style="flex:1;min-width:0">
+            <div id="m-title-display" style="font-size:.82rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+            <div id="m-file-display" style="font-size:.72rem;color:var(--text3);margin-top:2px"></div>
+            <div id="m-id-display" style="font-size:.68rem;color:var(--gold);font-family:monospace;margin-top:2px"></div>
+          </div>
+        </div>
+        <div id="m-existing-stats" style="display:flex;gap:1rem;margin-top:.6rem;flex-wrap:wrap"></div>
+      </div>
+      <!-- 48H NEW DATA -->
+      <div style="font-size:.72rem;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem">Enter 48h YouTube Studio Data</div>
+      <div class="form-grid2">
+        <div class="form-row"><label class="form-label">Impressions (48h)</label><input class="inp" id="m-imp" placeholder="e.g. 1200"/></div>
+        <div class="form-row"><label class="form-label">Views (48h)</label><input class="inp" id="m-views" placeholder="e.g. 95"/></div>
+        <div class="form-row"><label class="form-label">CTR % (48h)</label><input class="inp" id="m-ctr" placeholder="e.g. 4.8"/></div>
+        <div class="form-row"><label class="form-label">AVD (mm:ss)</label><input class="inp" id="m-avd" placeholder="e.g. 1:15"/></div>
+        <div class="form-row"><label class="form-label">Avg % Viewed</label><input class="inp" id="m-avg" placeholder="e.g. 38.5"/></div>
+        <div class="form-row"><label class="form-label">Browse %</label><input class="inp" id="m-browse" placeholder="e.g. 55"/></div>
+        <div class="form-row"><label class="form-label">Subs Gained</label><input class="inp" id="m-subs" placeholder="e.g. 3"/></div>
+      </div>
+      <div class="form-row"><label class="form-label">Notes (optional)</label><input class="inp" id="m-notes" placeholder="Thumbnail test A, title change, etc."/></div>
+    </div>
+    <div class="modal-ft"><button class="btn btn-outline" onclick="closeModal('modal48h')">Cancel</button><button class="btn btn-gold" onclick="save48h()">Save & Get Decision</button></div>
+  </div>
+</div>
+
+<script>
+function logout(){try{localStorage.removeItem('lsm_auth');}catch(e){}location.reload();}
+
+// ═══ SIDEBAR TOGGLE ════════════════════════════════════════════════════
+var sidebarOpen=true;
+function toggleSidebar(){
+  sidebarOpen=!sidebarOpen;
+  var sb=document.getElementById('sidebar');
+  var main=document.getElementById('mainArea');
+  var tgl=document.getElementById('sbToggle');
+  if(window.innerWidth<=768){
+    sb.classList.toggle('mobile-open',sidebarOpen);
+    tgl.classList.toggle('mobile-open',sidebarOpen);
+  } else {
+    sb.classList.toggle('collapsed',!sidebarOpen);
+    main.classList.toggle('expanded',!sidebarOpen);
+    var tb=document.querySelector('.topbar');
+    if(tb) tb.style.left=sidebarOpen?'240px':'0px';
+    tgl.textContent=sidebarOpen?'☰':'☰';
+  }
+}
+// Close sidebar on mobile when nav item clicked
+document.querySelectorAll('.nav-item').forEach(function(ni){
+  ni.addEventListener('click',function(){
+    if(window.innerWidth<=768){sidebarOpen=false;document.getElementById('sidebar').classList.remove('mobile-open');}
+  });
+});
+
+// ═══ DATA ════════════════════════════════════════════════════════════════
+var TODAY=new Date();
+var blDays=30;
+var rcFilter='all', rcEraFilter='all', titleEraFilter='all', tcFilter='all', tlFilter='all';
+var UNDO_STACK=[];
+
+var VIDEOS=[
+  // ═══ RECENT (March 2026) - need 48h data ═══
+  {id:'LSM_MAR05A',title:'This Didgeridoo Performance Is Pure Adrenaline',file:'Elephant Anyuta C – Dragon – High Energy',cat:'High-Energy',days:1,ctr:0,views:0,avd_sec:0,avgpct:0,dur:420,format:'Edited',era:'serious',decision:'Needs 48h Data',posted:'2026-03-04'},
+  {id:'LSM_MAR03A',title:'GOOSEBUMPS Didgeridoo Sound',file:'Elephant Major D – Dragon – High Energy',cat:'High-Energy',days:3,ctr:5.8,views:412,avd_sec:74,avgpct:27.3,dur:380,format:'Edited',era:'serious',decision:'Repost Candidate',posted:'2026-03-02'},
+  {id:'LSM_MAR01A',title:'The #1 Sound for INSTANT CALM – 73 Hz',file:'Gypsy C – Healing – 73Hz',cat:'Healing',days:5,ctr:4.9,views:289,avd_sec:82,avgpct:30.1,dur:440,format:'Static',era:'serious',decision:'Monitor',posted:'2026-02-28'},
+  {id:'LSM_FEB28A',title:'Didgeridoo Effects That Sound Unreal – Ear Candy',file:'Elephant Major D – Ear Candy',cat:'High-Energy',days:6,ctr:6.1,views:523,avd_sec:68,avgpct:24.8,dur:360,format:'Edited',era:'serious',decision:'Repost Candidate',posted:'2026-02-27'},
+  {id:'LSM_FEB27A',title:'The #1 Sound for INSTANT CALM – 1 Hour 73 Hz',file:'Gypsy C – Healing 1H – 73Hz',cat:'Healing 1 Hour',days:7,ctr:3.8,views:178,avd_sec:210,avgpct:35.4,dur:3600,format:'Static',era:'serious',decision:'Monitor',posted:'2026-02-26'},
+  // ═══ Pre-Oct 2025 era (older content) ═══
+  {id:'dQw4w9WgXcQ',title:'Didgeridoo Healing Frequencies 432Hz',cat:'Healing',days:240,ctr:3.2,views:1840,avd_sec:88,avgpct:22.1,dur:320,format:'Static',era:'casual',decision:'Monitor',notes:'Pre-relaunch era',file:'Didgeridoo Healing Frequencies 432Hz'},
+  {id:'kJQP7kiw5Fk',title:'Aboriginal Didgeridoo Sound Bath',cat:'Healing',days:210,ctr:2.8,views:2100,avd_sec:72,avgpct:18.4,dur:240,format:'Static',era:'casual',decision:'Monitor',notes:'Pre-relaunch era',file:'Aboriginal Didgeridoo Sound Bath'},
+  {id:'9bZkp7q19f0',title:'Raw Didgeridoo Improvisation Live',cat:'High-Energy',days:185,ctr:4.1,views:3200,avd_sec:45,avgpct:15.2,dur:180,format:'Live',era:'casual',decision:'Monitor',notes:'Pre-relaunch era',file:'Raw Didgeridoo Improvisation Live'},
+  {id:'JGwWNGJdvx8',title:'Didgeridoo Deep Meditation 1 Hour',cat:'Healing 1 Hour',days:195,ctr:2.4,views:1560,avd_sec:920,avgpct:25.3,dur:3600,format:'Static',era:'casual',decision:'Monitor',notes:'Pre-relaunch era',file:'Didgeridoo Deep Meditation 1 Hour'},
+  {id:'hT_nvWreIhg',title:'Breathing Techniques with Didgeridoo',cat:'High-Energy',days:220,ctr:3.5,views:890,avd_sec:67,avgpct:19.8,dur:200,format:'Live',era:'casual',decision:'Monitor',notes:'Pre-relaunch era',file:'Breathing Techniques with Didgeridoo'},
+  {id:'xIfW_7W5mKw',title:'The #1 Sound for INSTANT CALM - 73 Hz',cat:'Healing',days:120,ctr:9.81,views:2355,avd_sec:54,avgpct:45.34,dur:120,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'Highest CTR — TEXT thumbnail',file:'The #1 Sound for INSTANT CALM - 73 Hz'},
+  {id:'tKExIduceHw',title:'These 69Hz Didgeridoo Frequencies HIT DEEP',cat:'Healing',days:89,ctr:7.80,views:2637,avd_sec:66,avgpct:35.80,dur:187,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',file:'These 69Hz Didgeridoo Frequencies HIT DEEP'},
+  {id:'N3AX0Cjx4JE',title:'The #1 Sound for INSTANT CALM - 73 Hz Didgeridoo Tone',cat:'Healing',days:35,ctr:6.83,views:428,avd_sec:65,avgpct:57.43,dur:114,format:'Static',era:'serious',decision:'Repost Candidate',notes:'Highest avg% — TEXT thumbnail',file:'The #1 Sound for INSTANT CALM - 73 Hz Didgeridoo T'},
+  {id:'aJNm1qZ2Tgs',title:'This Didgeridoo Sounds Makes Your Brain Stop',cat:'Healing',days:27,ctr:5.60,views:26149,avd_sec:104,avgpct:28.28,dur:370,format:'Static',era:'serious',decision:'Repost Candidate',notes:'VIRAL 307k impressions',file:'This Didgeridoo Sounds Makes Your Brain Stop'},
+  {id:'ItAJz3RZqD4',title:'The #1 Sound For INSTANT CALM - 69Hz Didgeridoo',cat:'Healing',days:21,ctr:4.77,views:553,avd_sec:80,avgpct:36.52,dur:220,format:'Static',era:'serious',decision:'Repost Candidate',notes:'',file:'The #1 Sound For INSTANT CALM - 69Hz Didgeridoo'},
+  {id:'evUXopPSZG8',title:'This Didgeridoo Sound Will Put Your Brain to SLEEP',cat:'Healing',days:9,ctr:4.67,views:108,avd_sec:160,avgpct:40.82,dur:392,format:'Edited',era:'serious',decision:'Monitor',notes:'',file:'This Didgeridoo Sound Will Put Your Brain to SLEEP'},
+  {id:'vA8NDWS2azY',title:'The Hidden Power of Didgeridoo Music For Healing',cat:'Healing',days:111,ctr:6.26,views:1735,avd_sec:112,avgpct:24.33,dur:463,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',file:'The Hidden Power of Didgeridoo Music For Healing'},
+  {id:'auUUg7jO9BA',title:'Didgeridoo Effects That Sound Unreal - Ear Candy',cat:'High-Energy',days:113,ctr:7.70,views:4476,avd_sec:80,avgpct:37.37,dur:216,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',file:'Didgeridoo Effects That Sound Unreal - Ear Candy'},
+  {id:'fslVf6Ndu7Q',title:'GOOSEBUMPS Didgeridoo Sound',cat:'High-Energy',days:96,ctr:6.63,views:49272,avd_sec:104,avgpct:36.84,dur:285,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'TOP 510k impressions',file:'GOOSEBUMPS Didgeridoo Sound'},
+  {id:'941zhOxiViU',title:'This Didgeridoo Sound Will BREAK Your Brain',cat:'High-Energy',days:66,ctr:6.06,views:26227,avd_sec:41,avgpct:46.06,dur:91,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',file:'This Didgeridoo Sound Will BREAK Your Brain'},
+  {id:'kwdCP4HYLRw',title:'This Didgeridoo Sound Should NOT Be Possible',cat:'High-Energy',days:53,ctr:7.62,views:11208,avd_sec:66,avgpct:30.81,dur:215,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'Viral 115k',file:'This Didgeridoo Sound Should NOT Be Possible'},
+  {id:'68SyXKsWOvk',title:'This Didgeridoo Vibration Is Way Too Powerful',cat:'High-Energy',days:58,ctr:7.42,views:2715,avd_sec:65,avgpct:38.08,dur:173,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',file:'This Didgeridoo Vibration Is Way Too Powerful'},
+  {id:'iBPAPuB9qmY',title:"Is This the Most EPIC Didgeridoo Performance You've Ever Heard?",cat:'High-Energy',days:31,ctr:5.01,views:1010,avd_sec:91,avgpct:41.83,dur:219,format:'Static',era:'serious',decision:'Repost Candidate',notes:''},
+  {id:'p3JUJCftjRc',title:'Didgeridoo Effects That Sound Unreal - Ear Candy v2',cat:'High-Energy',days:41,ctr:4.85,views:519,avd_sec:81,avgpct:39.07,dur:208,format:'Static',era:'serious',decision:'Repost Candidate',notes:'',file:'Didgeridoo Effects That Sound Unreal - Ear Candy v'},
+  {id:'etJLfkbkkVQ',title:'This Didgeridoo Sound Makes Your Brain Glitch',cat:'High-Energy',days:15,ctr:5.55,views:641,avd_sec:86,avgpct:30.29,dur:284,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',file:'This Didgeridoo Sound Makes Your Brain Glitch'},
+  {id:'yqGOfn5O9iQ',title:'This Didgeridoo Sound Should NOT Be Possible v2',cat:'High-Energy',days:17,ctr:4.04,views:264,avd_sec:116,avgpct:41.39,dur:281,format:'Static',era:'serious',decision:'Change Thumbnail',notes:'',file:'This Didgeridoo Sound Should NOT Be Possible v2'},
+  {id:'lSMJQthFetc',title:'This Didgeridoo Performance Is Pure Adrenaline',cat:'High-Energy',days:23,ctr:3.21,views:323,avd_sec:96,avgpct:41.07,dur:236,format:'Edited',era:'serious',decision:'Change Thumbnail',notes:'',file:'This Didgeridoo Performance Is Pure Adrenaline'},
+  {id:'7h88uzZf6VE',title:"This Didgeridoo Sounds Like It's Possessed",cat:'High-Energy',days:29,ctr:3.68,views:403,avd_sec:74,avgpct:48.80,dur:152,format:'Static',era:'serious',decision:'Change Thumbnail',notes:''},
+  {id:'F_mxavVq_90',title:'This Didgeridoo Sound Gives You Instant Goosebumps',cat:'High-Energy',days:13,ctr:4.92,views:98,avd_sec:118,avgpct:40.48,dur:292,format:'Edited',era:'serious',decision:'Monitor',notes:'',file:'This Didgeridoo Sound Gives You Instant Goosebumps'},
+  {id:'EJohVnzCm_g',title:'The #1 Sound for INSTANT CALM - 1 Hour 73 Hz',cat:'Healing 1 Hour',days:116,ctr:7.45,views:1479,avd_sec:741,avgpct:19.67,dur:3771,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'Highest AVD 1hr',file:'The #1 Sound for INSTANT CALM 1H'},
+  {id:'4qIPQ9Fuz-M',title:'This Sound Deletes Stress | 1 Hour Didgeridoo',cat:'Healing 1 Hour',days:60,ctr:5.30,views:3048,avd_sec:322,avgpct:8.79,dur:3666,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',file:'This Sound Deletes Stress 1H'},
+  {id:'7nhuUgUXc2c',title:'This Didgeridoo Feels Like a SEDATIVE | 1 Hour',cat:'Healing 1 Hour',days:54,ctr:6.49,views:2535,avd_sec:385,avgpct:10.50,dur:3666,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',file:'This Didgeridoo Feels Like a SEDATIVE 1H'},
+  {id:'HcyzeHscz38',title:'This Didgeridoo Feels Like a SEDATIVE | 1 Hour v1',cat:'Healing 1 Hour',days:19,ctr:7.30,views:1213,avd_sec:203,avgpct:5.57,dur:3644,format:'Static',era:'serious',decision:'Repost Candidate',notes:'Best CTR 1hr',file:'This Didgeridoo Feels Like a SEDATIVE 1H'},
+  {id:'Xmx24mN9qKo',title:'This Didgeridoo Sound Removes ALL Tension | 1 Hour',cat:'Healing 1 Hour',days:25,ctr:5.10,views:510,avd_sec:602,avgpct:15.46,dur:3897,format:'Static',era:'serious',decision:'Repost Candidate',notes:'',file:'This Didgeridoo Sound Removes ALL Tension 1H'},
+  // Archive
+  {id:'EJioKvOcFY0',title:"Dan Flynn's Didgeridoo — Mind Blowing",cat:'High-Energy',days:151,ctr:10.69,views:2007,avd_sec:128,avgpct:18.54,dur:693,format:'Edited',era:'archive',decision:'Repost Candidate',notes:'HIGH CTR 10.69% — TEXT thumb'},
+  {id:'fy13tu3EELo',title:'Strawberry Man Meets Zach Bainter – Epic Didgeridoo Jam',cat:'High-Energy',days:82,ctr:7.87,views:2110,avd_sec:128,avgpct:43.27,dur:296,format:'Edited',era:'archive',decision:'Repost Candidate',notes:'High CTR + retention',file:'Strawberry Man Meets Zach Bainter – Epic Didgerido'},
+];
+
+var QUEUE=[
+  {id:'q1',title:'3 Elephant Anyuta C - Healing 1 Hour Loop',file:'Elephant Anyuta C – Healing – 1H Loop',stage:'Ready',type:'Healing 1 Hour',priority:'high',notes:''},
+  {id:'q2',title:'8 Elephant Anyuta C - Moritzplatz',file:'Elephant Anyuta C – Moritzplatz – High Energy',stage:'Ready',type:'High-Energy',priority:'med',notes:''},
+  {id:'q3',title:'3 Elephant Anyuta C - Healing 1',file:'Elephant Anyuta C – Healing 1',stage:'Ready',type:'Healing',priority:'high',notes:''},
+  {id:'q4',title:'4 Elephant Anyuta C - Healing 2',file:'Elephant Anyuta C – Healing 2',stage:'Ready',type:'Healing',priority:'high',notes:''},
+  {id:'q5',title:'9 Elephant Major D - Dragon',file:'Elephant Major D – Dragon – High Energy',stage:'Ready',type:'High-Energy',priority:'med',notes:''},
+  {id:'q6',title:'10 Elephant Major D - Funkedelic',file:'Elephant Major D – Funkedelic – High Energy',stage:'Ready',type:'High-Energy',priority:'med',notes:''},
+  {id:'q7',title:'11 Elephant Anyuta C - Dragon',file:'Elephant Anyuta C – Dragon – High Energy',stage:'Ready',type:'High-Energy',priority:'med',notes:''},
+  {id:'q8',title:'12 Elephant Anyuta C - Funkedelic',file:'Elephant Anyuta C – Funkedelic – High Energy',stage:'Ready',type:'High-Energy',priority:'med',notes:''},
+  {id:'q9',title:'7 Elephant Anyuta C - Ear Candy',file:'Elephant Anyuta C – Ear Candy – High Energy',stage:'Scheduled',type:'High-Energy',priority:'high',notes:'Scheduled for tomorrow'},
+  {id:'q10',title:'2 Elephant Major D - Healing 2',file:'Elephant Major D – Healing 2',stage:'Live',type:'Healing',priority:'low',notes:''},
+  {id:'q11',title:'6 Elephant Major D - Moritzplatz',file:'Elephant Major D – Moritzplatz',stage:'Live',type:'High-Energy',priority:'low',notes:''},
+  {id:'q12',title:'5 Elephant Major D - Ear Candy',file:'Elephant Major D – Ear Candy',stage:'Live',type:'High-Energy',priority:'low',notes:''},
+  {id:'q13',title:'1 Elephant Major D - Healing 1',file:'Elephant Major D – Healing 1',stage:'Live',type:'Healing',priority:'low',notes:''},
+  {id:'q14',title:'Gypsy C - Funkedelic',file:'Gypsy C – Funkedelic – High Energy',stage:'Live',type:'High-Energy',priority:'low',notes:''},
+  {id:'q15',title:'Gypsy C# - Healing 1 Hour',file:'Gypsy C# – Healing – 1H',stage:'Live',type:'Healing 1 Hour',priority:'low',notes:''},
+];
+
+var INSTRUMENTS=[
+  {id:6,model:'Anyuta',note:'C',color:'Purple Matte',stage:'Ready',location:'Roni',assignee:'Roni',deadline:'2026-03-27',client:'Markus Gfatterhofer',type:'Client',comments:''},
+  {id:21,model:'Gypsy',note:'C#',color:'Purple',stage:'Scheduled',location:'Workshop',assignee:'Eldar',deadline:'—',client:'LSM',type:'LSM',comments:'Few color imperfections'},
+  {id:7,model:'Gypsy',note:'C',color:'Dark Blue',stage:'Ready',location:'Martinho',assignee:'Martinho',deadline:'2026-02-27',client:'Steve Weis',type:'Client',comments:''},
+  {id:2,model:'Gypsy',note:'C#',color:'Imitate Bones',stage:'Ready',location:'Workshop',assignee:'Eldar',deadline:'2026-02-27',client:'Michael Hannon',type:'Client',comments:'Eldar sanding/after rone varnish'},
+  {id:1,model:'Lucky',note:'D',color:'Dark Blue',stage:'Ready',location:'Martinho',assignee:'Martinho',deadline:'2026-02-27',client:'William Stoltenberg',type:'Client',comments:'Fix Varnish'},
+  {id:3,model:'Lucky',note:'D',color:'Dark Green',stage:'Ready',location:'Roni',assignee:'Roni',deadline:'2026-02-27',client:'Christina Hagemann',type:'Client',comments:''},
+  {id:4,model:'Gypsy',note:'C',color:'Dark Green',stage:'Ready',location:'Roni',assignee:'Roni',deadline:'2026-02-27',client:'Carter Chamberlain',type:'Client',comments:''},
+  {id:8,model:'Major',note:'C#',color:'Red Gold',stage:'Ready',location:'Workshop',assignee:'Martinho',deadline:'2026-03-06',client:'LSM',type:'LSM',comments:''},
+  {id:17,model:'Major',note:'D',color:'—',stage:'Ready',location:'Roni',assignee:'Roni',deadline:'2026-03-06',client:'Stock',type:'Stock',comments:''},
+  {id:22,model:'Major',note:'D',color:'Green',stage:'Ready',location:'Workshop',assignee:'Martinho',deadline:'2026-03-06',client:'LSM',type:'LSM',comments:'Repaired bottom — handle carefully'},
+  {id:11,model:'Gypsy',note:'C',color:'—',stage:'Scheduled',location:'Workshop',assignee:'Eldar',deadline:'2026-03-04',client:'Stock',type:'Stock',comments:''},
+  {id:12,model:'Major',note:'D',color:'—',stage:'Ready',location:'Workshop',assignee:'Eldar',deadline:'2026-03-04',client:'Stock',type:'Stock',comments:''},
+  {id:16,model:'Gypsy',note:'C',color:'—',stage:'Ready',location:'Roni',assignee:'Roni',deadline:'2026-03-06',client:'Stock',type:'Stock',comments:''},
+  {id:18,model:'Lucky',note:'D',color:'—',stage:'Ready',location:'Roni',assignee:'Roni',deadline:'2026-03-06',client:'Stock',type:'Stock',comments:''},
+];
+
+// Load persisted data
+// ═══ SUPABASE SYNC ══════════════════════════════════════════════════════
+// Reads live data from Supabase on load, writes back on every change
+// Falls back to hardcoded data if API unavailable
+
+async function loadFromSupabase(){
+  try{
+    var [vRes,qRes,iRes]=await Promise.all([
+      fetch('/api/data?table=videos').then(function(r){return r.json();}),
+      fetch('/api/data?table=queue').then(function(r){return r.json();}),
+      fetch('/api/data?table=instruments').then(function(r){return r.json();})
+    ]);
+    if(Array.isArray(vRes)&&vRes.length){
+      vRes.forEach(function(row){
+        var v=VIDEOS.find(function(x){return x.id===row.id;});
+        if(v)Object.assign(v,row);
+        else VIDEOS.push(row);
+      });
+    }
+    if(Array.isArray(qRes)&&qRes.length){
+      qRes.forEach(function(row){
+        var q=QUEUE.find(function(x){return x.id===row.id;});
+        if(q)Object.assign(q,row);
+        else QUEUE.push(row);
+      });
+    }
+    if(Array.isArray(iRes)&&iRes.length){
+      iRes.forEach(function(row){
+        var i=INSTRUMENTS.find(function(x){return x.id===row.id;});
+        if(i)Object.assign(i,row);
+        else INSTRUMENTS.push(row);
+      });
+    }
+    console.log('Loaded from Supabase ✓');
+  }catch(e){
+    console.warn('Supabase load failed, using local data:',e);
+  }
+}
+
+function saveV(v){
+  fetch('/api/data?table=videos&id='+v.id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(v)}).catch(function(e){console.warn('saveV failed',e);});
+}
+function saveQ(q){
+  var method=q._new?'POST':'PATCH';
+  var url=q._new?'/api/data?table=queue':'/api/data?table=queue&id='+q.id;
+  delete q._new;
+  fetch(url,{method:method,headers:{'Content-Type':'application/json'},body:JSON.stringify(q)}).catch(function(e){console.warn('saveQ failed',e);});
+}
+function saveI(instr){
+  fetch('/api/data?table=instruments&id='+instr.id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(instr)}).catch(function(e){console.warn('saveI failed',e);});
+}
+
+// ═══ UNDO ════════════════════════════════════════════════════════════════
+function pushUndo(label,undo){
+  UNDO_STACK.push({label:label,undo:undo});
+  if(UNDO_STACK.length>30)UNDO_STACK.shift();
+  var chip=document.getElementById('undoChip');
+  var txt=document.getElementById('undoText');
+  chip.classList.add('show');
+  txt.textContent='Undid: '+label;
+  txt.textContent='Last: '+label.substring(0,30)+(label.length>30?'…':'');
+}
+function doUndo(){
+  if(!UNDO_STACK.length)return;
+  var a=UNDO_STACK.pop();
+  a.undo();
+  if(!UNDO_STACK.length)document.getElementById('undoChip').classList.remove('show');
+  else document.getElementById('undoText').textContent='Last: '+UNDO_STACK[UNDO_STACK.length-1].label.substring(0,30);
+  showToast('↩ Undone: '+a.label);
+  reRender();
+}
+document.addEventListener('keydown',function(e){if((e.metaKey||e.ctrlKey)&&e.key==='z'&&!e.shiftKey){e.preventDefault();doUndo();}});
+
+function reRender(){
+  renderHome();
+  var ap=document.querySelector('[id^="page-"]:not([style*="none"])');
+  if(ap){var pid=ap.id.replace('page-','');if(pid!=='home'){var fns={repost:renderRepost,tracker:renderTracker,titles:renderTitles,queue:renderQueue,filming:renderFilming,editing:renderEdit,instruments:renderInstr};if(fns[pid])fns[pid]();}}
+}
+
+// ═══ SCORING ════════════════════════════════════════════════════════════
+function catAvg(cat){
+  var excl=document.getElementById('excOut1')?document.getElementById('excOut1').checked:true;
+  var vids=VIDEOS.filter(function(v){return v.cat===cat&&v.era==='serious'&&(blDays===0||v.days<=blDays);});
+  if(!vids.length)vids=VIDEOS.filter(function(v){return v.cat===cat&&v.era==='serious';});
+  if(excl&&vids.length>3){var top=vids.slice().sort(function(a,b){return b.views-a.views;})[0];vids=vids.filter(function(v){return v.id!==top.id;});}
+  if(!vids.length)return{ctr:5,avd:80,avgpct:35};
+  return{ctr:vids.reduce(function(s,v){return s+v.ctr;},0)/vids.length,avd:vids.reduce(function(s,v){return s+v.avd_sec;},0)/vids.length,avgpct:vids.reduce(function(s,v){return s+v.avgpct;},0)/vids.length};
+}
+
+function calcScore(v){
+  var avg=catAvg(v.cat);
+  var isLong=v.dur>1800;
+  var avdPct=v.dur>0?(v.avd_sec/v.dur)*100:v.avgpct;
+  return Math.round(Math.min(avdPct*(isLong?4:1.5),100)*.35+Math.min((v.ctr/avg.ctr)*50,100)*.25+Math.min(v.avgpct*1.5,100)*.25+Math.min(Math.log10(v.views+1)*20,100)*.15);
+}
+
+function autoDecision(v){
+  var avg=catAvg(v.cat);
+  var ctrOk=v.ctr>=avg.ctr*.9;
+  var avdOk=v.avd_sec>=avg.avd*.9;
+  if(ctrOk&&avdOk)return'Repost Candidate';
+  if(!ctrOk&&avdOk)return'Change Thumbnail';
+  if(ctrOk&&!avdOk)return'Check Hook';
+  return'Change Thumbnail';
+}
+
+function scoreColor(s){return s>=75?'var(--green)':s>=55?'var(--gold)':s>=35?'var(--orange)':'var(--red)';}
+function fmt(n){if(!n||isNaN(n))return'—';if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1000)return(n/1000).toFixed(1)+'k';return String(Math.round(n));}
+function avdStr(s){var m=Math.floor(s/60);return m+':'+(s%60).toString().padStart(2,'0');}
+function tci(c){return c==='High-Energy'?'⚡':c==='Healing'?'🌿':'🧘';}
+function tcp(c){return c==='High-Energy'?'p-energy':c==='Healing'?'p-heal':'p-hour';}
+
+// ═══ RUNWAY ══════════════════════════════════════════════════════════════
+function runway(){
+  var live=QUEUE.filter(function(q){return q.stage==='Live';}).length;
+  var ready=QUEUE.filter(function(q){return q.stage==='Ready'||q.stage==='Scheduled';}).length;
+  var days=(live+ready)*2;
+  return{days:days,ready:ready,live:live};
+}
+
+// ═══ TOAST ═══════════════════════════════════════════════════════════════
+function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';setTimeout(function(){t.style.opacity='0';t.style.transform='translateX(-50%) translateY(10px)';},2500);}
+
+// ═══ NAV ═════════════════════════════════════════════════════════════════
+var PAGE_TITLES={home:'Command Center',repost:'Repost Queue',tracker:'Video Tracker',decisions:'Decisions Log',planner:'Monthly Planner',titles:'Title Lab',queue:'Content Queue',filming:'Filming Planner',editing:'Edit Queue',instruments:'Instruments — Lydia',sales:'Sales — Shopify',ads:'Campaigns — Gal',vertical:'Vertical Content',chat:'Ask Claude',guide:'Decision Guide',integrations:'Integrations & API'};
+var RENDERS={repost:renderRepost,tracker:renderTracker,decisions:renderDecisions,planner:function(){
+  var n=new Date(); plannerDate=new Date(n.getFullYear(),n.getMonth(),1);
+  requestAnimationFrame(function(){ requestAnimationFrame(renderPlanner); });
+},titles:renderTitles,queue:renderQueue,filming:renderFilming,editing:renderEdit,instruments:renderInstr,vertical:renderVertical,integrations:renderIntegrations};
+
+function nav(page){
+  document.querySelectorAll('[id^="page-"]').forEach(function(p){p.style.display='none';});
+  var pg=document.getElementById('page-'+page);
+  if(pg)pg.style.display=page==='chat'?'flex':'block';
+  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.toggle('active',n.dataset.page===page);});
+  document.getElementById('pageHeading').textContent=PAGE_TITLES[page]||page;
+  // Scroll main area to top
+  window.scrollTo(0,0);
+  if(RENDERS[page])RENDERS[page]();
+}
+
+// ═══ HOME ════════════════════════════════════════════════════════════════
+function renderHome(){
+  var rw=runway();
+  var cls=rw.days<=7?'runway-crit':rw.days<=14?'runway-warn':'runway-ok';
+  var icon=rw.days<=7?'🚨':rw.days<=14?'⚠️':'✅';
+  document.getElementById('runwayChip').innerHTML='<div class="runway-chip '+cls+'" title="Content runway = days until you run out of queued videos to post. Below 14d = danger zone.">'+icon+' '+rw.days+'d runway <span style="font-size:.6rem;opacity:.6">ⓘ</span></div>';
+  var alertHtml = '';
+  if(rw.days<=14){
+    alertHtml += '<div class="alert-box">🚨 Content runs out in '+rw.days+' days — film session needed NOW. You need 3 weeks lead time (film → sound → edit → SEO).</div>';
+  }
+  // Check for videos needing 48h data (posted 40-96h ago, no entry yet)
+  var now48 = Date.now();
+  VIDEOS.filter(function(v){
+    if(!v.posted) return false;
+    var hoursOld = (now48 - new Date(v.posted).getTime()) / 3600000;
+    return hoursOld >= 40 && hoursOld <= 120 && !v.lastEntry48;
+  }).forEach(function(v){
+    alertHtml += '<div class="alert-box" style="background:rgba(224,69,58,.12);border-color:var(--gold);display:flex;align-items:center;justify-content:space-between;gap:1rem"><span>⚡ <strong>'+v.title.substring(0,35)+'…</strong> was posted '+Math.floor((now48-new Date(v.posted).getTime())/3600000)+'h ago — enter 48h data now</span><button class="btn btn-gold btn-sm" onclick="prefill48h(\''+v.id+'\')" style="flex-shrink:0">Enter Now</button></div>';
+  });
+  document.getElementById('homeAlert').innerHTML = alertHtml;
+
+  var repReady=VIDEOS.filter(function(v){return v.decision==='Repost Candidate';}).length;
+  var needsAtt=VIDEOS.filter(function(v){return v.decision==='Monitor'||v.decision==='Change Thumbnail'||v.decision==='Check Hook';}).length;
+  document.getElementById('homeStats').innerHTML=
+    sc2(rw.days+'d','Content runway','var(--gold2)')+
+    sc2(repReady,'Repost candidates','var(--green)')+
+    sc2(needsAtt,'Need attention','var(--red)')+
+    sc2(QUEUE.filter(function(q){return q.stage==='Ready';}).length,'Ready to post','var(--blue)');
+  document.getElementById('nb-repost').textContent=repReady;
+  document.getElementById('nb-tracker').textContent=needsAtt;
+
+  var best=VIDEOS.filter(function(v){return v.decision==='Repost Candidate';}).sort(function(a,b){return calcScore(b)-calcScore(a);})[0];
+  if(best){
+    var s=calcScore(best);
+    document.getElementById('homeNextRepost').innerHTML=
+      '<div style="background:var(--s2);border:1px solid var(--gold);border-radius:8px;padding:1rem">'
+      +'<img src="https://img.youtube.com/vi/'+best.id+'/mqdefault.jpg" style="width:100%;border-radius:4px;margin-bottom:.75rem;display:block"/>'
+      +'<span class="pill '+tcp(best.cat)+'">'+tci(best.cat)+' '+best.cat+'</span>'
+      +'<div style="font-size:.88rem;font-weight:700;margin:.5rem 0;line-height:1.4">'+best.title+'</div>'
+      +'<div style="display:flex;gap:1.2rem;margin-bottom:.75rem">'
+      +'<div><div style="font-size:1.4rem;font-weight:800;color:'+scoreColor(s)+';font-family:\'JetBrains Mono\',monospace">'+s+'</div><div style="font-size:.68rem;color:var(--text3)">Score</div></div>'
+      +'<div><div style="font-size:1.4rem;font-weight:800;font-family:\'JetBrains Mono\',monospace">'+best.ctr+'%</div><div style="font-size:.68rem;color:var(--text3)">CTR</div></div>'
+      +'<div><div style="font-size:1.4rem;font-weight:800;font-family:\'JetBrains Mono\',monospace">'+avdStr(best.avd_sec)+'</div><div style="font-size:.68rem;color:var(--text3)">AVD</div></div>'
+      +'</div><div style="display:flex;gap:.5rem">'
+      +'<a class="btn btn-gold btn-sm" href="https://youtube.com/watch?v='+best.id+'" target="_blank">▶ Watch</a>'
+      +'<button class="btn btn-outline btn-sm" onclick="setDec(\''+best.id+'\',\'Reposted\')">✓ Mark Reposted</button>'
+      +'</div></div>';
+  }
+
+  var stages=['Ready','Scheduled','Live','Repost'];
+  var stageCols={'Ready':'var(--gold)','Scheduled':'var(--blue)','Live':'var(--green)','Repost':'var(--purple)'};
+  document.getElementById('homePipeline').innerHTML=stages.map(function(st){
+    var n=QUEUE.filter(function(q){return q.stage===st;}).length;
+    return'<div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.85rem">'
+      +'<span style="color:var(--text2)">'+st+'</span>'
+      +'<span style="font-weight:800;color:'+stageCols[st]+';font-family:\'JetBrains Mono\',monospace">'+n+'</span></div>';
+  }).join('');
+
+  var att=VIDEOS.filter(function(v){return v.decision==='Monitor'||v.decision==='Change Thumbnail'||v.decision==='Check Hook';}).slice(0,6);
+  document.getElementById('homeNeeds').innerHTML=att.length?att.map(function(v){
+    var dCls=v.decision==='Change Thumbnail'?'p-red':v.decision==='Check Hook'?'p-blue':'p-gold';
+    return'<div style="display:flex;justify-content:space-between;align-items:center;padding:.45rem 0;border-bottom:1px solid var(--border);cursor:pointer;gap:.5rem" onclick="nav(\'tracker\')">'
+      +'<span style="font-size:.82rem;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">'+v.title+'</span>'
+      +'<span class="pill '+dCls+'">'+v.decision+'</span></div>';
+  }).join(''):'<div style="font-size:.85rem;color:var(--green);padding:.5rem 0">✓ All up to date</div>';
+
+  var top5=VIDEOS.slice().sort(function(a,b){return calcScore(b)-calcScore(a);}).slice(0,5);
+  document.getElementById('homeTop5').innerHTML=top5.map(function(v,i){
+    var s=calcScore(v);
+    return'<div style="display:flex;align-items:center;gap:.75rem;padding:.45rem 0;border-bottom:1px solid var(--border)">'
+      +'<span style="font-size:.82rem;font-weight:800;color:var(--text3);min-width:1rem;font-family:\'JetBrains Mono\',monospace">'+(i+1)+'</span>'
+      +'<span class="pill '+tcp(v.cat)+'" style="flex-shrink:0">'+tci(v.cat)+'</span>'
+      +'<span style="font-size:.8rem;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+v.title+'</span>'
+      +'<span style="font-size:.95rem;font-weight:800;color:'+scoreColor(s)+';font-family:\'JetBrains Mono\',monospace;flex-shrink:0">'+s+'</span></div>';
+  }).join('');
+}
+
+function sc2(val,label,color){return'<div class="stat-card"><div class="stat-val" style="color:'+color+'">'+val+'</div><div class="stat-label">'+label+'</div></div>';}
+
+// ═══ REPOST QUEUE ════════════════════════════════════════════════════════
+function setBL(d,btn){blDays=d;btn.closest('.tgl-group').querySelectorAll('.tgl').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');reRender();}
+function setRC(c,btn){rcFilter=c;document.querySelectorAll('[data-rc]').forEach(function(b){b.classList.toggle('on',b.dataset.rc===c);});renderRepost();}
+
+function getPosted(v){
+  // Use stored posted date, or compute from days field
+  if(v.posted) return v.posted;
+  if(!v.days && v.days!==0) return null;
+  var d=new Date(Date.now() - v.days*86400000);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function needs48h(v){
+  var posted=getPosted(v);
+  if(!posted) return false;
+  var h=(Date.now()-new Date(posted).getTime())/3600000;
+  return h>=40 && h<=168 && !v.lastEntry48; // 40h-7d window
+}
+function renderRepost(){
+  var list=VIDEOS.filter(function(v){
+    if(v.decision!=='Repost Candidate') return false;
+    if(rcFilter!=='all' && v.cat!==rcFilter) return false;
+    if(rcEraFilter!=='all'){var vp=getPosted(v); var isNew=!vp||vp>='2025-10-01'; if(rcEraFilter==='new'&&!isNew) return false; if(rcEraFilter==='old'&&isNew) return false;}
+    return true;
+  })
+    .map(function(v){return Object.assign({},v,{s:calcScore(v)});}).sort(function(a,b){return b.s-a.s;});
+  document.getElementById('repostList').innerHTML=list.length?list.map(function(v,i){
+    var avg=catAvg(v.cat);
+    var avdPct=v.dur>0?((v.avd_sec/v.dur)*100).toFixed(0):v.avgpct;
+    var ctrDiff=((v.ctr/avg.ctr-1)*100).toFixed(0);
+    var q1hr=v.cat==='Healing'&&parseFloat(avdPct)>=35&&v.ctr>=4.5;
+    var isTop=i===0;
+    return'<div style="background:'+(isTop?'var(--s2)':'var(--s1)')+';border:1px solid '+(isTop?'var(--gold)':'var(--border)')+';border-radius:8px;padding:'+(isTop?'1.1rem':'0.85rem')+';margin-bottom:.6rem;display:grid;grid-template-columns:3rem 1fr auto;gap:1rem;align-items:center">'
+      +'<div style="text-align:center"><div style="font-size:'+(isTop?'2rem':'1.3rem')+';font-weight:800;color:'+(isTop?'var(--gold)':'var(--text3)')+';font-family:\'JetBrains Mono\',monospace">'+(i+1)+'</div></div>'
+      +'<div><img src="https://img.youtube.com/vi/'+v.id+'/mqdefault.jpg" style="width:100%;max-width:200px;border-radius:4px;margin-bottom:.5rem;display:block"/>'
+      +'<span class="pill '+tcp(v.cat)+'">'+tci(v.cat)+' '+v.cat+'</span>'
+      +(isTop?'<span style="font-size:.7rem;color:var(--gold);font-weight:700;margin-left:.5rem">← POST THIS NEXT</span>':'')
+      +'<div style="font-size:'+(isTop?'.9rem':'.82rem')+';font-weight:700;margin:.4rem 0;line-height:1.4">'+v.title+'</div>'
+      +'<div style="display:flex;gap:.75rem;font-size:.78rem;color:var(--text3);flex-wrap:wrap">'
+      +'<span>'+v.days+'d old</span>'
+      +'<span style="color:'+(parseFloat(ctrDiff)>=0?'var(--green)':'var(--red)')+'">CTR '+(parseFloat(ctrDiff)>=0?'+':'')+ctrDiff+'% vs avg</span>'
+      +'<span>'+avdPct+'% of video watched</span>'
+      +(v.notes?'<span style="color:var(--gold)">'+v.notes+'</span>':'')
+      +(q1hr?'<span class="pill p-blue">🧘 Qualifies for 1-Hour</span>':'')
+      +'</div></div>'
+      +'<div style="display:flex;flex-direction:column;gap:.5rem;align-items:flex-end">'
+      +'<div style="text-align:center;margin-bottom:.25rem"><div style="font-size:1.6rem;font-weight:800;color:'+scoreColor(v.s)+';font-family:\'JetBrains Mono\',monospace">'+v.s+'</div><div style="font-size:.65rem;color:var(--text3);text-transform:uppercase">Score</div></div>'
+      +'<a class="btn btn-gold btn-sm" href="https://youtube.com/watch?v='+v.id+'" target="_blank">▶ Watch</a>'
+      +'<button class="btn btn-outline btn-sm" onclick="setDec(\''+v.id+'\',\'Reposted\')">✓ Reposted</button>'
+      +'</div></div>';
+  }).join(''):'<div style="padding:2rem;text-align:center;color:var(--text3)">No repost candidates in this category yet.</div>';
+}
+
+// ═══ TRACKER ══════════════════════════════════════════════════════════
+function setTC(c,btn){tcFilter=c;document.querySelectorAll('[data-tc]').forEach(function(b){b.classList.toggle('on',b.dataset.tc===c);});renderTracker();}
+
+var trackerSort='score', trackerSortDir='desc', tcStageFilter='all', tcEraFilter='all';
+
+function setTrackerSort(col){
+  if(trackerSort===col) trackerSortDir=trackerSortDir==='desc'?'asc':'desc';
+  else{ trackerSort=col; trackerSortDir='desc'; }
+  // Update header arrows
+  document.querySelectorAll('.th-sort').forEach(function(el){
+    el.classList.remove('sort-active');
+    el.innerHTML=el.innerHTML.replace(/ [▲▼]$/,'');
+  });
+  var active=document.getElementById('th-'+col);
+  if(active){
+    active.classList.add('sort-active');
+    active.innerHTML=active.innerHTML.replace(/ [▲▼]$/,'')+(trackerSortDir==='desc'?' ▼':' ▲');
+  }
+  renderTracker();
+}
+
+function setTCEra(e,btn){
+  tcEraFilter=e;
+  ['tcEraAll','tcEraNew','tcEraOld'].forEach(function(id){var el=document.getElementById(id);if(el)el.classList.remove('on');});
+  if(btn) btn.classList.add('on');
+  renderTracker();
+}
+
+function renderTracker(){
+  var search=(document.getElementById('trackSearch')||{value:''}).value.toLowerCase();
+  var sort=trackerSort+'-'+trackerSortDir;
+  var list=VIDEOS.filter(function(v){
+    if(v.era==='archive') return false;
+    if(tcFilter!=='all'&&v.cat!==tcFilter)return false;
+    if(tcStageFilter!=='all'&&v.decision!==tcStageFilter)return false;
+    if(tcEraFilter!=='all'){var vp=getPosted(v);var isNew=!vp||vp>='2025-10-01';if(tcEraFilter==='new'&&!isNew)return false;if(tcEraFilter==='old'&&isNew)return false;}
+    if(search&&!v.title.toLowerCase().includes(search))return false;
+    return true;
+  }).map(function(v){return Object.assign({},v,{s:calcScore(v)});});
+  list.sort(function(a,b){
+    var d=trackerSortDir==='asc'?1:-1;
+    var av=trackerSort==='ctr'?a.ctr:trackerSort==='avd'?a.avd_sec:trackerSort==='avgpct'?a.avgpct:trackerSort==='views'?a.views:trackerSort==='days'?a.days:a.s;
+    var bv=trackerSort==='ctr'?b.ctr:trackerSort==='avd'?b.avd_sec:trackerSort==='avgpct'?b.avgpct:trackerSort==='views'?b.views:trackerSort==='days'?b.days:b.s;
+    return (bv-av)*d;
+  });
+
+  var ser=list.filter(function(v){return v.era==='serious';});
+  if(ser.length){
+    var ac=(ser.reduce(function(s,v){return s+v.ctr;},0)/ser.length).toFixed(2);
+    var aa=Math.round(ser.reduce(function(s,v){return s+v.avd_sec;},0)/ser.length);
+    var ap=(ser.reduce(function(s,v){return s+v.avgpct;},0)/ser.length).toFixed(1);
+    document.getElementById('trackerStats').innerHTML=
+      sc2(ac+'%','Avg CTR','var(--gold2)')+sc2(avdStr(aa),'Avg AVD','var(--text)')+sc2(ap+'%','Avg Retention','var(--blue)')+sc2(list.filter(function(v){return v.decision==='Repost Candidate';}).length,'Repost Ready','var(--green)');
+    var avgEl=document.getElementById('avgBar');
+    if(avgEl){var cats=['High-Energy','Healing','Healing 1 Hour'];avgEl.innerHTML='<span style="color:var(--text3);font-size:.72rem">Your '+( blDays||'all-time')+' day avg: </span>'+cats.map(function(c){var a=catAvg(c);return'<span title="'+c+' category average over selected period">'+tci(c)+' <strong>'+a.ctr.toFixed(1)+'%</strong> CTR · <strong>'+avdStr(Math.round(a.avd))+'</strong> AVD</span>';}).join('<span style="color:var(--border2)"> | </span>');}
+  }
+
+  var empty=document.getElementById('trackerEmpty');
+  var tbody=document.getElementById('trackerBody');
+  if(!list.length){tbody.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+
+  tbody.innerHTML=list.map(function(v){
+    var avg=catAvg(v.cat);
+    var cg=v.ctr>=avg.ctr*.95?'g':v.ctr<avg.ctr*.8?'r':'';
+    var ag=v.avd_sec>=avg.avd*.95?'g':v.avd_sec<avg.avd*.8?'r':'';
+    var dc=v.decision==='Repost Candidate'?'var(--green)':v.decision==='Change Thumbnail'||v.decision==='Check Hook'?'var(--orange)':v.decision==='Monitor'?'var(--gold)':'var(--text3)';
+    return'<tr class="clickable" id="tr-'+v.id+'" onclick="toggleExp(\''+v.id+'\')">'
+      +'<td>'+tci(v.cat)+'</td>'
+      +'<td style="max-width:280px"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px;font-weight:600" title="'+v.title+'">'+v.title+'</div>'+(v.file&&v.file!==v.title?'<div style="font-size:.66rem;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px">📁 '+v.file+'</div>':'')+'</td>'
+      +'<td><span class="pill '+tcp(v.cat)+'">'+v.cat+'</span></td>'
+      +'<td><div class="score-wrap"><span class="score-num" style="color:'+scoreColor(v.s)+'">'+v.s+'</span><div class="score-bar"><div class="score-fill" style="width:'+v.s+'%;background:'+scoreColor(v.s)+'"></div></div></div></td>'
+      +'<td class="dr-val '+cg+'">'+v.ctr+'%</td>'
+      +'<td class="dr-val '+ag+'">'+avdStr(v.avd_sec)+'</td>'
+      +'<td>'+v.avgpct+'%</td>'
+      +'<td>'+fmt(v.views)+'</td>'
+      +'<td style="color:var(--text3)">'+v.days+'d</td>'
+      +'<td><span class="pill p-muted">'+v.format+'</span></td>'
+      +'<td style="color:'+dc+';font-size:.8rem;font-weight:700">'+v.decision+'</td>'
+      +'<td><a href="https://youtube.com/watch?v='+v.id+'" target="_blank" onclick="event.stopPropagation()" style="color:var(--text3);text-decoration:none;font-size:1rem">▶</a></td>'
+      +'</tr>'
+      +'<tr class="exp-row" id="exp-'+v.id+'"><td colspan="12" class="exp-cell"><div class="exp-inner">'+expRow(v)+'</div></td></tr>';
+  }).join('');
+}
+
+function expRow(v){
+  var avg=catAvg(v.cat);
+  var avdPct=v.dur>0?((v.avd_sec/v.dur)*100).toFixed(1):'—';
+  var q1hr=v.cat==='Healing'&&parseFloat(avdPct)>=35&&v.ctr>=4.5;
+  var s=calcScore(v);
+  return'<div class="exp-grid">'
+    +'<div><div class="exp-section-title">Performance Data</div>'
+    +'<img src="https://img.youtube.com/vi/'+v.id+'/mqdefault.jpg" style="width:100%;border-radius:4px;margin-bottom:.75rem"/>'
+    +dr3('CTR',v.ctr+'%',v.ctr>=avg.ctr?'g':'r')+dr3('Category avg CTR',avg.ctr.toFixed(2)+'%')
+    +dr3('AVD',avdStr(v.avd_sec),v.avd_sec>=avg.avd?'g':'r')+dr3('Category avg AVD',avdStr(Math.round(avg.avd)))
+    +dr3('Avg % Viewed',v.avgpct+'%')+dr3('AVD % of video',avdPct+'%')
+    +(v.notes?dr3('Notes',v.notes):'')+'</div>'
+    +'<div><div class="exp-section-title">Score: '+s+' / 100</div>'
+    +'<div style="font-size:2.5rem;font-weight:800;color:'+scoreColor(s)+';font-family:\'JetBrains Mono\',monospace;margin-bottom:.5rem">'+s+'</div>'
+    +dr3('Automatic decision',autoDecision(v))+dr3('CTR vs category avg',((v.ctr/avg.ctr-1)*100).toFixed(0)+'%',v.ctr>=avg.ctr?'g':'r')
+    +dr3('AVD vs category avg',((v.avd_sec/avg.avd-1)*100).toFixed(0)+'%',v.avd_sec>=avg.avd?'g':'r')
+    +(q1hr?'<div class="pill p-blue" style="margin-top:.75rem">🧘 Qualifies for 1-Hour!</div>':'')
+    +'</div>'
+    +'<div><div class="exp-section-title">Set Decision</div><div class="dec-grid" id="db-'+v.id+'">'
+    +[['Repost Candidate','✅'],['Change Thumbnail','🖼'],['Check Hook','🔍'],['Re-edit','✂️'],['Monitor','👁'],['Reposted','♻️']].map(function(d){
+      return'<button class="dec-btn'+(v.decision===d[0]?' sel':'')+'" onclick="setDec(\''+v.id+'\',\''+d[0]+'\')">'+d[1]+' '+d[0]+'</button>';
+    }).join('')
+    +'</div><div style="margin-top:1rem;display:flex;flex-direction:column;gap:.4rem">'
+    +'<a class="btn btn-outline btn-sm" href="https://youtube.com/watch?v='+v.id+'" target="_blank">▶ YouTube</a>'
+    +'<a class="btn btn-outline btn-sm" href="https://studio.youtube.com/video/'+v.id+'/edit" target="_blank">⚙ Studio</a>'
+    +'<button class="btn btn-gold btn-sm" onclick="prefill48h(\''+v.id+'\')">+ Update 48h Data</button>'
+    +'<button class="gcal-btn" onclick="createGCalReminderForVideo(\''+v.id+'\',\''+v.title.replace(/'/g,"\\'")+'\')" style="margin-top:.2rem">📅 48h Reminder</button>'
+    +'</div></div>'
+    +'</div>';
+}
+
+function dr3(l,v,cls){return'<div class="dr"><span class="dr-label">'+l+'</span><span class="dr-val'+(cls?' '+cls:'')+'">'+(v||'—')+'</span></div>';}
+
+function toggleExp(id){
+  var r=document.getElementById('exp-'+id);var tr=document.getElementById('tr-'+id);
+  var open=r&&r.classList.contains('open');
+  document.querySelectorAll('.exp-row.open').forEach(function(x){x.classList.remove('open');});
+  document.querySelectorAll('tbody tr.expanded').forEach(function(x){x.classList.remove('expanded');});
+  if(!open&&r){r.classList.add('open');if(tr)tr.classList.add('expanded');}
+}
+
+function setDec(id,dec){
+  var v=VIDEOS.find(function(x){return x.id===id;});if(!v)return;
+  var old=v.decision;
+  v.decision=dec;saveV(v);
+  pushUndo('"'+v.title.substring(0,25)+'…" → '+dec,function(){v.decision=old;saveV(v);});
+  var btns=document.getElementById('db-'+id);
+  if(btns)btns.querySelectorAll('.dec-btn').forEach(function(b){b.classList.toggle('sel',b.textContent.trim().includes(dec.substring(0,8)));});
+  renderHome();
+}
+
+// ═══ TITLE LAB ═══════════════════════════════════════════════════════════
+function setTLC(c,btn){tlFilter=c;document.querySelectorAll('[data-tlc]').forEach(function(b){b.classList.toggle('on',b.dataset.tlc===c);});renderThumbGrid();}
+
+var FORMULAS=[
+  {f:'This Didgeridoo Sound Will [ACTION] Your [BODY PART]',ctr:7.2,note:'Best formula. e.g. BREAK Your Brain, MELT Your Stress'},
+  {f:'This Didgeridoo Sound [IMPOSSIBLE THING]',ctr:6.8,note:'e.g. Should NOT Be Possible, Makes Your Brain Stop'},
+  {f:'The #1 Sound for INSTANT [BENEFIT] — [Hz] Didgeridoo',ctr:6.6,note:'Best for Healing. TEXT thumbnail → high CTR'},
+  {f:'[CAPS HOOK] — Legendary Strawberry Man',ctr:6.3,note:'Works for collabs with text thumbnail'},
+  {f:'Is This the Most EPIC Didgeridoo [X] EVER?',ctr:5.8,note:'Good for collab content'},
+];
+var SUGS=['This Didgeridoo Sound Will REWIRE Your Nervous System','What Happens to Your Brain When You Hear This?','The #1 Sound for INSTANT FOCUS — 73Hz Didgeridoo','This Didgeridoo Sound Should Be ILLEGAL','Your Body Has Never Felt a Sound Like This','This Frequency Will DISSOLVE Your Anxiety | Didgeridoo','I Recorded the Most DANGEROUS Didgeridoo Sound','The #1 Sound for DEEP SLEEP — 65Hz Loop | 1 Hour','This Didgeridoo Sound Hits Different at 3am','What This Didgeridoo Does to Your Brain Is Unreal'];
+
+function renderTitles(){
+  document.getElementById('titleFormulas').innerHTML=FORMULAS.map(function(f){
+    return'<div class="formula-card"><div><div class="formula-text">'+f.f+'</div><div class="formula-note">'+f.note+'</div></div><div style="text-align:right"><div class="formula-ctr" style="color:'+scoreColor(f.ctr*10)+'">'+f.ctr+'%</div><div style="font-size:.65rem;color:var(--text3)">avg CTR</div></div></div>';
+  }).join('');
+  genTitles();
+  renderThumbGrid();
+}
+
+function copySug(el){
+  var t=el.getAttribute('data-title');
+  navigator.clipboard.writeText(t).then(function(){
+    var orig=el.style.background;
+    el.style.background='var(--goldbg)';
+    setTimeout(function(){el.style.background=orig;},600);
+  }).catch(function(){});
+}
+function renderSugs(list){
+  var el=document.getElementById('titleSugs');
+  if(!el) return;
+  el.innerHTML='';
+  var items=list||TITLE_BANK.slice().sort(function(a,b){return b.score-a.score;});
+  items.forEach(function(entry){
+    var catIcon=entry.cat==='Healing'?'🌿':entry.cat==='Healing 1 Hour'?'🧘':'⚡';
+    var div=document.createElement('div');
+    div.className='sug-card';
+    div.title='Click to copy';
+    div.innerHTML='<div style="display:flex;align-items:center;gap:.5rem;flex:1"><span style="font-size:.85rem">'+catIcon+'</span><span style="flex:1;font-size:.82rem">'+entry.t+'</span></div>'
+      +'<div style="display:flex;align-items:center;gap:.5rem;flex-shrink:0"><span style="font-size:.72rem;font-weight:700;color:'+scoreColor(entry.score)+'">'+entry.score+'</span><span style="font-size:.75rem;color:var(--text3)">⎘</span></div>';
+    div.onclick=function(){
+      navigator.clipboard.writeText(entry.t).then(function(){
+        div.style.background='var(--goldbg)';
+        setTimeout(function(){div.style.background='';},600);
+      }).catch(function(){});
+    };
+    el.appendChild(div);
+  });
+}
+
+// Curated title bank scored by formula strength (1-100)
+var TITLE_BANK=[
+  // HIGH-ENERGY (⚡) - Brain/shock reactions
+  {t:'This Didgeridoo Sound Will BREAK Your Brain',cat:'High-Energy',score:94},
+  {t:'I Played a Didgeridoo and Something Happened to My Brain',cat:'High-Energy',score:91},
+  {t:'The Didgeridoo Sound That Makes People CRY',cat:'High-Energy',score:89},
+  {t:'This Should NOT Be Possible on a Didgeridoo',cat:'High-Energy',score:92},
+  {t:'POV: You Hear a Didgeridoo for the First Time',cat:'High-Energy',score:87},
+  {t:'Didgeridoo Effects That Sound Completely UNREAL',cat:'High-Energy',score:88},
+  {t:'The Most INSANE Didgeridoo Sound on the Internet',cat:'High-Energy',score:86},
+  {t:'Why This Didgeridoo Sound Feels ILLEGAL',cat:'High-Energy',score:90},
+  {t:'I Made People Stop Walking Just With a Didgeridoo',cat:'High-Energy',score:85},
+  {t:'This Didgeridoo Sound Broke 3 People in One Day',cat:'High-Energy',score:83},
+  {t:'Nobody Believes This Is a Real Didgeridoo Sound',cat:'High-Energy',score:87},
+  {t:'The Didgeridoo Sound That Went Viral for a Reason',cat:'High-Energy',score:82},
+  {t:'What Happens to Your Brain When You Hear THIS',cat:'High-Energy',score:84},
+  {t:'This Didgeridoo Performance Left Everyone Speechless',cat:'High-Energy',score:81},
+  {t:'Warning: This Didgeridoo Sound Is Too Good',cat:'High-Energy',score:80},
+  // HEALING (🌿) - Frequency/calm
+  {t:'The #1 Sound for INSTANT CALM — 432 Hz Didgeridoo',cat:'Healing',score:96},
+  {t:'Scientists Say THIS Sound Reduces Stress in 3 Minutes',cat:'Healing',score:93},
+  {t:'The Didgeridoo Frequency That Puts Your Brain to Sleep',cat:'Healing',score:91},
+  {t:'I Played 528 Hz on Didgeridoo and Something Shifted',cat:'Healing',score:89},
+  {t:'Why This Didgeridoo Sound Feels Like a Warm Hug',cat:'Healing',score:88},
+  {t:'This Is the Sound Your Nervous System Has Been Waiting For',cat:'Healing',score:92},
+  {t:'The Didgeridoo Sound That Stops Anxiety INSTANTLY',cat:'Healing',score:90},
+  {t:'Deep Earth Frequency — 40 Hz Didgeridoo for Focus',cat:'Healing',score:87},
+  {t:'This Didgeridoo Sound Literally Vibrates Your Chest',cat:'Healing',score:86},
+  {t:'The Rarest Healing Sound in the World (Live Didgeridoo)',cat:'Healing',score:85},
+  {t:'If You Feel Anxious, Listen to This Didgeridoo Sound',cat:'Healing',score:88},
+  {t:'741 Hz Didgeridoo — Remove Toxins, Clear Your Mind',cat:'Healing',score:84},
+  {t:'This Frequency Heals While You Sleep (Didgeridoo)',cat:'Healing',score:89},
+  {t:'The Sound That Ancient Cultures Used to Heal',cat:'Healing',score:83},
+  {t:'My Most Healing Didgeridoo Recording (Live, No Editing)',cat:'Healing',score:82},
+  // 1 HOUR (🧘) - Sleep/meditation
+  {t:'1 Hour Didgeridoo for Deep Sleep — No Ads, No Interruptions',cat:'Healing 1 Hour',score:95},
+  {t:'432 Hz Didgeridoo — 1 Hour for Full Body Relaxation',cat:'Healing 1 Hour',score:93},
+  {t:'Sleep in 20 Minutes with This 1-Hour Didgeridoo Loop',cat:'Healing 1 Hour',score:91},
+  {t:'1 Hour of the Most Calming Didgeridoo Sound Ever Recorded',cat:'Healing 1 Hour',score:90},
+  {t:'Healing Frequency Didgeridoo — 1 Hour Study & Focus Music',cat:'Healing 1 Hour',score:88},
+  {t:'1 Hour Didgeridoo Meditation — Let Go of Everything',cat:'Healing 1 Hour',score:87},
+  {t:'The 1-Hour Didgeridoo That 50,000 People Sleep To',cat:'Healing 1 Hour',score:92},
+  {t:'Fall Asleep in Nature — 1 Hour Live Didgeridoo',cat:'Healing 1 Hour',score:86},
+  // More High-Energy titles
+  {t:'This Didgeridoo Sound Is Physically Impossible',cat:'High-Energy',score:93},
+  {t:'I Made 10,000 People Stop Scrolling With This Sound',cat:'High-Energy',score:91},
+  {t:'The Didgeridoo Sound That Went Viral For Good Reason',cat:'High-Energy',score:89},
+  {t:'Your Brain Has Never Heard This Before (Didgeridoo)',cat:'High-Energy',score:92},
+  {t:'Why Everyone Is Talking About This Didgeridoo Sound',cat:'High-Energy',score:88},
+  {t:'The Most Satisfying Didgeridoo Sound On YouTube',cat:'High-Energy',score:87},
+  {t:'Scientists Cant Explain What This Didgeridoo Does To Your Brain',cat:'High-Energy',score:95},
+  {t:'I Challenged Myself To Play The Most Intense Didgeridoo Sound',cat:'High-Energy',score:86},
+  {t:'This Didgeridoo Frequency Is NOT For Everyone',cat:'High-Energy',score:90},
+  {t:'The Sound That Made 1 Million People Stop Everything',cat:'High-Energy',score:94},
+  {t:'Nobody Believed This Didgeridoo Sound Was Real',cat:'High-Energy',score:89},
+  {t:'This Is What 40Hz Feels Like Through A Didgeridoo',cat:'High-Energy',score:88},
+  {t:'The ASMR Didgeridoo That Broke The Internet',cat:'High-Energy',score:85},
+  {t:'This Circular Breathing Pattern Will Hypnotize You',cat:'High-Energy',score:87},
+  {t:'Watch What Happens When I Play THIS Frequency',cat:'High-Energy',score:91},
+  // More Healing titles
+  {t:'432Hz Didgeridoo — The Frequency Your Body Has Been Missing',cat:'Healing',score:95},
+  {t:'This 5 Minute Didgeridoo Session Replaces 1 Hour Of Meditation',cat:'Healing',score:94},
+  {t:'The Ancient Sound That Modern Science Just Confirmed Works',cat:'Healing',score:93},
+  {t:'Your Nervous System Will Thank You For This',cat:'Healing',score:91},
+  {t:'I Played This For My Anxious Friend. Watch What Happened.',cat:'Healing',score:89},
+  {t:'The #1 Sound For Stress Relief According To 50,000 Listeners',cat:'Healing',score:92},
+  {t:'Why Therapists Are Now Using Didgeridoo Frequencies',cat:'Healing',score:88},
+  {t:'This Is What Healing Sounds Like (73Hz Didgeridoo)',cat:'Healing',score:87},
+  {t:'Stop Scrolling. You Need To Hear This.',cat:'Healing',score:90},
+  {t:'The Sound That Quiets Your Mind In Under 60 Seconds',cat:'Healing',score:93},
+  {t:'528Hz Didgeridoo — DNA Repair Frequency',cat:'Healing',score:91},
+  {t:'If You Have Anxiety, You Need To Listen To This',cat:'Healing',score:94},
+  {t:'The Didgeridoo Sound That Actually Lowers Cortisol',cat:'Healing',score:89},
+  {t:'I Cannot Explain Why This Sound Makes People Cry',cat:'Healing',score:92},
+  {t:'Your Brain On Didgeridoo Frequencies (The Science Is Wild)',cat:'Healing',score:88},
+  {t:'This Frequency Reaches Parts Of Your Brain Music Can Not',cat:'Healing',score:86},
+  // More 1 Hour titles
+  {t:'1 Hour Didgeridoo Healing — No Ads, No Interruptions',cat:'Healing 1 Hour',score:97},
+  {t:'Sleep Deeply With 1 Hour Of 432Hz Didgeridoo',cat:'Healing 1 Hour',score:95},
+  {t:'1 Hour Continuous Didgeridoo For Deep Meditation',cat:'Healing 1 Hour',score:94},
+  {t:'The Only Didgeridoo Sleep Video You Will Ever Need',cat:'Healing 1 Hour',score:96},
+  {t:'1 Hour Didgeridoo For Anxiety Relief — No Talking',cat:'Healing 1 Hour',score:93},
+  {t:'Fall Asleep In 10 Minutes With This 1 Hour Didgeridoo',cat:'Healing 1 Hour',score:95},
+  {t:'1 Hour Of The Most Relaxing Didgeridoo Sound Ever Recorded',cat:'Healing 1 Hour',score:94},
+  {t:'Study/Work/Sleep — 1 Hour Didgeridoo Frequency Bath',cat:'Healing 1 Hour',score:91},
+  {t:'1 Hour 528Hz Didgeridoo — Healing While You Sleep',cat:'Healing 1 Hour',score:93},
+  {t:'The 1 Hour Didgeridoo Video That Replaced My Sleep Medication',cat:'Healing 1 Hour',score:92},
+];
+
+var titleFilter='all';
+function setTitleEra(e,btn){
+  titleEraFilter=e;
+  ['tEraAll','tEraNew','tEraOld'].forEach(function(id){var el=document.getElementById(id);if(el)el.classList.remove('on');});
+  if(btn) btn.classList.add('on');
+  genTitles();
+}
+function setTitleFilter(f,btn){
+  titleFilter=f;
+  btn.closest('.filter-bar').querySelectorAll('.flt-btn').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+  genTitles();
+}
+
+var titleEraFilter='all';
+function setTitleEra(e,btn){
+  titleEraFilter=e;
+  ['titleEraAll','titleEraNew','titleEraOld'].forEach(function(id){var el=document.getElementById(id);if(el)el.classList.remove('on');});
+  if(btn) btn.classList.add('on');
+  genTitles();
+}
+function genTitles(){
+  var search=(document.getElementById('titleSearch')||{value:''}).value.toLowerCase();
+  var list=TITLE_BANK.filter(function(t){
+    if(titleFilter!=='all'&&t.cat!==titleFilter) return false;
+    if(search && t.t.toLowerCase().indexOf(search)===-1) return false;
+    return true;
+  }).sort(function(a,b){return b.score-a.score;});
+  renderSugs(list);
+}
+
+
+
+function renderThumbGrid(){
+  var list=VIDEOS.filter(function(v){return tlFilter==='all'||v.cat===tlFilter;}).sort(function(a,b){return b.ctr-a.ctr;});
+  document.getElementById('thumbGrid').innerHTML=list.map(function(v){
+    var hasText=v.notes&&v.notes.toLowerCase().includes('text');
+    return'<div class="thumb-card" onclick="window.open(\'https://youtube.com/watch?v='+v.id+'\',\'_blank\')">'
+      +'<img class="thumb-img" src="https://img.youtube.com/vi/'+v.id+'/mqdefault.jpg" loading="lazy" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'"/>'
+      +'<div class="thumb-img-placeholder" style="display:none">'+tci(v.cat)+'</div>'
+      +'<div class="thumb-info">'
+      +(hasText?'<span class="text-thumb-badge">TEXT THUMB</span>':'')
+      +'<div class="thumb-title">'+v.title+'</div>'
+      +'<div class="thumb-meta"><span class="thumb-ctr" style="color:'+scoreColor(v.ctr*10)+'">'+v.ctr+'% CTR</span><span class="pill '+tcp(v.cat)+'">'+tci(v.cat)+'</span></div>'
+      +'</div></div>';
+  }).join('');
+}
+
+// ═══ CONTENT QUEUE (Kanban) ═══════════════════════════════════════════
+function renderQueue(){
+  var rw=runway();
+  var cls=rw.days<=7?'var(--red)':rw.days<=14?'var(--orange)':'var(--green)';
+  document.getElementById('queueRunway').innerHTML=
+    '<div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap">'
+    +'<div style="font-size:2.5rem;font-weight:800;color:'+cls+';font-family:\'JetBrains Mono\',monospace">'+rw.days+'d</div>'
+    +'<div><div style="font-size:.72rem;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.08em">Content Runway</div>'
+    +'<div style="font-size:.85rem;color:var(--text2);margin-top:.15rem">'+rw.ready+' videos ready to schedule · 1 post every 2 days</div></div>'
+    +(rw.days<=14?'<div class="alert-box" style="margin:0;flex:1">🚨 Film session needed urgently</div>':'')
+    +'</div>';
+
+  var stages=[
+    {key:'Ready',label:'Ready to Schedule',color:'var(--gold)'},
+    {key:'Scheduled',label:'Scheduled with SEO',color:'var(--blue)'},
+    {key:'Live',label:'Live (Recent)',color:'var(--green)'},
+    {key:'Repost',label:'Added to Repost List',color:'var(--purple)'},
+  ];
+
+  document.getElementById('kanbanBoard').innerHTML=stages.map(function(st){
+    var cards=QUEUE.filter(function(q){return q.stage===st.key;});
+    return'<div class="k-col" id="col-'+st.key+'" ondragover="event.preventDefault()" ondrop="dropCard(event,\''+st.key+'\')"><div class="k-col-hd" style="border-top:3px solid '+st.color+'"><span>'+st.label+'</span><span class="k-count">'+cards.length+'</span></div>'
+      +'<div class="k-cards" id="cards-'+st.key+'">'
+      +cards.map(function(c){
+        return'<div class="k-card" draggable="true" id="kc-'+c.id+'" ondragstart="dragCard(event,\''+c.id+'\')"><div style="display:flex;align-items:flex-start;justify-content:space-between;gap:.3rem"><div class="k-priority-dot k-priority-'+c.priority+'"></div><div style="flex:1"><div class="k-card-title">'+c.title+'</div>'+(c.file?'<div style="font-size:.63rem;color:var(--text3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">\u{1F4C1} '+c.file+'</div>':'')+'</div><button onclick="event.stopPropagation();deleteQueueCard(\''+c.id+'\')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:.85rem;line-height:1;padding:.1rem .2rem;flex-shrink:0" title="Delete">✕</button></div><div style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center"><span class="pill '+tcp(c.type)+'">'+tci(c.type)+' '+c.type+'</span>'+(c.notes?'<span style="font-size:.65rem;color:var(--text3)">'+c.notes+'</span>':'')+'</div></div>';
+      }).join('')
+      +'</div></div>';
+  }).join('');
+}
+
+var dragId=null;
+function deleteQueueCard(id){
+  if(!confirm('Delete this video from the queue?')) return;
+  var idx=QUEUE.findIndex(function(x){return x.id===id;});
+  if(idx===-1) return;
+  var removed=QUEUE.splice(idx,1)[0];
+  // Delete from Supabase too
+  fetch('/api/data?table=queue&id='+id,{method:'DELETE'}).catch(function(){});
+  pushUndo('Deleted "'+removed.title.substring(0,20)+'…"',function(){QUEUE.push(removed);saveQ(removed);renderQueue();});
+  renderQueue();showToast('Deleted from queue');
+}
+function dragCard(e,id){dragId=id;e.dataTransfer.effectAllowed='move';}
+function dropCard(e,stage){
+  if(!dragId)return;
+  var q=QUEUE.find(function(x){return x.id===dragId;});
+  if(!q)return;
+  var oldStage=q.stage;
+  q.stage=stage;saveQ(q);
+  pushUndo('Moved "'+q.title.substring(0,20)+'…" to '+stage,function(){q.stage=oldStage;saveQ(q);renderQueue();});
+  renderQueue();showToast('Moved to '+stage);
+  dragId=null;
+}
+
+function addQueueCard(){
+  var title=prompt('Video title:');
+  if(!title)return;
+  var type=prompt('Type (High-Energy / Healing / Healing 1 Hour):','Healing');
+  var id='q'+Date.now();
+  QUEUE.push({id:id,title:title,stage:'Ready',type:type||'Healing',priority:'med',notes:''});
+  saveQ({id:id,title:title,stage:'Ready',type:type||'Healing',priority:'med',notes:'',_new:true});
+  renderQueue();showToast('Added: '+title);
+}
+
+// ═══ FILMING ═══════════════════════════════════════════════════════════
+function renderFilming(){
+  var rw=runway();
+  var html='';
+  if(rw.days<=14) html+='<div class="alert-box">🚨 URGENT: Content ends in '+rw.days+' days. Film NOW — you need 3 weeks lead time (film + sound engineer + Carl edits + SEO).</div>';
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">';
+  html+='<div class="card"><div class="card-label">📊 Current Status</div>';
+  html+=dr3('Content runway',rw.days+'d',rw.days<=7?'r':rw.days<=14?'o':'g');
+  html+=dr3('Videos ready to post',rw.ready.toString());
+  html+=dr3('Latest safe film date',rw.days>21?'In '+(rw.days-21)+'d':'OVERDUE',rw.days<=21?'r':'g');
+  html+=dr3('Time needed','3 weeks (film → sound → edit → SEO)');
+  html+='</div>';
+  html+='<div class="card"><div class="card-label">🎯 What to Film Next</div>';
+  [{song:'Elephant Anyuta C# — Healing style',why:'This key/model not yet in healing content — high potential'},{song:'New collab with musician (High Energy)',why:'Your collab content gets 7.8%+ CTR — highest in energy category'},{song:'Gypsy D — Healing',why:'Healing Gypsy D missing from pipeline entirely'},{song:'Anyuta C — Text Thumbnail Test',why:'Old text thumbs got 8–10% CTR — test same content, new thumb style'}].forEach(function(s){
+    html+='<div style="padding:.5rem 0;border-bottom:1px solid var(--border)"><div style="font-size:.88rem;font-weight:700">'+s.song+'</div><div style="font-size:.78rem;color:var(--text3);margin-top:.15rem">'+s.why+'</div></div>';
+  });
+  html+='</div></div>';
+  html+='<div class="card"><div class="card-label">📅 Production Timeline</div>';
+  [{l:'Film session',d:'Today (overdue)',c:'var(--red)'},{l:'Sound engineer',d:'Film + 3 days',c:'var(--orange)'},{l:'Carl edits video',d:'Sound + 7 days',c:'var(--gold)'},{l:'SEO + thumbnail',d:'Edit + 2 days',c:'var(--blue)'},{l:'Schedule & post',d:'SEO + 1 day',c:'var(--green)'}].forEach(function(t){
+    html+='<div style="display:flex;align-items:center;gap:.85rem;padding:.5rem 0;border-bottom:1px solid var(--border)"><div style="width:8px;height:8px;border-radius:50%;background:'+t.c+';flex-shrink:0"></div><div style="flex:1;font-size:.85rem;font-weight:600">'+t.l+'</div><div style="font-size:.85rem;font-weight:700;color:'+t.c+'">'+t.d+'</div></div>';
+  });
+  html+='</div>';
+  document.getElementById('filmingContent').innerHTML=html;
+}
+
+// ═══ EDIT QUEUE (Carl) ═══════════════════════════════════════════════
+function renderEdit(){
+  var toEdit=QUEUE.filter(function(q){return q.stage==='Need Sound'||q.stage==='Ready';});
+  var html='<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">';
+  html+='<div class="card"><div class="card-label">✂️ Carl\'s Edit Queue</div>';
+  toEdit.forEach(function(q,i){
+    html+='<div style="display:flex;align-items:center;gap:.75rem;padding:.5rem 0;border-bottom:1px solid var(--border)">'
+      +'<span style="font-size:.85rem;font-weight:800;color:var(--text3);min-width:1.5rem;font-family:\'JetBrains Mono\',monospace">'+(i+1)+'</span>'
+      +'<div style="flex:1"><div style="font-size:.85rem;font-weight:600">'+q.title+'</div><div style="font-size:.75rem;color:var(--text3);margin-top:.1rem">'+q.stage+'</div></div>'
+      +'<span class="pill '+tcp(q.type)+'">'+tci(q.type)+'</span>'
+      +'<span class="pill '+(q.stage==='Need Sound'?'p-red':'p-gold')+'">'+(q.stage==='Need Sound'?'🔊 Sound needed':'✓ Ready')+'</span>'
+      +'</div>';
+  });
+  html+='</div>';
+  html+='<div class="card"><div class="card-label">📋 Carl\'s Notes</div>'
+    +'<div style="display:flex;flex-direction:column;gap:.65rem;font-size:.85rem;line-height:1.7">'
+    +'<div style="padding:.65rem;background:var(--s2);border-radius:6px"><strong>Reels:</strong> Every long-form needs a 30–60s reel. Use the peak sound moment.</div>'
+    +'<div style="padding:.65rem;background:var(--s2);border-radius:6px"><strong>1-Hour loops:</strong> Crossfade at loop point. No visible cut. Export 4K.</div>'
+    +'<div style="padding:.65rem;background:var(--s2);border-radius:6px"><strong>Thumbnail priority:</strong> Test Style C (text overlay, person to side) on Healing videos — old text thumbs got 8–10% CTR. Try it.</div>'
+    +'<div style="padding:.65rem;background:var(--s2);border-radius:6px"><strong>1-Hour thumbnails:</strong> Try SEO keywords in the title: Study / Sleep / Focus / Deep Work.</div>'
+    +'</div></div></div>';
+  document.getElementById('editContent').innerHTML=html;
+}
+
+// ═══ INSTRUMENTS ═════════════════════════════════════════════════════
+function renderInstr(){
+  var overdue=INSTRUMENTS.filter(function(i){
+    if(!i.deadline||i.deadline==='—')return false;
+    return new Date(i.deadline)<TODAY;
+  });
+  var html='';
+  if(overdue.length) html+='<div class="alert-box" style="margin-bottom:1rem">⚠️ '+overdue.length+' instrument(s) past deadline: '+overdue.map(function(i){return'#'+i.id+' '+i.model+i.note+' ('+i.client+')';}).join(', ')+'</div>';
+
+  var stages=['Built','Painted','Painting','Ready for Paint','Printed'];
+  html+='<div class="stat-grid stat-grid-4" style="margin-bottom:1.25rem">'+stages.slice(0,4).map(function(st){
+    var n=INSTRUMENTS.filter(function(i){return i.stage===st;}).length;
+    return sc2(n,st,'var(--text)');
+  }).join('')+'</div>';
+
+  html+='<div class="table-wrap"><table><thead><tr><th>#</th><th>Model</th><th>Note</th><th>Color</th><th>Stage</th><th>Location</th><th>Assignee</th><th>Deadline</th><th>Client</th><th>Type</th><th>Comments</th></tr></thead><tbody>';
+  INSTRUMENTS.forEach(function(instr){
+    var overD=instr.deadline&&instr.deadline!=='—'&&new Date(instr.deadline)<TODAY;
+    var soonD=instr.deadline&&instr.deadline!=='—'&&!overD&&(new Date(instr.deadline)-TODAY)/86400000<7;
+    html+='<tr>';
+    html+='<td style="font-family:\'JetBrains Mono\',monospace;color:var(--text3)">#'+instr.id+'</td>';
+    ['model','note','color','location','assignee'].forEach(function(f){
+      html+='<td><input class="cell-edit" value="'+( instr[f]||'').replace(/"/g,'&quot;')+'" onblur="updateInstr('+instr.id+',\''+f+'\',this.value)" onkeydown="if(event.key===\'Enter\')this.blur()"/></td>';
+    });
+    // Stage dropdown
+    html+='<td><select onchange="updateInstr('+instr.id+',\'stage\',this.value)" style="background:var(--s3);border:1px solid var(--border);color:var(--text);font-family:\'Plus Jakarta Sans\',sans-serif;font-size:.8rem;padding:.2rem .4rem;border-radius:4px;outline:none">'
+      +['Built','Painted','Painting','Ready for Paint','Printed'].map(function(s){return'<option value="'+s+'"'+(instr.stage===s?' selected':'')+'>'+s+'</option>';}).join('')+'</select></td>';
+    html+='<td><input class="cell-edit '+(overD?'overdue':soonD?'due-soon':'')+'" value="'+(instr.deadline||'—')+'" onblur="updateInstr('+instr.id+',\'deadline\',this.value)" style="max-width:90px"/></td>';
+    html+='<td><input class="cell-edit" value="'+(instr.client||'').replace(/"/g,'&quot;')+'" onblur="updateInstr('+instr.id+',\'client\',this.value)"/></td>';
+    html+='<td><span class="pill '+(instr.type==='Client'?'p-gold':instr.type==='LSM'?'p-blue':'p-green')+'">'+instr.type+'</span></td>';
+    html+='<td><input class="cell-edit" value="'+(instr.comments||'').replace(/"/g,'&quot;')+'" onblur="updateInstr('+instr.id+',\'comments\',this.value)" style="max-width:180px"/></td>';
+    html+='</tr>';
+  });
+  html+='</tbody></table></div>';
+  document.getElementById('instrContent').innerHTML=html;
+}
+
+function updateInstr(id,field,val){
+  var instr=INSTRUMENTS.find(function(x){return x.id===id;});if(!instr)return;
+  var old=instr[field];instr[field]=val;saveI(instr);
+  pushUndo('Instrument #'+id+' '+field,function(){instr[field]=old;saveI(instr);renderInstr();});
+  showToast('Saved #'+id+' '+field);
+}
+
+// ═══ VERTICAL CONTENT ═══════════════════════════════════════════════
+function renderVertical(){
+  var topEnergy=VIDEOS.filter(function(v){return v.cat==='High-Energy';}).sort(function(a,b){return b.ctr-a.ctr;}).slice(0,10);
+  var topHeal=VIDEOS.filter(function(v){return v.cat==='Healing';}).sort(function(a,b){return b.avgpct-a.avgpct;}).slice(0,10);
+  var all=[...topEnergy,...topHeal];
+  document.getElementById('verticalReposts').innerHTML='<div style="font-size:.78rem;color:var(--text3);margin-bottom:.75rem">Top clips ranked by CTR (Energy) and retention (Healing)</div>'
+    +all.map(function(v,i){
+      return'<div style="display:flex;align-items:center;gap:.75rem;padding:.45rem 0;border-bottom:1px solid var(--border)">'
+        +'<span style="font-size:.78rem;color:var(--text3);min-width:1.5rem;font-family:\'JetBrains Mono\',monospace">'+(i+1)+'</span>'
+        +'<img src="https://img.youtube.com/vi/'+v.id+'/default.jpg" style="width:50px;height:28px;object-fit:cover;border-radius:3px;flex-shrink:0"/>'
+        +'<span style="font-size:.8rem;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+v.title+'</span>'
+        +'<span style="font-size:.78rem;font-weight:800;color:var(--gold);font-family:\'JetBrains Mono\',monospace">'+v.ctr+'%</span>'
+        +'</div>';
+    }).join('');
+
+  var captions=['SOUND THAT SHOULD NOT EXIST… 🎵','This frequency does something to your brain 🧠','Wait for the moment at 0:32…','POV: you discover the world\'s most meditative instrument','This is not edited. This is real. 🔊','The #1 instrument for instant calm 🌿','Why does this feel like a whole body reset?','You NEED to hear this with headphones on 🎧'];
+  document.getElementById('captionFormulas').innerHTML='<div style="font-size:.78rem;color:var(--text3);margin-bottom:.75rem">Click to copy</div>'
+    +captions.map(function(c){
+      return'<div class="sug-card" onclick="navigator.clipboard.writeText(\''+c.replace(/'/g,"\\'")+'\')" title="Click to copy">'
+        +'<span style="font-size:.85rem">'+c+'</span><span style="color:var(--text3)">⎘</span></div>';
+    }).join('');
+}
+
+// ═══ CHAT ════════════════════════════════════════════════════════════
+var chatHistory=[];
+function sendChat(){
+  var input=document.getElementById('chatInput');
+  var msg=input.value.trim();if(!msg)return;
+  input.value='';input.style.height='auto';
+  var msgs=document.getElementById('chatMessages');
+  msgs.innerHTML+='<div class="chat-msg user"><div class="chat-who" style="color:var(--gold)">You</div>'+msg+'</div>';
+  msgs.innerHTML+='<div class="chat-msg ai" id="chatTyping"><div class="chat-who">Claude</div><div style="display:flex;gap:3px;align-items:center"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>';
+  msgs.scrollTop=msgs.scrollHeight;
+  chatHistory.push({role:'user',content:msg});
+
+  var context='You are Claude, the AI assistant embedded in the LSM Empire OS — a business dashboard for "Legendary Strawberry Man", a professional didgeridoo musician. The team: Shane (owner/musician), Sean (YouTube manager), Carl (video editor/thumbnails), Lydia (instrument logistics), Gal (Facebook campaigns).\n\nChannel stats: ~3 content types (High-Energy, Healing, Healing 1-Hour). Top CTR titles use "BREAK Your Brain", "INSTANT CALM", "Should NOT Be Possible" formulas. TEXT thumbnails have gotten 8-10% CTR. Channel avg CTR ~5.5%.\n\nBe concise, practical, and specific to LSM. When giving advice, think about what actually helps grow a YouTube music channel.';
+
+  fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:context,messages:chatHistory})})
+    .then(function(r){return r.json();})
+    .then(function(d){
+      var reply=d.content&&d.content[0]?d.content[0].text:'Sorry, I couldn\'t get a response. Try again.';
+      chatHistory.push({role:'assistant',content:reply});
+      var typing=document.getElementById('chatTyping');
+      if(typing)typing.outerHTML='<div class="chat-msg ai"><div class="chat-who">Claude</div>'+reply.replace(/\n/g,'<br/>')+'</div>';
+      msgs.scrollTop=msgs.scrollHeight;
+    }).catch(function(){
+      var typing=document.getElementById('chatTyping');
+      if(typing)typing.outerHTML='<div class="chat-msg ai"><div class="chat-who">Claude</div>Connection error — check your internet and try again.</div>';
+    });
+}
+
+// ═══ GOOGLE CALENDAR ════════════════════════════════════════════════
+function createGCalReminderForVideo(ytId,title){
+  var now=new Date();
+  var reminder=new Date(now.getTime()+50*60*60*1000); // 50 hours
+  var start=reminder.toISOString().replace(/[-:]/g,'').split('.')[0]+'Z';
+  var end=new Date(reminder.getTime()+30*60*1000).toISOString().replace(/[-:]/g,'').split('.')[0]+'Z';
+  var gcalUrl='https://calendar.google.com/calendar/render?action=TEMPLATE'
+    +'&text='+encodeURIComponent('Check 48h data: '+title)
+    +'&dates='+start+'/'+end
+    +'&details='+encodeURIComponent('Enter 48h data in LSM Empire OS for: https://youtube.com/watch?v='+ytId+'\n\nGo to: + 48h Data button at top of app.')
+    +'&location=LSM Empire OS';
+  window.open(gcalUrl,'_blank');
+  showToast('Opening Google Calendar to create 48h reminder…');
+}
+function createGCalReminder(){createGCalReminderForVideo('','latest upload');}
+
+// ═══ INTEGRATIONS ═══════════════════════════════════════════════════
+var INTEGRATIONS=[
+  {key:'shopify',icon:'🛒',name:'Shopify',desc:'Sales, orders, inventory, revenue',status:'Not connected',placeholder:'shpat_xxxxxxxxxxxx'},
+  {key:'youtube',icon:'▶️',name:'YouTube Analytics API',desc:'Auto-pull CTR, AVD, views — no manual entry',status:'Not connected',placeholder:'AIzaSy...'},
+  {key:'facebook',icon:'📘',name:'Facebook Ads (Gal)',desc:'Campaign spend, ROAS, top creatives — uses Gal\'s Business Manager token',status:'Not connected',placeholder:'EAAxxxxxxxxxx'},
+  {key:'instagram',icon:'📸',name:'Instagram Insights',desc:'Reel performance, reach, saves',status:'Not connected',placeholder:'IGxxxxxxxxxx'},
+  {key:'tiktok',icon:'🎵',name:'TikTok Analytics',desc:'Video performance on TikTok',status:'Not connected',placeholder:'ttxxxxxxxxxx'},
+];
+
+function renderIntegrations(){
+  var savedKeys=JSON.parse(localStorage.getItem('lsm_keys')||'{}');
+  document.getElementById('integrationsList').innerHTML=INTEGRATIONS.map(function(intg){
+    var val=savedKeys[intg.key]||'';
+    var connected=val.length>5;
+    return'<div class="integration-card">'
+      +'<div class="int-icon">'+intg.icon+'</div>'
+      +'<div class="int-info"><div class="int-name">'+intg.name+'</div><div class="int-status">'+intg.desc+'</div></div>'
+      +'<div style="display:flex;gap:.5rem;align-items:center">'
+      +(connected?'<span class="int-connected">✓ Connected</span>':'')
+      +'<input class="int-key-input" type="password" placeholder="'+intg.placeholder+'" value="'+val+'" onchange="saveKey(\''+intg.key+'\',this.value)" style="width:180px"/>'
+      +'<button class="btn btn-outline btn-xs" onclick="saveKey(\''+intg.key+'\',this.previousElementSibling.value)">Save</button>'
+      +'</div></div>';
+  }).join('');
+}
+
+function saveKey(key,val){
+  var d=JSON.parse(localStorage.getItem('lsm_keys')||'{}');
+  d[key]=val;localStorage.setItem('lsm_keys',JSON.stringify(d));
+  renderIntegrations();showToast('Saved API key for '+key);
+}
+
+// ═══ 48H MODAL ═══════════════════════════════════════════════════════
+function showModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-bg').forEach(function(m){m.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});});
+
+// Global decisions log
+var DECISIONS = [];
+
+function prefill48h(id){
+  document.getElementById('m-id').value=id;
+  var v=VIDEOS.find(function(x){return x.id===id;});
+  if(v){
+    if(v.ctr)document.getElementById('m-ctr').value=v.ctr;
+    if(v.avd_sec)document.getElementById('m-avd').value=v.avd_sec;
+    if(v.avgpct)document.getElementById('m-avg').value=v.avgpct;
+    if(v.views)document.getElementById('m-views').value=v.views;
+    if(v.notes)document.getElementById('m-notes').value=v.notes;
+  }
+  showModal('modal48h');
+}
+
+function save48h(){
+  var sel=document.getElementById('m-video-select'); var id=sel?sel.value:'';
+  if(!id){alert('Please select a video from the dropdown');return;}
+  var v=VIDEOS.find(function(x){return x.id===id;});
+  if(!v){
+    // Create a new entry for this video (not yet in hardcoded list)
+    v={id:id,title:'Video '+id,cat:'High-Energy',era:'serious',days:2,
+       ctr:0,avd_sec:0,avgpct:0,views:0,dur:300,format:'Performance',decision:'Monitor',notes:''};
+    VIDEOS.push(v);
+  }
+  var avdRaw=document.getElementById('m-avd').value.trim();
+  var avd;
+  if(avdRaw.indexOf(':')>-1){var pts=avdRaw.split(':');avd=parseInt(pts[0])*60+parseInt(pts[1]||0);}
+  else{avd=parseInt(avdRaw)||v.avd_sec;}
+  var oldV=Object.assign({},v);
+  v.ctr=parseFloat(document.getElementById('m-ctr').value)||v.ctr;
+  v.views=parseInt(document.getElementById('m-views').value)||v.views;
+  v.avd_sec=avd;
+  v.avgpct=parseFloat(document.getElementById('m-avg').value)||v.avgpct;
+  v.imp48=parseInt(document.getElementById('m-imp').value)||0;
+  v.browse=parseFloat(document.getElementById('m-browse').value)||0;
+  v.subs48=parseInt(document.getElementById('m-subs').value)||0;
+  v.notes=document.getElementById('m-notes').value||v.notes;
+  v.decision=autoDecision(v);
+  v.lastEntry48=new Date().toISOString();
+  saveV(v);
+  pushUndo('48h data for "'+v.title.substring(0,20)+'…"',function(){Object.assign(v,oldV);saveV(v);});
+  // Store in decisions log
+  var newDec={
+    videoId:id, title:v.title, decision:v.decision,
+    score:calcScore(v), ctr:v.ctr, avd_sec:v.avd_sec,
+    avgpct:v.avgpct, views:v.views, imp48:v.imp48,
+    browse:v.browse, subs48:v.subs48, notes:v.notes,
+    date:new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}),
+    ts:Date.now()
+  };
+  DECISIONS.unshift(newDec);
+  try{localStorage.setItem('lsm_decisions',JSON.stringify(DECISIONS));}catch(e){}
+  // Also persist to Supabase
+  saveDecisionToSupabase(newDec);
+  updateDecisionsBadge();
+  closeModal('modal48h');
+  reRender();
+  // Navigate to decisions page to show result
+  nav('decisions');
+}
+
+async function saveDecisionToSupabase(dec){
+  try{
+    await fetch('/api/data',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({table:'decisions',record:dec})
+    });
+  }catch(e){console.warn('Decision not saved to DB:',e);}
+}
+
+async function loadDecisionsFromSupabase(){
+  try{
+    var res=await fetch('/api/data?table=decisions&order=ts.desc&limit=100');
+    var data=await res.json();
+    if(data&&data.length){
+      DECISIONS=data;
+      try{localStorage.setItem('lsm_decisions',JSON.stringify(DECISIONS));}catch(e){}
+      updateDecisionsBadge();
+      return true;
+    }
+  }catch(e){console.warn('Could not load decisions from DB');}
+  return false;
+}
+
+function loadDecisions(){
+  // Try localStorage first for instant load
+  try{var d=localStorage.getItem('lsm_decisions');if(d)DECISIONS=JSON.parse(d);}catch(e){}
+  updateDecisionsBadge();
+  // Then sync from Supabase (authoritative source)
+  loadDecisionsFromSupabase().then(function(loaded){
+    if(loaded)renderDecisions();
+  });
+}
+
+function updateDecisionsBadge(){
+  var el=document.getElementById('nb-decisions');
+  if(el)el.textContent=DECISIONS.length;
+}
+
+
+// ═══ DECISIONS LOG ═══════════════════════════════════════════════════════
+function renderDecisions(){
+  var el=document.getElementById('decisionsList');
+  if(!el)return;
+  if(!DECISIONS.length){
+    el.innerHTML='<div class="card" style="text-align:center;padding:2.5rem;color:var(--text3)"><div style="font-size:2rem;margin-bottom:.75rem">🎯</div><div style="font-size:.95rem;font-weight:600;margin-bottom:.5rem">No decisions yet</div><div style="font-size:.82rem">Enter 48h data after each upload and the decision will appear here.</div><button class="btn btn-gold" style="margin-top:1.25rem" onclick="showModal(&quot;modal48h&quot;)">+ Enter First 48h Data</button></div>';
+    return;
+  }
+  var html='';
+  DECISIONS.forEach(function(d,i){
+    var decClass=d.decision==='Repost Candidate'?'var(--green)':d.decision==='Monitor'?'var(--gold)':'var(--red)';
+    var decIcon=d.decision==='Repost Candidate'?'✅':d.decision==='Monitor'?'👁️':d.decision==='Change Thumbnail'?'🖼️':'🎣';
+    var why=decisionWhy(d);
+    html+='<div class="card" style="margin-bottom:.85rem;cursor:pointer" onclick="showDecisionDetail('+i+')">';
+    html+='<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap">';
+    html+='<div style="flex:1;min-width:0">';
+    html+='<div style="font-size:.88rem;font-weight:700;color:var(--text);margin-bottom:.3rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+d.title+'</div>';
+    html+='<div style="font-size:.75rem;color:var(--text3)">'+d.date+'</div>';
+    html+='</div>';
+    html+='<div style="text-align:right;flex-shrink:0">';
+    html+='<div style="font-size:.82rem;font-weight:700;color:'+decClass+'">'+decIcon+' '+d.decision+'</div>';
+    html+='<div style="font-size:.78rem;color:var(--text3);margin-top:.15rem">Score: <strong style="color:'+scoreColor(d.score)+'">'+d.score+'</strong></div>';
+    html+='</div></div>';
+    html+='<div style="margin-top:.75rem;padding:.65rem .85rem;background:var(--s1);border-radius:8px;font-size:.8rem;color:var(--text2);line-height:1.6"><strong style="color:var(--gold)">Why:</strong> '+why+'</div>';
+    html+='<div style="display:flex;gap:1.5rem;margin-top:.75rem;flex-wrap:wrap">';
+    var stats=[['CTR',d.ctr+'%'],['AVD',avdStr(d.avd_sec)],['Avg%',d.avgpct+'%'],['Views',fmt(d.views)]];
+    if(d.imp48)stats.push(['Impressions',fmt(d.imp48)]);
+    if(d.subs48)stats.push(['Subs+','+'+d.subs48]);
+    stats.forEach(function(s){html+='<div style="font-size:.75rem"><div style="color:var(--text3)">'+s[0]+'</div><div style="font-weight:700;color:var(--text)">'+s[1]+'</div></div>';});
+    html+='</div>';
+    if(d.notes)html+='<div style="margin-top:.6rem;font-size:.78rem;color:var(--text3);font-style:italic">📝 '+d.notes+'</div>';
+    html+='</div>';
+  });
+  el.innerHTML=html;
+}
+
+function decisionWhy(d){
+  if(d.decision==='Repost Candidate')return'Both CTR and AVD are above your channel average — this video hooks viewers AND keeps them watching. High repost potential.';
+  if(d.decision==='Change Thumbnail')return'AVD is good (people watch once they click) but CTR is low. The content works but not enough people are clicking. Try a new thumbnail or title.';
+  if(d.decision==='Check Hook')return'CTR is good (people click) but AVD is low. They click but leave early. The first 30 seconds are not delivering on the promise. Fix the hook.';
+  return'Both CTR and AVD are below average. Try a new thumbnail first - the fastest lever. Then review the hook if CTR improves.';
+}
+
+function showDecisionDetail(i){
+  var d=DECISIONS[i];
+  if(!d)return;
+  var why=decisionWhy(d);
+  var decClass=d.decision==='Repost Candidate'?'var(--green)':d.decision==='Monitor'?'var(--gold)':'var(--red)';
+  var msg='<div style="font-size:1.1rem;font-weight:700;color:'+decClass+';margin-bottom:.5rem">'+d.decision+'</div><div style="font-size:.85rem;color:var(--text2);line-height:1.7;margin-bottom:.75rem">'+why+'</div><div style="font-size:.8rem;color:var(--text3)">'+d.date+' · Score '+d.score+'</div>';
+  var modal=document.getElementById('modal-decision-detail');
+  if(!modal){
+    modal=document.createElement('div');
+    modal.id='modal-decision-detail';
+    modal.className='modal-bg';
+    modal.innerHTML='<div class="modal"><div class="modal-hd"><span class="modal-title" id="mdd-title"></span><button class="modal-close" onclick="closeModal(&quot;modal-decision-detail&quot;)">✕</button></div><div class="modal-body" id="mdd-body"></div><div class="modal-ft"><button class="btn btn-outline" onclick="closeModal(&quot;modal-decision-detail&quot;)">Close</button></div></div>';
+    modal.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+    document.body.appendChild(modal);
+  }
+  document.getElementById('mdd-title').textContent=d.title.substring(0,40)+(d.title.length>40?'…':'');
+  document.getElementById('mdd-body').innerHTML=msg;
+  showModal('modal-decision-detail');
+}
+
+
+// ═══ MONTHLY PLANNER ════════════════════════════════════════════════════
+var plannerDate = new Date(2026,2,1);
+var plannerFilter = 'all';
+var plannerSelected = null;
+
+function plannerSelectVid(vid){ showPlannerDetail(vid); }
+function closePlannerDetail(){ plannerSelected=null; var el=document.getElementById('plannerDetail'); if(el) el.style.display='none'; renderPlanner(); }
+function prefill48hFromPlanner(vid){ prefill48h(vid); }
+
+function setPlannerFilter(f,btn){
+  plannerFilter=f;
+  ['plannerToggleAll','plannerToggleNew','plannerToggleOld'].forEach(function(id){var e=document.getElementById(id);if(e)e.classList.remove('on');});
+  if(btn) btn.classList.add('on');
+  renderPlanner();
+}
+function plannerPrevMonth(){ plannerDate.setMonth(plannerDate.getMonth()-1); renderPlanner(); }
+function plannerNextMonth(){ plannerDate.setMonth(plannerDate.getMonth()+1); renderPlanner(); }
+
+function getFilteredVideos(){
+  return VIDEOS.filter(function(v){
+    var vp=getPosted(v);
+    if(plannerFilter==='new') return !vp || vp>='2025-10-01';
+    if(plannerFilter==='old') return vp && vp<'2025-10-01';
+    return true;
+  });
+}
+
+function getEligibleReposts(){
+  var now=Date.now();
+  return getFilteredVideos().filter(function(v){
+    if(v.era!=='serious') return false;
+    var score=calcScore(v); if(score<55) return false;
+    var minDays=score>=75?60:90;
+    var vp2=getPosted(v); var postedMs=vp2?new Date(vp2).getTime():0;
+    return (now-postedMs)/86400000>=minDays;
+  }).sort(function(a,b){return calcScore(b)-calcScore(a);});
+}
+
+
+
+
+function showPlannerDetail(videoId){
+  plannerSelected=videoId;
+  var panel=document.getElementById('plannerDetail');
+  if(!videoId){ if(panel) panel.style.display='none'; renderPlanner(); return; }
+  var v=VIDEOS.find(function(x){return x.id===videoId;});
+  if(!v){ if(panel) panel.style.display='none'; return; }
+  panel.style.display='block';
+  renderDetailPanel(v,panel);
+  renderPlanner();
+  panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function renderDetailPanel(v, panel){
+  var score=calcScore(v);
+  var avdFmt=avdStr(v.avd_sec||0);
+  var isNeeds=needs48h(v);
+  var sc=scoreColor(score);
+  var titles=TITLE_BANK.filter(function(t){return t.cat===v.cat;}).slice(0,4);
+  var desc=v.cat==='Healing'
+    ?'Deep healing didgeridoo frequencies for stress relief and relaxation.\n\nThis video features healing frequencies.\n\nPerfect for: meditation, sleep, anxiety relief, deep focus\n\nSubscribe for new healing frequencies every 2 days\n#didgeridoo #healing #frequency #meditation #432hz'
+    :v.cat==='High-Energy'
+    ?'Raw didgeridoo power — unfiltered, live performance energy.\n\nFilmed live with no editing tricks. Just pure didgeridoo.\n\nSubscribe for new videos every 2 days\n#didgeridoo #livemusic #viral #musicperformance'
+    :'1 hour of continuous didgeridoo healing frequencies. No ads. No interruptions.\n\nSet a timer and let this run while you sleep or meditate.\n\n#didgeridoo #sleep #meditation #1hour #healing';
+  var tags=v.cat==='Healing'
+    ?'didgeridoo, healing frequencies, 432hz, stress relief, meditation music, sleep music, anxiety relief, deep relaxation, frequency healing, aboriginal music'
+    :v.cat==='High-Energy'
+    ?'didgeridoo, live music, aboriginal instrument, street performance, viral music, world music, unique instrument, circular breathing'
+    :'didgeridoo, sleep music, 1 hour meditation, healing frequencies, deep sleep, relaxation music, white noise alternative, meditation';
+
+  var d=document.createElement('div');
+
+  // Header row
+  var hdr=document.createElement('div');
+  hdr.style.cssText='display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1rem';
+  
+  var left=document.createElement('div');
+  left.style.cssText='display:flex;align-items:center;gap:.85rem';
+  
+  var thumb=document.createElement('img');
+  thumb.src='https://img.youtube.com/vi/'+v.id+'/mqdefault.jpg';
+  thumb.style.cssText='width:100px;height:56px;object-fit:cover;border-radius:6px;flex-shrink:0';
+  thumb.onerror=function(){this.style.opacity='0';};
+  left.appendChild(thumb);
+  
+  var titleBlock=document.createElement('div');
+  var titleEl=document.createElement('div');
+  titleEl.style.cssText='font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:.3rem';
+  titleEl.textContent=v.title;
+  titleBlock.appendChild(titleEl);
+  
+  var pillRow=document.createElement('div');
+  pillRow.style.cssText='display:flex;gap:.4rem;flex-wrap:wrap;align-items:center';
+  var pill=document.createElement('span');
+  pill.className='pill '+tcf(v.cat);
+  pill.textContent=tci(v.cat)+' '+v.cat;
+  pillRow.appendChild(pill);
+  var vPosted=getPosted(v); if(vPosted){var pd=document.createElement('span');pd.style.cssText='font-size:.72rem;color:var(--text3)';pd.textContent='Posted: '+vPosted;pillRow.appendChild(pd);}
+  if(isNeeds){var badge=document.createElement('span');badge.style.cssText='background:rgba(251,146,60,.2);color:var(--orange);font-size:.7rem;font-weight:700;padding:.15rem .4rem;border-radius:4px';badge.textContent='⚡ 48h data due!';pillRow.appendChild(badge);}
+  titleBlock.appendChild(pillRow);
+  left.appendChild(titleBlock);
+  hdr.appendChild(left);
+
+  var btns=document.createElement('div');
+  btns.style.cssText='display:flex;gap:.5rem;flex-wrap:wrap';
+  if(isNeeds){
+    var b48=document.createElement('button');
+    b48.className='btn btn-gold btn-sm';
+    b48.textContent='Enter 48h Data';
+    b48.onclick=function(){prefill48hFromPlanner(v.id);};
+    btns.appendChild(b48);
+  }
+  var byt=document.createElement('a');
+  byt.href='https://youtube.com/watch?v='+v.id;
+  byt.target='_blank';
+  byt.className='btn btn-outline btn-sm';
+  byt.textContent='▶ Watch';
+  btns.appendChild(byt);
+  var bcl=document.createElement('button');
+  bcl.className='btn btn-outline btn-sm';
+  bcl.textContent='✕ Close';
+  bcl.onclick=closePlannerDetail;
+  btns.appendChild(bcl);
+  hdr.appendChild(btns);
+  d.appendChild(hdr);
+
+  // Stats bar
+  var stats=[
+    {l:'Score',val:score,col:sc,bold:true},
+    {l:'CTR',val:(v.ctr||0)+'%'},
+    {l:'AVD',val:avdFmt},
+    {l:'Avg%',val:(v.avgpct||0)+'%'},
+    {l:'Views',val:(v.views||0).toLocaleString()},
+    {l:'Decision',val:v.decision||'—'}
+  ];
+  var statGrid=document.createElement('div');
+  statGrid.style.cssText='display:grid;grid-template-columns:repeat(6,1fr);gap:.5rem;margin-bottom:1rem';
+  stats.forEach(function(s){
+    var cell=document.createElement('div');
+    cell.style.cssText='background:var(--s3);border-radius:6px;padding:.5rem;text-align:center';
+    var val=document.createElement('div');
+    val.style.cssText='font-size:'+(s.bold?'1.1rem':'.85rem')+';font-weight:700;color:'+(s.col||'var(--text)');
+    val.textContent=s.val;
+    var lbl=document.createElement('div');
+    lbl.style.cssText='font-size:.63rem;color:var(--text3);margin-top:.1rem';
+    lbl.textContent=s.l;
+    cell.appendChild(val); cell.appendChild(lbl);
+    statGrid.appendChild(cell);
+  });
+  d.appendChild(statGrid);
+
+  // 3-col: Titles | Description | Tags
+  var cols=document.createElement('div');
+  cols.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem';
+
+  // Titles col
+  var tcol=document.createElement('div');
+  var th=document.createElement('div');
+  th.style.cssText='font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--text3);margin-bottom:.45rem';
+  th.textContent='💡 Title Ideas (click to copy)';
+  tcol.appendChild(th);
+  titles.forEach(function(t){
+    var ti=document.createElement('div');
+    ti.style.cssText='font-size:.76rem;background:var(--s3);border-radius:5px;padding:.4rem .6rem;margin-bottom:.3rem;cursor:pointer;color:var(--text2);transition:background .15s;line-height:1.4';
+    ti.title='Click to copy';
+    ti.textContent=t.t;
+    ti.onclick=function(){navigator.clipboard.writeText(t.t);this.style.background='var(--gold)';this.style.color='#fff';var el=this;setTimeout(function(){el.style.background='var(--s3)';el.style.color='var(--text2)';},900);};
+    tcol.appendChild(ti);
+  });
+  // Score info
+  if(v.ctr||v.avd_sec){
+    var perf=document.createElement('div');
+    perf.style.cssText='font-size:.68rem;color:var(--text3);margin-top:.5rem;padding:.4rem;background:var(--s3);border-radius:5px';
+    perf.textContent='Best test: '+(score>=75?'TEXT thumbnail on proven concept':'Test new hook angle against this CTR');
+    tcol.appendChild(perf);
+  }
+  cols.appendChild(tcol);
+
+  // Description col
+  var dcol=document.createElement('div');
+  var dh=document.createElement('div');
+  dh.style.cssText='font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--text3);margin-bottom:.45rem';
+  dh.textContent='📝 Description Template (click to copy)';
+  dcol.appendChild(dh);
+  var dtxt=document.createElement('div');
+  dtxt.style.cssText='font-size:.73rem;color:var(--text2);background:var(--s3);border-radius:5px;padding:.5rem .65rem;white-space:pre-wrap;cursor:pointer;max-height:140px;overflow-y:auto;line-height:1.5';
+  dtxt.title='Click to copy';
+  dtxt.textContent=desc;
+  dtxt.onclick=function(){navigator.clipboard.writeText(desc);this.style.background='var(--gold)';var el=this;setTimeout(function(){el.style.background='var(--s3)';},700);};
+  dcol.appendChild(dtxt);
+  cols.appendChild(dcol);
+
+  // Tags col
+  var tagcol=document.createElement('div');
+  var tagh=document.createElement('div');
+  tagh.style.cssText='font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--text3);margin-bottom:.45rem';
+  tagh.textContent='🏷️ Tags (click to copy)';
+  tagcol.appendChild(tagh);
+  var tagtxt=document.createElement('div');
+  tagtxt.style.cssText='font-size:.73rem;color:var(--text2);background:var(--s3);border-radius:5px;padding:.5rem .65rem;cursor:pointer;line-height:1.8';
+  tagtxt.title='Click to copy';
+  tagtxt.textContent=tags;
+  tagtxt.onclick=function(){navigator.clipboard.writeText(tags);this.style.background='var(--gold)';var el=this;setTimeout(function(){el.style.background='var(--s3)';},700);};
+  tagcol.appendChild(tagtxt);
+  cols.appendChild(tagcol);
+
+  d.appendChild(cols);
+  panel.innerHTML='';
+  panel.appendChild(d);
+}
+
+function tcf(cat){return cat==='Healing'?'pill-heal':cat==='High-Energy'?'pill-energy':'pill-hour';}
+
+function renderPlanner(){
+  var el=document.getElementById('plannerGrid');
+  var sugEl=document.getElementById('plannerSuggestions');
+  if(!el) return;
+
+  var year=plannerDate.getFullYear(), month=plannerDate.getMonth();
+  var months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var lbl=document.getElementById('plannerMonthLabel');
+  if(lbl) lbl.textContent=months[month]+' '+year;
+
+  var now=new Date();
+  var todayStr=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+  var firstDay=new Date(year,month,1).getDay();
+  var daysInMonth=new Date(year,month+1,0).getDate();
+
+  // Build posted map
+  var postedMap={};
+  getFilteredVideos().forEach(function(v){
+    var vpost=getPosted(v);
+    if(!vpost) return;
+    var d=new Date(vpost);
+    if(d.getFullYear()===year && d.getMonth()===month){
+      var k=d.getDate(); postedMap[k]=postedMap[k]||[]; postedMap[k].push(v);
+    }
+  });
+
+  var eligible=getEligibleReposts();
+  var usedSug={};
+
+  // Render grid
+  el.innerHTML='';
+  var dayNames=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  dayNames.forEach(function(dn){
+    var h=document.createElement('div');
+    h.style.cssText='font-size:.64rem;font-weight:700;color:var(--text3);padding:.3rem;text-align:center;background:var(--s1);border-radius:4px;margin-bottom:3px';
+    h.textContent=dn; el.appendChild(h);
+  });
+  for(var i=0;i<firstDay;i++){var emp=document.createElement('div');emp.style.minHeight='72px';el.appendChild(emp);}
+
+  for(var day=1;day<=daysInMonth;day++){
+    var dateStr=year+'-'+String(month+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+    var isToday=dateStr===todayStr;
+    var isFuture=dateStr>todayStr;
+    var cell=document.createElement('div');
+    cell.style.cssText='min-height:80px;border-radius:6px;padding:.35rem;cursor:pointer;transition:all .15s;border:1px solid var(--border);background:var(--s2)';
+
+    if(isToday) cell.style.borderColor='var(--gold)';
+
+    var dayLbl=document.createElement('div');
+    dayLbl.style.cssText='font-size:.68rem;font-weight:700;color:'+(isToday?'var(--gold)':'var(--text3)')+';margin-bottom:.2rem';
+    dayLbl.textContent=day+(isToday?' ●':'');
+    cell.appendChild(dayLbl);
+
+    if(postedMap[day]){
+      cell.style.background='rgba(204,120,92,.05)';
+      postedMap[day].forEach(function(v){
+        var isSelected=v.id===plannerSelected;
+        var isN48=needs48h(v);
+        var chip=document.createElement('div');
+        chip.style.cssText='font-size:.6rem;font-weight:600;padding:.1rem .28rem;border-radius:3px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;cursor:pointer;'
+          +'background:'+(isSelected?'var(--gold)':isN48?'rgba(251,146,60,.2)':'var(--goldbg)')
+          +';color:'+(isSelected?'#fff':isN48?'var(--orange)':'var(--gold)')
+          +';border:1px solid '+(isN48&&!isSelected?'var(--orange)':'transparent');
+        chip.title=v.title+(isN48?' — 48h data due!':'');
+        // Thumbnail + title chip
+        var chipInner=document.createElement('div');
+        chipInner.style.cssText='display:flex;align-items:center;gap:.25rem';
+        var thumb=document.createElement('img');
+        thumb.src='https://img.youtube.com/vi/'+v.id+'/mqdefault.jpg';
+        thumb.style.cssText='width:28px;height:16px;object-fit:cover;border-radius:2px;flex-shrink:0';
+        thumb.onerror=function(){this.style.opacity=0;this.style.width='0';this.style.marginRight='0';};
+        var titleSpan=document.createElement('span');
+        titleSpan.style.cssText='overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+        titleSpan.textContent=(isN48?'⚡ ':'')+v.title.substring(0,16);
+        chipInner.appendChild(thumb);
+        chipInner.appendChild(titleSpan);
+        chip.appendChild(chipInner);
+        (function(vid){chip.onclick=function(e){e.stopPropagation();showPlannerDetail(vid);};})(v.id);
+        cell.appendChild(chip);
+        if(!isSelected) cell.style.borderColor='var(--border2)';
+        if(isSelected) cell.style.borderColor='var(--gold)';
+      });
+    } else if(isFuture){
+      var diff=Math.round((new Date(dateStr)-now)/86400000);
+      if(diff>0 && diff%2===0){
+        var sug=eligible.filter(function(v){return !usedSug[v.id];})[0];
+        if(sug){
+          usedSug[sug.id]=true;
+          var sugChip=document.createElement('div');
+          sugChip.style.cssText='font-size:.58rem;font-weight:600;padding:.1rem .25rem;border-radius:3px;background:rgba(96,165,250,.1);color:var(--blue);border:1px dashed rgba(96,165,250,.4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;cursor:pointer';
+          sugChip.title='Suggested repost: '+sug.title;
+          sugChip.textContent='↩ '+sug.title.substring(0,14);
+          (function(sid){sugChip.onclick=function(e){e.stopPropagation();showPlannerDetail(sid);};})(sug.id);
+          // Add thumbnail then chip
+          var sugThumb=document.createElement('img');
+          sugThumb.src='https://img.youtube.com/vi/'+sug.id+'/mqdefault.jpg';
+          sugThumb.style.cssText='width:28px;height:16px;object-fit:cover;border-radius:2px;flex-shrink:0;display:block;margin-bottom:2px';
+          sugThumb.onerror=function(){this.style.opacity=0;};
+          cell.appendChild(sugThumb);
+          cell.appendChild(sugChip);
+          var scLabel=document.createElement('div');
+          scLabel.style.cssText='font-size:.55rem;color:var(--text3);margin-top:1px';
+          scLabel.textContent='Score '+calcScore(sug);
+          cell.appendChild(scLabel);
+          cell.style.borderColor='rgba(96,165,250,.2)';
+        }
+      }
+    }
+    cell.onclick=function(){showPlannerDetail(null);};
+    el.appendChild(cell);
+  }
+
+  // Upcoming suggestions list
+  sugEl.innerHTML='';
+  var used2={},count=0;
+  for(var d2=1;d2<=daysInMonth&&count<5;d2++){
+    var ds2=year+'-'+String(month+1).padStart(2,'0')+'-'+String(d2).padStart(2,'0');
+    if(ds2<=todayStr) continue;
+    var diff2=Math.round((new Date(ds2)-now)/86400000);
+    if(diff2<=0||diff2%2!==0) continue;
+    var sug2=eligible.filter(function(v){return !used2[v.id];})[0];
+    if(!sug2) break;
+    used2[sug2.id]=true; count++;
+    var row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:.75rem;padding:.6rem .85rem;background:var(--s2);border-radius:8px;margin-bottom:.4rem;cursor:pointer;border:1px solid var(--border);transition:border-color .15s';
+    row.onmouseover=function(){this.style.borderColor='var(--border2)';};
+    row.onmouseout=function(){this.style.borderColor='var(--border)';};
+    var img2=document.createElement('img');
+    img2.src='https://img.youtube.com/vi/'+sug2.id+'/mqdefault.jpg';
+    img2.style.cssText='width:48px;height:27px;object-fit:cover;border-radius:4px;flex-shrink:0';
+    img2.onerror=function(){this.style.opacity='0';};
+    row.appendChild(img2);
+    var info2=document.createElement('div');
+    info2.style.cssText='flex:1;min-width:0';
+    var t2=document.createElement('div');
+    t2.style.cssText='font-size:.8rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
+    t2.textContent=sug2.title;
+    var sc2=calcScore(sug2);
+    var sub2=document.createElement('div');
+    sub2.style.cssText='font-size:.7rem;color:var(--text3)';
+    sub2.textContent=sug2.cat+' · Score '+sc2+' · Post '+ds2;
+    info2.appendChild(t2); info2.appendChild(sub2);
+    row.appendChild(info2);
+    var wa=document.createElement('a');
+    wa.href='https://youtube.com/watch?v='+sug2.id;
+    wa.target='_blank';
+    wa.style.cssText='font-size:.75rem;color:var(--text3);text-decoration:none';
+    wa.textContent='▶';
+    wa.onclick=function(e){e.stopPropagation();};
+    row.appendChild(wa);
+    (function(sid2){row.onclick=function(){showPlannerDetail(sid2);};})(sug2.id);
+    sugEl.appendChild(row);
+  }
+  if(!sugEl.children.length){
+    var nm=document.createElement('div');
+    nm.style.cssText='color:var(--text3);font-size:.82rem;padding:.5rem';
+    nm.textContent='No repost candidates this month. Videos need score 55+ and 60-90 days since posting.';
+    sugEl.appendChild(nm);
+  }
+  if(plannerSelected) showPlannerDetail(plannerSelected);
+}
+
+// ═══ YOUTUBE ANALYTICS SYNC ════════════════════════════════════════════
+var YT_CONNECTED = false;
+
+async function syncYouTubeAnalytics() {
+  try {
+    var ids = VIDEOS.filter(function(v){return v.era==='serious';}).map(function(v){return v.id;}).join(',');
+    var res = await fetch('/api/youtube-analytics?videoIds='+ids+'&days=30');
+    var data = await res.json();
+
+    if (data.error === 'not_authenticated') {
+      // Show connect button
+      showYTConnectBanner(data.authUrl);
+      return;
+    }
+
+    if (data.videos) {
+      YT_CONNECTED = true;
+      var updated = 0;
+      data.videos.forEach(function(row) {
+        if (row.noData) return;
+        var v = VIDEOS.find(function(x){return x.id === row.id;});
+        if (!v) return;
+        // Only update if we got real data
+        if (row.ctr > 0) v.ctr = row.ctr;
+        if (row.avd_sec > 0) v.avd_sec = row.avd_sec;
+        if (row.avgpct > 0) v.avgpct = row.avgpct;
+        if (row.views > 0) v.views = row.views;
+        // Auto-update decision based on fresh data
+        v.decision = autoDecision(v);
+        saveV(v);
+        updated++;
+      });
+      updateYTStatus('✅ YouTube data live · '+updated+' videos · '+data.period);
+      reRender();
+    }
+  } catch(e) {
+    updateYTStatus('⚠️ YouTube sync failed');
+  }
+}
+
+function showYTConnectBanner(authUrl) {
+  var banner = document.getElementById('ytConnectBanner');
+  if (banner) { banner.style.display = 'flex'; banner.dataset.url = authUrl; }
+}
+
+function updateYTStatus(msg) {
+  var el = document.getElementById('ytStatus');
+  if (el) el.textContent = msg;
+}
+async function init(){
+  try{
+    // Show sidebar immediately so page isn't blank during load
+    document.getElementById('app').style.display='block';
+    document.querySelector('.layout').style.opacity='1';
+  }catch(e){}
+  
+  try{ await loadFromSupabase(); }catch(e){ console.warn('Supabase load failed',e); }
+  try{ renderHome(); }catch(e){ console.error('renderHome failed',e); }
+  try{ renderRepost(); }catch(e){ console.error('renderRepost failed',e); }
+  try{ renderTitles(); }catch(e){ console.error('renderTitles failed',e); }
+  try{ loadDecisions(); }catch(e){ console.warn('loadDecisions failed',e); }
+  try{ syncYouTubeAnalytics(); }catch(e){ console.warn('YT sync failed',e); }
+  // Default page = planner (after data loaded)
+  nav('planner');
+  // Handle OAuth redirect back to app
+  var params=new URLSearchParams(window.location.search);
+  if(params.get('auth_success')){showToast('✅ YouTube connected! Syncing data…');window.history.replaceState({},'','/lsm-os.html');setTimeout(syncYouTubeAnalytics,1500);}
+  if(params.get('auth_error')){showToast('❌ YouTube error: '+params.get('auth_error'));window.history.replaceState({},'','/lsm-os.html');}
+}
+// Single safe init on DOM ready
+document.addEventListener('DOMContentLoaded', function(){ 
+  if(typeof init === 'function') init(); 
+});
+</script>
+</body>
+</html>function open48h(preId){
+  // Populate the select dropdown with recent videos
+  var sel=document.getElementById('m-video-select');
+  if(sel){
+    sel.innerHTML='<option value="">— Choose a video —</option>';
+    var recents=VIDEOS.slice().sort(function(a,b){return a.days-b.days;}).slice(0,30);
+    recents.forEach(function(v){
+      var opt=document.createElement('option');
+      opt.value=v.id;
+      var label=(v.file||v.title).substring(0,45)+(v.days===1?'  ← Yesterday':'  ('+v.days+'d ago)');
+      opt.textContent=label;
+      sel.appendChild(opt);
+    });
+    if(preId){sel.value=preId; prefill48h(preId);}
+    else{ document.getElementById('m-prefill-card').style.display='none'; }
+  }
+  // Clear data fields
+  ['m-imp','m-views','m-ctr','m-avd','m-avg','m-browse','m-subs','m-notes'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.value='';
+  });
+  document.getElementById('modal48h').style.display='flex';
+}
+
+function prefill48h(vid){
+  var card=document.getElementById('m-prefill-card');
+  if(!vid){card.style.display='none';return;}
+  var v=VIDEOS.find(function(x){return x.id===vid;});
+  if(!v){card.style.display='none';return;}
+  card.style.display='block';
+  document.getElementById('m-thumb').src='https://img.youtube.com/vi/'+v.id+'/mqdefault.jpg';
+  document.getElementById('m-title-display').textContent=v.title;
+  document.getElementById('m-file-display').textContent='📁 '+(v.file||'—');
+  document.getElementById('m-id-display').textContent='YT ID: '+v.id;
+  // Show existing stats
+  var statsEl=document.getElementById('m-existing-stats');
+  var avd=v.avd_sec?Math.floor(v.avd_sec/60)+':'+(v.avd_sec%60<10?'0':'')+v.avd_sec%60:'—';
+  statsEl.innerHTML='<span style="font-size:.72rem;color:var(--text3)">Existing: </span>'
+    +'<span style="font-size:.72rem;color:var(--text2)">CTR '+v.ctr+'%</span>'
+    +'<span style="font-size:.72rem;color:var(--text2)">AVD '+avd+'</span>'
+    +'<span style="font-size:.72rem;color:var(--text2)">'+v.views+' views</span>'
+    +(v.avgpct?'<span style="font-size:.72rem;color:var(--text2)">'+v.avgpct+'% ret</span>':'');
+  // Prefill CTR/AVD if already known
+  if(v.ctr) document.getElementById('m-ctr').value=v.ctr;
+  if(v.avd_sec){
+    var m=Math.floor(v.avd_sec/60),s=v.avd_sec%60;
+    document.getElementById('m-avd').value=m+':'+(s<10?'0':'')+s;
+  }
+  if(v.avgpct) document.getElementById('m-avg').value=v.avgpct;
+  if(v.views) document.getElementById('m-views').value=v.views;
+}
+!DOC
+        <div style="display:flex;gap:.4rem;align-items:center;margin-top:.4rem">
+          <span style="font-size:.68rem;color:var(--text3)">Era:</span>
+          <button class="flt-btn on" id="tEraAll" onclick="setTitleEra('all',this)">All</button>
+          <button class="flt-btn" id="tEraNew" onclick="setTitleEra('new',this)">After Oct '25</button>
+          <button class="flt-btn" id="tEraOld" onclick="setTitleEra('old',this)">Before Oct '25</button>
+        </div>TYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>LSM Empire OS</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#1c1917;--s1:#28251f;--s2:#302d27;--s3:#3a362f;
+  --border:#3f3b34;--border2:#524d44;
+  --gold:#d97757;--gold2:#e8906e;--goldbg:rgba(217,119,87,.13);
+  --green:#4ade80;--red:#f87171;--blue:#60a5fa;--purple:#a78bfa;--orange:#fb923c;
+  --heal:#6ee7b7;--energy:#fb923c;--hour:#93c5fd;
+  --text:#e7e2db;--text2:#9c9288;--text3:#635d55;
+  --fw:600;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:15px}
+body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh;overflow-x:hidden}
+::selection{background:rgba(224,69,58,.15);color:var(--gold2)}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:10px}
+
+
+/* ── PLANNER ── */
+.planner-sugg-row{display:flex;align-items:center;gap:.75rem;padding:.6rem .85rem;background:var(--s2);border-radius:8px;margin-bottom:.4rem;cursor:pointer;border:1px solid var(--border);transition:border-color .15s}
+.planner-sugg-row:hover{border-color:var(--border2)}
+.planner-day{background:var(--s2);border:1px solid var(--border);border-radius:6px;min-height:80px;padding:.4rem;cursor:pointer;transition:border-color .15s}
+.planner-day:hover{border-color:var(--border2)}
+.planner-day.today{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+.planner-day.posting{background:var(--goldbg)}
+.planner-day.empty-slot{border-style:dashed}
+.planner-day-num{font-size:.7rem;font-weight:700;color:var(--text3);margin-bottom:.25rem}
+.planner-day.today .planner-day-num{color:var(--gold)}
+.planner-chip{font-size:.6rem;font-weight:700;padding:.15rem .35rem;border-radius:3px;margin-bottom:.2rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.planner-chip.upload{background:rgba(224,69,58,.2);color:var(--gold2)}
+.planner-chip.repost{background:rgba(74,222,128,.15);color:var(--green)}
+.planner-chip.suggested{background:rgba(96,165,250,.1);color:var(--blue);border:1px dashed var(--blue)}
+.planner-day-hd{font-size:.65rem;font-weight:700;color:var(--text3);padding:.2rem .35rem;background:var(--s1);text-align:center;border-radius:4px;margin-bottom:4px}
+
+/* ── LAYOUT ── */
+#app{display:none}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:240px;background:var(--s1);border-right:1px solid var(--border);position:fixed;left:0;top:0;bottom:0;z-index:100;transition:transform .25s ease;overflow-y:auto;display:flex;flex-direction:column}
+.sidebar.collapsed{transform:translateX(-240px)}
+.main{margin-left:240px;min-height:100vh;width:calc(100vw - 240px);max-width:calc(100vw - 240px);overflow-x:hidden;transition:margin-left .25s ease;display:flex;flex-direction:column;box-sizing:border-box;padding-top:52px}
+.main.expanded{margin-left:0}
+
+/* ── SIDEBAR ── */
+.sb-header{padding:1.25rem 1.25rem .75rem;border-bottom:1px solid var(--border)}
+.sb-logo{font-size:1.1rem;font-weight:800;color:var(--gold2);display:flex;align-items:center;gap:.5rem}
+.sb-version{font-size:.65rem;color:var(--text3);margin-top:.15rem;font-family:'JetBrains Mono',monospace}
+
+.sb-toggle.collapsed{left:0}
+.sb-toggle:hover{color:var(--gold);background:var(--s2)}
+.sb-section{padding:.5rem 0}
+.sb-section-label{font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);padding:.35rem 1.25rem .15rem}
+.nav-item{display:flex;align-items:center;gap:.7rem;padding:.6rem 1.25rem;font-size:.82rem;font-weight:600;color:var(--text2);cursor:pointer;transition:all .15s;position:relative;border-left:3px solid transparent}
+.nav-item:hover{color:var(--text);background:var(--s2)}
+.nav-item.active{color:var(--gold2);background:var(--goldbg);border-left-color:var(--gold)}
+.nav-item .icon{font-size:1rem;width:1.3rem;text-align:center}
+.nav-badge{margin-left:auto;font-size:.62rem;font-weight:700;padding:.1rem .45rem;border-radius:20px;font-family:'JetBrains Mono',monospace}
+.nb-red{background:rgba(248,113,113,.15);color:var(--red)}
+.nb-gold{background:var(--goldbg);color:var(--gold2)}
+.sb-bottom{margin-top:auto;padding:.75rem 1.25rem;border-top:1px solid var(--border)}
+.sb-user{font-size:.75rem;color:var(--text3);display:flex;align-items:center;gap:.5rem}
+
+/* ── TOPBAR ── */
+.topbar{background:var(--s1);border-bottom:1px solid var(--border);padding:.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:fixed;top:0;left:240px;right:0;transition:left .25s ease;z-index:50;gap:1rem;flex-wrap:wrap;transition:left .25s ease}
+.topbar-left{display:flex;align-items:center;gap:.75rem}
+.page-heading{font-size:1.1rem;font-weight:800;color:var(--text)}
+.topbar-right{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+.runway-chip{display:flex;align-items:center;gap:.5rem;padding:.3rem .75rem;border-radius:20px;font-size:.75rem;font-weight:700;font-family:'JetBrains Mono',monospace}
+.runway-ok{background:rgba(52,211,153,.1);color:var(--green);border:1px solid rgba(52,211,153,.2)}
+.runway-warn{background:rgba(251,146,60,.1);color:var(--orange);border:1px solid rgba(251,146,60,.2)}
+.runway-crit{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.2);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.undo-chip{display:none;align-items:center;gap:.5rem;padding:.28rem .65rem;border-radius:20px;background:var(--goldbg);border:1px solid rgba(232,184,75,.25);font-size:.72rem;color:var(--gold2)}
+.undo-chip.show{display:flex}
+.undo-btn{background:var(--gold);border:none;color:#000;font-family:'Plus Jakarta Sans',sans-serif;font-size:.65rem;font-weight:700;padding:.18rem .5rem;border-radius:10px;cursor:pointer;white-space:nowrap}
+
+/* ── BUTTONS ── */
+.btn{border:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;transition:all .15s;display:inline-flex;align-items:center;gap:.4rem;white-space:nowrap}
+.btn-gold{background:var(--gold);color:#000;font-size:.82rem;padding:.5rem 1.1rem;border-radius:6px}.btn-gold:hover{background:var(--gold2)}
+.btn-outline{background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:.78rem;padding:.45rem .9rem;border-radius:6px}.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+.btn-ghost{background:transparent;border:none;color:var(--text3);font-size:.78rem;padding:.4rem .7rem}.btn-ghost:hover{color:var(--text)}
+.btn-sm{font-size:.72rem;padding:.35rem .75rem}
+.btn-xs{font-size:.65rem;padding:.22rem .55rem}
+.btn-red{background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.2);color:var(--red);font-size:.72rem;padding:.35rem .75rem;border-radius:6px}.btn-red:hover{background:rgba(248,113,113,.2)}
+
+/* ── CONTENT ── */
+.page-content{padding:1.5rem;width:100%;box-sizing:border-box;overflow-x:hidden}
+
+/* ── CARDS ── */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:1.25rem}
+.card-label{font-size:.68rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:.85rem}
+.stat-grid{display:grid;gap:.75rem}
+.stat-grid-4{grid-template-columns:repeat(4,1fr)}
+.stat-grid-3{grid-template-columns:repeat(3,1fr)}
+.stat-grid-2{grid-template-columns:repeat(2,1fr)}
+.stat-card{background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem}
+.stat-val{font-size:1.8rem;font-weight:800;line-height:1.1;font-family:'JetBrains Mono',monospace}
+.stat-label{font-size:.72rem;color:var(--text3);margin-top:.2rem;font-weight:600}
+.stat-delta{font-size:.7rem;margin-top:.15rem}
+.delta-up{color:var(--green)}.delta-down{color:var(--red)}.delta-neutral{color:var(--text3)}
+
+/* ── PILLS ── */
+.pill{display:inline-flex;align-items:center;gap:.25rem;padding:.2rem .6rem;border-radius:20px;font-size:.68rem;font-weight:700;white-space:nowrap}
+.p-heal{background:rgba(110,231,183,.1);color:var(--heal)}
+.p-energy{background:rgba(251,146,60,.1);color:var(--energy)}
+.p-hour{background:rgba(147,197,253,.1);color:var(--hour)}
+.p-green{background:rgba(52,211,153,.1);color:var(--green)}
+.p-red{background:rgba(248,113,113,.1);color:var(--red)}
+.p-gold{background:var(--goldbg);color:var(--gold2)}
+.p-purple{background:rgba(167,139,250,.1);color:var(--purple)}
+.p-blue{background:rgba(96,165,250,.1);color:var(--blue)}
+.p-muted{background:rgba(152,152,170,.08);color:var(--text3)}
+
+/* ── TABLE ── */
+.table-wrap{overflow-x:auto;border-radius:8px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse}
+thead th{font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);text-align:left;padding:.7rem 1rem;background:var(--s2);border-bottom:1px solid var(--border);white-space:nowrap}
+tbody td{padding:.75rem 1rem;font-size:.85rem;border-bottom:1px solid var(--border);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:rgba(255,255,255,.02)}
+tbody tr.clickable{cursor:pointer}
+tbody tr.expanded td{background:var(--goldbg)!important}
+
+/* ── EXPAND ROW ── */
+.exp-row{display:none}
+.exp-row.open{display:table-row}
+.exp-cell{background:var(--s2)!important;border-bottom:2px solid var(--gold)!important;padding:0!important}
+.exp-inner{padding:1.25rem 1.5rem}
+.exp-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5rem}
+.exp-section-title{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:.75rem}
+
+/* ── SCORE ── */
+.score-wrap{display:flex;align-items:center;gap:.5rem}
+.score-num{font-size:1rem;font-weight:800;min-width:2.2rem;font-family:'JetBrains Mono',monospace}
+.score-bar{height:4px;background:var(--border);border-radius:2px;flex:1;max-width:60px}
+.score-fill{height:100%;border-radius:2px}
+
+/* ── DATA ROW ── */
+.dr{display:flex;justify-content:space-between;align-items:center;padding:.4rem 0;border-bottom:1px solid var(--border);font-size:.8rem}
+.dr:last-child{border-bottom:none}
+.dr-label{color:var(--text3)}.dr-val{font-weight:600}
+.dr-val.g{color:var(--green)}.dr-val.r{color:var(--red)}.dr-val.o{color:var(--orange)}.dr-val.b{color:var(--blue)}
+
+/* ── DECISION BUTTONS ── */
+.dec-grid{display:flex;flex-direction:column;gap:.4rem}
+.dec-btn{background:var(--s3);border:1px solid var(--border);color:var(--text2);font-family:'Plus Jakarta Sans',sans-serif;font-size:.8rem;font-weight:600;padding:.55rem .85rem;cursor:pointer;border-radius:6px;text-align:left;transition:all .15s;display:flex;align-items:center;gap:.5rem}
+.dec-btn:hover{border-color:var(--gold);color:var(--gold)}
+.dec-btn.sel{background:var(--goldbg);border-color:var(--gold);color:var(--gold2)}
+
+/* ── TOGGLE ── */
+.tgl-group{display:flex;background:var(--s2);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.tgl{padding:.4rem .85rem;font-size:.75rem;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;border:none;background:transparent;color:var(--text3);transition:all .15s}
+.tgl.on{background:var(--gold);color:#000}
+
+/* ── FILTER BAR ── */
+.filter-bar{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem}
+.flt-btn{background:var(--s2);border:1px solid var(--border);color:var(--text3);font-family:'Plus Jakarta Sans',sans-serif;font-size:.75rem;font-weight:600;padding:.4rem .85rem;cursor:pointer;border-radius:20px;transition:all .15s}
+.flt-btn:hover,.flt-btn.on{border-color:var(--gold);color:var(--gold);background:var(--goldbg)}
+.search-box{background:var(--s2);border:1px solid var(--border);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:.82rem;padding:.45rem .9rem;outline:none;border-radius:6px;flex:1;max-width:260px}
+.search-box:focus{border-color:var(--gold)}
+.search-box::placeholder{color:var(--text3)}
+.sel-sort{background:var(--s2);border:1px solid var(--border);color:var(--text2);font-family:'Plus Jakarta Sans',sans-serif;font-size:.75rem;padding:.4rem .75rem;outline:none;cursor:pointer;border-radius:6px}
+
+/* ── INPUT / FORM ── */
+.inp{background:var(--s2);border:1px solid var(--border);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:.85rem;padding:.55rem .9rem;outline:none;border-radius:6px;width:100%}
+.inp:focus{border-color:var(--gold)}
+.inp::placeholder{color:var(--text3)}
+.form-label{font-size:.72rem;font-weight:700;color:var(--text3);display:block;margin-bottom:.3rem;letter-spacing:.04em}
+.form-row{margin-bottom:.85rem}
+.form-grid2{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+
+/* ── RUNWAY BAR ── */
+.runway-hero{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:1.25rem 1.5rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:1.5rem}
+.runway-num{font-size:3rem;font-weight:800;line-height:1;font-family:'JetBrains Mono',monospace;min-width:5rem}
+.runway-crit-num{color:var(--red)}
+.runway-warn-num{color:var(--orange)}
+.runway-ok-num{color:var(--green)}
+.runway-progress{flex:1}
+.runway-track{height:6px;background:var(--border);border-radius:3px;margin-top:.5rem;position:relative}
+.runway-fill{height:100%;border-radius:3px;transition:width .6s ease}
+.alert-box{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);border-radius:8px;padding:.85rem 1.1rem;font-size:.82rem;font-weight:600;color:var(--red);display:flex;align-items:center;gap:.65rem;margin-bottom:1rem}
+
+/* ── KANBAN ── */
+.kanban{display:grid;grid-template-columns:repeat(5,minmax(200px,1fr));gap:.85rem;overflow-x:auto;padding-bottom:.5rem}
+.k-col{flex:1;min-width:200px;background:var(--s1);border:1px solid var(--border);border-radius:8px;min-height:400px;display:flex;flex-direction:column}
+.k-col-hd{padding:.7rem 1rem;font-size:.75rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
+.k-count{background:var(--s3);padding:.1rem .5rem;border-radius:20px;font-size:.65rem;font-family:'JetBrains Mono',monospace}
+.k-cards{padding:.5rem;flex:1;display:flex;flex-direction:column;gap:.4rem}
+.k-card{background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:.75rem;cursor:pointer;transition:all .15s;position:relative;user-select:none}
+.k-card:hover{border-color:var(--gold);transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.k-card.dragging{opacity:.5;border-color:var(--gold)}
+.k-drop-zone{border:2px dashed var(--gold);border-radius:6px;height:40px;display:none;align-items:center;justify-content:center;font-size:.7rem;color:var(--gold)}
+.k-drop-zone.active{display:flex}
+.k-card-title{font-size:.8rem;font-weight:600;margin-bottom:.45rem;line-height:1.4}
+.k-priority-dot{position:absolute;top:.6rem;right:.6rem;width:7px;height:7px;border-radius:50%}
+.k-priority-high{background:var(--red)}
+.k-priority-med{background:var(--orange)}
+.k-priority-low{background:var(--text3)}
+
+/* ── THUMBNAIL CARD ── */
+.thumb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.85rem}
+.thumb-card{background:var(--s1);border:1px solid var(--border);border-radius:8px;overflow:hidden;cursor:pointer;transition:all .15s}
+.thumb-card:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.4)}
+.thumb-img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:var(--s3)}
+.thumb-img-placeholder{width:100%;aspect-ratio:16/9;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:2rem}
+.thumb-info{padding:.75rem}
+.thumb-title{font-size:.78rem;font-weight:600;line-height:1.4;margin-bottom:.45rem;color:var(--text)}
+.thumb-meta{display:flex;justify-content:space-between;align-items:center}
+.thumb-ctr{font-size:.9rem;font-weight:800;font-family:'JetBrains Mono',monospace}
+.text-thumb-badge{font-size:.58rem;font-weight:700;background:var(--gold);color:#000;padding:.1rem .4rem;border-radius:3px;margin-top:.3rem;display:inline-block}
+
+/* ── CHAT ── */
+.chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 130px);min-height:400px}
+.chat-messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.75rem}
+.chat-msg{max-width:75%;padding:.85rem 1.1rem;border-radius:12px;font-size:.85rem;line-height:1.6}
+.chat-msg.user{background:var(--goldbg);border:1px solid rgba(232,184,75,.2);margin-left:auto;color:var(--text)}
+.chat-msg.ai{background:var(--s2);border:1px solid var(--border);color:var(--text2)}
+.chat-msg.ai strong{color:var(--text)}
+.chat-who{font-size:.65rem;font-weight:700;color:var(--text3);margin-bottom:.35rem;text-transform:uppercase;letter-spacing:.08em}
+.chat-input-row{display:flex;gap:.65rem;padding:.85rem;border-top:1px solid var(--border);background:var(--s1)}
+.chat-input{flex:1;background:var(--s2);border:1px solid var(--border);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:.85rem;padding:.6rem 1rem;outline:none;border-radius:8px;resize:none;max-height:120px}
+.chat-input:focus{border-color:var(--gold)}
+.chat-send{background:var(--gold);border:none;color:#000;font-weight:800;font-size:.85rem;padding:.6rem 1rem;border-radius:8px;cursor:pointer;align-self:flex-end}
+.chat-send:hover{background:var(--gold2)}
+.chat-typing{display:flex;align-items:center;gap:.3rem;padding:.75rem 1rem;font-size:.75rem;color:var(--text3)}
+.dot{width:5px;height:5px;background:var(--text3);border-radius:50%;animation:dotb .8s infinite both}
+.dot:nth-child(2){animation-delay:.15s}.dot:nth-child(3){animation-delay:.3s}
+@keyframes dotb{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+
+/* ── TITLE FORMULA ── */
+.formula-card{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:.9rem 1.1rem;margin-bottom:.6rem;display:flex;justify-content:space-between;align-items:flex-start;gap:1rem}
+.formula-text{font-size:.85rem;font-weight:600;flex:1;line-height:1.5}
+.formula-note{font-size:.72rem;color:var(--text3);margin-top:.25rem}
+.formula-ctr{font-size:1.2rem;font-weight:800;font-family:'JetBrains Mono',monospace;text-align:right;flex-shrink:0}
+.sug-card{background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:.75rem 1rem;margin-bottom:.4rem;display:flex;align-items:center;justify-content:space-between;gap:.75rem;font-size:.85rem;line-height:1.5;cursor:pointer;transition:all .15s}
+.sug-card:hover{border-color:var(--gold)}
+
+/* ── INSTRUMENT TABLE ── */
+.stage-chip{display:inline-flex;padding:.2rem .65rem;border-radius:20px;font-size:.68rem;font-weight:700}
+.stage-Built{background:rgba(52,211,153,.1);color:var(--green)}
+.stage-Painted{background:rgba(96,165,250,.1);color:var(--blue)}
+.stage-Painting{background:rgba(232,184,75,.1);color:var(--gold2)}
+.stage-Ready-for-Paint{background:rgba(167,139,250,.1);color:var(--purple)}
+.stage-Printed{background:rgba(152,152,170,.08);color:var(--text3)}
+.cell-edit{outline:none;background:transparent;border:none;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:.85rem;width:100%;cursor:text;padding:.1rem .3rem;border-radius:4px}
+.cell-edit:focus{background:var(--s3);outline:1px solid var(--gold)}
+.overdue{color:var(--red)!important}.due-soon{color:var(--orange)!important}
+
+/* ── INTEGRATION HUB ── */
+.integration-card{background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:1.25rem;display:flex;align-items:center;gap:1rem}
+.int-icon{font-size:1.8rem;width:3rem;text-align:center}
+.int-info{flex:1}
+.int-name{font-size:.9rem;font-weight:700;margin-bottom:.2rem}
+.int-status{font-size:.75rem;color:var(--text3)}
+.int-key-input{background:var(--s3);border:1px solid var(--border);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.72rem;padding:.4rem .7rem;outline:none;border-radius:4px;flex:1}
+.int-key-input:focus{border-color:var(--gold)}
+.int-connected{display:inline-flex;align-items:center;gap:.3rem;font-size:.72rem;color:var(--green);font-weight:700}
+
+/* ── GCAL BUTTON ── */
+.gcal-btn{background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.2);color:var(--blue);font-family:'Plus Jakarta Sans',sans-serif;font-size:.75rem;font-weight:700;padding:.4rem .85rem;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:.4rem}
+.gcal-btn:hover{background:rgba(96,165,250,.2)}
+
+/* ── MODAL ── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;display:none;align-items:center;justify-content:center;padding:1rem}
+.modal-bg.open{display:flex}
+.modal{background:var(--s1);border:1px solid var(--border);border-radius:12px;width:520px;max-width:100%;max-height:90vh;overflow-y:auto}
+.modal-hd{padding:1.1rem 1.4rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.modal-title{font-size:1rem;font-weight:800;color:var(--gold2)}
+.modal-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:1.2rem;line-height:1}
+.modal-body{padding:1.25rem 1.4rem}
+.modal-ft{padding:.85rem 1.4rem;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:.6rem}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(10px);background:var(--s2);border:1px solid var(--gold);border-radius:8px;color:var(--gold2);padding:.6rem 1.25rem;font-size:.8rem;font-weight:600;z-index:999;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap}
+
+/* ── GUIDE ── */
+.guide-card{background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:1.35rem;margin-bottom:.85rem}
+.guide-title{font-size:1rem;font-weight:800;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;color:var(--gold2)}
+.step{display:flex;gap:.85rem;margin-bottom:.85rem;font-size:.85rem;line-height:1.7}
+.step-n{font-size:1.1rem;font-weight:800;color:var(--gold);min-width:1.5rem;font-family:'JetBrains Mono',monospace}
+.step-t{color:var(--text2)}.step-t strong{color:var(--text)}
+.rule-row{display:flex;justify-content:space-between;align-items:flex-start;padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.82rem;gap:1rem}
+.rule-label{color:var(--text2);flex:1}.rule-val{text-align:right;font-weight:600;flex-shrink:0}
+.callout{background:var(--goldbg);border:1px solid rgba(232,184,75,.2);border-radius:6px;padding:.85rem 1rem;margin-top:.85rem;font-size:.82rem;line-height:1.7;color:var(--text2)}
+.callout strong{color:var(--gold2)}
+.thumb-guide{display:flex;flex-direction:column;gap:.6rem}
+.thumb-type{background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:.75rem 1rem}
+.thumb-type-name{font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:.25rem}
+.thumb-type-desc{font-size:.78rem;color:var(--text3);line-height:1.5}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .sidebar{transform:translateX(-240px)}
+  .sidebar.mobile-open{transform:translateX(0)}
+  .main{margin-left:0!important}
+  .sb-toggle{left:0}
+  .sb-toggle.mobile-open{left:240px}
+  .stat-grid-4{grid-template-columns:1fr 1fr}
+  .exp-grid{grid-template-columns:1fr}
+  .kanban{grid-template-columns:repeat(5,200px)}
+  .page-content{padding:1rem}
+  .topbar{padding:.65rem 1rem}
+}
+</style>
+</head>
+<body style="visibility:visible;opacity:1">
+
+
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- APP -->
+<div id="app">
+<div class="layout">
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+  <div class="sb-header">
+    <div class="sb-logo">⚡ LSM<span style="color:var(--text3);font-weight:400;font-size:.75rem;margin-left:.3rem">Empire OS</span></div>
+    <div class="sb-version">v2.9 · Thu 5 Mar 2026</div>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-section-label">Overview</div>
+    <div class="nav-item active" onclick="nav('home')" data-page="home"><span class="icon">🏠</span>Command Center</div>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-section-label">YouTube</div>
+    <div class="nav-item" onclick="nav('repost')" data-page="repost"><span class="icon">♻️</span>Repost Queue<span class="nav-badge nb-gold" id="nb-repost">–</span></div>
+    <div class="nav-item" onclick="nav('tracker')" data-page="tracker"><span class="icon">📊</span>Video Tracker<span class="nav-badge nb-red" id="nb-tracker">–</span></div>
+    <div class="nav-item" onclick="nav('decisions')" data-page="decisions"><span class="icon">🎯</span>Decisions Log<span class="nav-badge nb-blue" id="nb-decisions">0</span></div>
+    <div class="nav-item" onclick="nav('planner')" data-page="planner"><span class="icon">📅</span>Monthly Planner</div>
+    <div class="nav-item" onclick="nav('titles')" data-page="titles"><span class="icon">💡</span>Title Lab</div>
+    <div class="nav-item" onclick="nav('queue')" data-page="queue"><span class="icon">📋</span>Content Queue</div>
+    
+    
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-section-label">Team</div>
+    
+    
+    
+    
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-section-label">Help & Settings</div>
+    
+    <div class="nav-item" onclick="nav('guide')" data-page="guide"><span class="icon">📚</span>Decision Guide</div>
+    <div class="nav-item" onclick="nav('integrations')" data-page="integrations"><span class="icon">🔌</span>Integrations & API</div>
+  </div>
+
+  <div class="sb-bottom">
+    <div class="sb-user">🔒 <span style="cursor:pointer;color:var(--text3)" onclick="logout()">Sign out</span></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main" id="mainArea">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <button id="sbToggle" onclick="toggleSidebar()" style="background:none;border:1px solid var(--border);color:var(--text2);width:28px;height:28px;border-radius:5px;cursor:pointer;font-size:.8rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s" onmouseenter="this.style.background='var(--s3)'" onmouseleave="this.style.background='none'">☰</button>
+      <span class="page-heading" id="pageHeading">Command Center</span>
+    </div>
+    <div class="topbar-right">
+      <div class="undo-chip" id="undoChip">
+        <span id="undoText" style="font-size:.72rem"></span>
+        <button class="undo-btn" onclick="doUndo()">↩ Undo</button>
+      </div>
+      <div id="ytConnectBanner" style="display:none;align-items:center;gap:.5rem;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);padding:.28rem .75rem;border-radius:6px">
+        <span style="font-size:.7rem;color:var(--red)">YouTube not connected</span>
+        <button onclick="window.location.href=this.closest('#ytConnectBanner').dataset.url" style="background:var(--red);border:none;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:.65rem;font-weight:700;padding:.18rem .55rem;border-radius:4px;cursor:pointer">Connect →</button>
+      </div>
+      <span id="ytStatus" style="font-size:.68rem;color:var(--text3)"></span>
+      <div id="runwayChip"></div>
+      <button class="btn btn-outline btn-sm" onclick="nav('guide')">📚 Guide</button>
+      <button class="btn btn-gold btn-sm" onclick="showModal('modal48h')">+ 48h Data</button>
+    </div>
+  </div>
+
+  <!-- PAGES -->
+  <div style="overflow-y:auto;flex:1">
+
+<!-- ════════ HOME ════════ -->
+<div class="page-content" id="page-home">
+  <div id="homeAlert"></div>
+  <div class="stat-grid stat-grid-4" id="homeStats" style="margin-bottom:1.25rem"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+    <div class="card"><div class="card-label">▶ Post This Next</div><div id="homeNextRepost"></div></div>
+    <div class="card"><div class="card-label">📋 Content Pipeline</div><div id="homePipeline"></div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+    <div class="card"><div class="card-label">⚡ Needs Attention</div><div id="homeNeeds"></div></div>
+    <div class="card"><div class="card-label">🏆 Top 5 All-Time Scores</div><div id="homeTop5"></div></div>
+  </div>
+</div>
+
+<!-- ════════ REPOST QUEUE ════════ -->
+<div class="page-content" id="page-repost" style="display:none">
+  <div class="card" style="margin-bottom:1rem">
+    <div class="card-label">Upload Rotation Cycle</div>
+    <div style="display:grid;grid-template-columns:repeat(8,1fr);gap:2px;background:var(--border);border-radius:6px;overflow:hidden">
+      <div style="background:var(--s2);padding:.65rem .5rem;text-align:center"><div style="font-size:.6rem;color:var(--text3);margin-bottom:.25rem">1</div><div style="font-size:.8rem">⚡ New</div></div>
+      <div style="background:var(--s2);padding:.65rem .5rem;text-align:center"><div style="font-size:.6rem;color:var(--text3);margin-bottom:.25rem">2</div><div style="font-size:.8rem">🌿 New</div></div>
+      <div style="background:var(--goldbg);padding:.65rem .5rem;text-align:center;border-top:2px solid var(--gold)"><div style="font-size:.6rem;color:var(--gold);margin-bottom:.25rem">3</div><div style="font-size:.8rem;color:var(--gold2);font-weight:700">♻️ Repost</div></div>
+      <div style="background:rgba(147,197,253,.07);padding:.65rem .5rem;text-align:center"><div style="font-size:.6rem;color:var(--hour);margin-bottom:.25rem">4</div><div style="font-size:.8rem;color:var(--hour)">🧘 1-Hour</div></div>
+      <div style="background:var(--s2);padding:.65rem .5rem;text-align:center"><div style="font-size:.6rem;color:var(--text3);margin-bottom:.25rem">5</div><div style="font-size:.8rem">⚡ New</div></div>
+      <div style="background:var(--s2);padding:.65rem .5rem;text-align:center"><div style="font-size:.6rem;color:var(--text3);margin-bottom:.25rem">6</div><div style="font-size:.8rem">🌿 New</div></div>
+      <div style="background:var(--goldbg);padding:.65rem .5rem;text-align:center;border-top:2px solid var(--gold)"><div style="font-size:.6rem;color:var(--gold);margin-bottom:.25rem">7</div><div style="font-size:.8rem;color:var(--gold2);font-weight:700">♻️ Repost</div></div>
+      <div style="background:rgba(147,197,253,.07);padding:.65rem .5rem;text-align:center"><div style="font-size:.6rem;color:var(--hour);margin-bottom:.25rem">8</div><div style="font-size:.8rem;color:var(--hour)">🧘 1-Hour</div></div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:.85rem;flex-wrap:wrap;margin-bottom:1rem">
+    <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+      <div class="tgl-group"><button class="tgl on" onclick="setBL(30,this)">30d</button><button class="tgl" onclick="setBL(60,this)">60d</button><button class="tgl" onclick="setBL(90,this)">90d</button><button class="tgl" onclick="setBL(0,this)">All</button></div>
+      <span style="font-size:.72rem;color:var(--text3)" title="Compare each video against your own channel averages from this time window. Use 30d for current trends, All for all-time benchmark.">Compare against your last N days of uploads ⓘ</span>
+    </div>
+    <label style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:var(--text3);cursor:pointer"><input type="checkbox" id="excOut1" checked onchange="renderRepost()" style="accent-color:var(--gold)"/>Exclude viral outliers</label>
+    <div class="filter-bar" style="margin:0">
+      <button class="flt-btn on" data-rc="all" onclick="setRC('all',this)">All</button>
+      <button class="flt-btn" data-rc="High-Energy" onclick="setRC('High-Energy',this)">⚡ High Energy</button>
+      <button class="flt-btn" data-rc="Healing" onclick="setRC('Healing',this)">🌿 Healing</button>
+      <span style="color:var(--border2);margin:0 .25rem">|</span>
+      <button class="flt-btn on" id="rcEraAll" onclick="setRCEra('all',this)">All eras</button>
+      <button class="flt-btn" id="rcEraNew" onclick="setRCEra('new',this)">After Oct '25</button>
+      <button class="flt-btn" id="rcEraOld" onclick="setRCEra('old',this)">Before Oct '25</button>
+      <button class="flt-btn" data-rc="Healing 1 Hour" onclick="setRC('Healing 1 Hour',this)">🧘 1-Hour</button>
+    </div>
+  </div>
+  <div id="repostList"></div>
+</div>
+
+<!-- ════════ VIDEO TRACKER ════════ -->
+<div class="page-content" id="page-tracker" style="display:none">
+  <div style="display:flex;align-items:center;gap:.85rem;flex-wrap:wrap;margin-bottom:1rem">
+    <div class="tgl-group"><button class="tgl on" onclick="setBL(30,this)">30d</button><button class="tgl" onclick="setBL(60,this)">60d</button><button class="tgl" onclick="setBL(90,this)">90d</button><button class="tgl" onclick="setBL(0,this)">All</button></div>
+    <label style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:var(--text3);cursor:pointer"><input type="checkbox" id="excOut2" checked onchange="renderTracker()" style="accent-color:var(--gold)"/>Exclude outliers</label>
+    <div id="avgBar" style="font-size:.75rem;color:var(--gold);margin-left:auto"></div>
+  </div>
+  <div class="stat-grid stat-grid-4" id="trackerStats" style="margin-bottom:1rem"></div>
+  <div class="filter-bar">
+    <input class="search-box" placeholder="Search titles…" id="trackSearch" oninput="renderTracker()"/>
+    <button class="flt-btn on" data-tc="all" onclick="setTC('all',this)">All</button>
+    <button class="flt-btn" data-tc="High-Energy" onclick="setTC('High-Energy',this)">⚡</button>
+    <button class="flt-btn" data-tc="Healing" onclick="setTC('Healing',this)">🌿</button>
+    <button class="flt-btn" data-tc="Healing 1 Hour" onclick="setTC('Healing 1 Hour',this)">🧘</button>
+    <span style="color:var(--border2);margin:0 .3rem">|</span>
+    <button class="flt-btn on" id="tcStageAll" onclick="setTCStage('all',this)" title="All videos">All</button>
+    <button class="flt-btn" id="tcStageRepost" onclick="setTCStage('Repost Candidate',this)" title="Ready to repost">🔁 Repost</button>
+    <button class="flt-btn" id="tcStageMonitor" onclick="setTCStage('Monitor',this)" title="Monitoring performance">👁 Monitor</button>
+    <button class="flt-btn" id="tcStageThumb" onclick="setTCStage('Change Thumbnail',this)" title="Needs thumbnail update">🖼 Fix Thumb</button>
+    <div style="display:flex;gap:.35rem;align-items:center;margin-left:.35rem">
+      <span style="font-size:.68rem;color:var(--text3)">Era:</span>
+      <button class="flt-btn on" id="tcEraAll" onclick="setTCEra('all',this)">All</button>
+      <button class="flt-btn" id="tcEraNew" onclick="setTCEra('new',this)">↑Oct'25</button>
+      <button class="flt-btn" id="tcEraOld" onclick="setTCEra('old',this)">↓Oct'25</button>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table><thead><tr>
+  <th></th>
+  <th>Title</th>
+  <th>Type</th>
+  <th class="th-sort" onclick="setTrackerSort('score')" id="th-score" title="Weighted: CTR 25%, AVD 35%, Avg% 25%, Views 15%">Score</th>
+  <th class="th-sort" onclick="setTrackerSort('ctr')" id="th-ctr" title="Click-Through Rate">CTR%</th>
+  <th class="th-sort" onclick="setTrackerSort('avd')" id="th-avd" title="Average View Duration">AVD</th>
+  <th class="th-sort" onclick="setTrackerSort('avgpct')" id="th-avgpct">Avg%</th>
+  <th class="th-sort" onclick="setTrackerSort('views')" id="th-views">Views</th>
+  <th class="th-sort" onclick="setTrackerSort('days')" id="th-days">Days</th>
+  <th>Format</th>
+  <th>Decision</th>
+  <th></th>
+</tr></thead>
+    <tbody id="trackerBody"></tbody></table>
+  </div>
+  <div id="trackerEmpty" style="display:none;padding:3rem;text-align:center;color:var(--text3);font-size:.9rem">No videos match this filter.</div>
+</div>
+
+<!-- ════════ TITLE LAB ════════ -->
+<div class="page-content" id="page-titles" style="display:none">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">
+    <div class="card">
+      <div class="card-label">🏆 Top Performing Title Formulas</div>
+      <div id="titleFormulas"></div>
+    </div>
+    <div class="card">
+      <div class="card-label">📋 Title Bank — Scored Suggestions</div>
+      <div style="font-size:.78rem;color:var(--text3);margin-bottom:.75rem">Scored by formula strength. Click any title to copy.</div>
+      <div class="filter-bar" style="margin-bottom:.5rem">
+        <button class="flt-btn on" onclick="setTitleFilter('all',this)">All</button>
+        <button class="flt-btn" onclick="setTitleFilter('High-Energy',this)">⚡ Energy</button>
+        <button class="flt-btn" onclick="setTitleFilter('Healing',this)">🌿 Healing</button>
+        <button class="flt-btn" onclick="setTitleFilter('Healing 1 Hour',this)">🧘 1 Hour</button>
+      </div>
+      <div id="titleSugs" style="max-height:600px;overflow-y:auto;padding-right:.25rem"></div>
+      <button class="btn btn-outline btn-sm" style="margin-top:.75rem;width:100%" onclick="genTitles()">↻ Shuffle</button>
+    </div>
+  </div>
+  <div class="card-label">All Videos — Thumbnail & CTR Performance</div>
+  <div class="filter-bar">
+    <button class="flt-btn on" data-tlc="all" onclick="setTLC('all',this)">All</button>
+    <button class="flt-btn" data-tlc="High-Energy" onclick="setTLC('High-Energy',this)">⚡</button>
+    <button class="flt-btn" data-tlc="Healing" onclick="setTLC('Healing',this)">🌿</button>
+    <button class="flt-btn" data-tlc="Healing 1 Hour" onclick="setTLC('Healing 1 Hour',this)">🧘</button>
+  </div>
+  <div class="thumb-grid" id="thumbGrid"></div>
+</div>
+
+<!-- ════════ CONTENT QUEUE ════════ -->
+<div class="page-content" id="page-queue" style="display:none">
+  <div id="queueRunway" style="margin-bottom:1rem"></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.85rem">
+    <div style="font-size:.8rem;color:var(--text3)">Drag cards between columns to update status</div>
+    <button class="btn btn-outline btn-sm" onclick="addQueueCard()">+ Add Video</button>
+  </div>
+  <div class="kanban" id="kanbanBoard"></div>
+</div>
+
+<!-- ════════ FILMING PLANNER ════════ -->
+<div class="page-content" id="page-filming" style="display:none">
+  <div id="filmingContent"></div>
+</div>
+
+<!-- ════════ EDIT QUEUE ════════ -->
+<div class="page-content" id="page-editing" style="display:none">
+  <div id="editContent"></div>
+</div>
+
+<!-- ════════ INSTRUMENTS ════════ -->
+<div class="page-content" id="page-instruments" style="display:none">
+  <div id="instrContent"></div>
+</div>
+
+<!-- ════════ SALES ════════ -->
+<div class="page-content" id="page-sales" style="display:none">
+  <div class="alert-box">🔌 Connect Shopify in <strong>Integrations & API</strong> to see live sales data here.</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+    <div class="card"><div class="card-label">Shopify — Coming Soon</div><div style="font-size:.85rem;color:var(--text3);line-height:1.8">Once connected:<br/>• Orders (30d / 7d / today)<br/>• Revenue & AOV<br/>• Unfulfilled orders<br/>• Top products<br/>• Inventory alerts</div></div>
+    <div class="card"><div class="card-label">How to Connect</div><div style="font-size:.85rem;color:var(--text3);line-height:1.8">1. Go to <strong style="color:var(--text)">Integrations & API</strong> in sidebar<br/>2. Paste your Shopify API token<br/>3. Data updates every time you refresh</div></div>
+  </div>
+</div>
+
+<!-- ════════ ADS / GAL ════════ -->
+<div class="page-content" id="page-ads" style="display:none">
+  <div class="alert-box">🔌 Facebook Ads need Gal's Business Manager token in <strong>Integrations & API</strong>.</div>
+  <div class="card"><div class="card-label">Facebook & Instagram Campaigns — Coming Soon</div><div style="font-size:.85rem;color:var(--text3);line-height:1.8">Once connected via Gal's token:<br/>• Active campaigns & spend<br/>• ROAS per campaign<br/>• Top performing creatives<br/>• Budget utilisation<br/><br/><strong style="color:var(--text)">Note:</strong> Gal's account uses a separate API key — add it in Integrations.</div></div>
+</div>
+
+<!-- ════════ VERTICAL CONTENT ════════ -->
+<div class="page-content" id="page-vertical" style="display:none">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+    <div class="card"><div class="card-label">📱 Repost Bank (90 clips)</div>
+      <div style="font-size:.82rem;color:var(--text3);margin-bottom:.85rem">Best-performing clips to repost across platforms.</div>
+      <div id="verticalReposts"></div>
+    </div>
+    <div class="card"><div class="card-label">📝 Caption Formulas That Work</div>
+      <div id="captionFormulas"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ CHAT / ASK AI ════════ -->
+<div id="page-chat" style="display:none;height:calc(100vh - 65px)">
+  <div class="chat-wrap">
+    <div style="padding:.85rem 1.5rem;border-bottom:1px solid var(--border);background:var(--s1)">
+      <div style="font-size:.75rem;font-weight:700;color:var(--text3);letter-spacing:.1em;text-transform:uppercase">Ask Claude — Team Assistant</div>
+      <div style="font-size:.78rem;color:var(--text3);margin-top:.2rem">Sean, Lydia, Carl, Gal — ask anything about the channel, strategy, or decisions</div>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+      <div class="chat-msg ai"><div class="chat-who">Claude</div>Hi! I'm here to help the LSM team. Ask me about video decisions, title ideas, what to film next, thumbnail strategy — anything about the channel. What do you need?</div>
+    </div>
+    <div class="chat-input-row">
+      <textarea class="chat-input" id="chatInput" placeholder="Ask anything… e.g. 'Which videos should Sean prioritise this week?'" rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"
+        oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+      <button class="chat-send" onclick="sendChat()">Send</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ DECISION GUIDE ════════ -->
+<div class="page-content" id="page-guide" style="display:none">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+    <div>
+      <div class="guide-card">
+        <div class="guide-title">📅 Sean's Daily Workflow</div>
+        <div class="step"><div class="step-n">1</div><div class="step-t"><strong>48–60 hours after upload:</strong> Click "+ 48h Data" in the top bar. Enter numbers from YouTube Studio. The app will automatically tell you what to do next.</div></div>
+        <div class="step"><div class="step-n">2</div><div class="step-t"><strong>Read the automatic decision:</strong> The app reads CTR vs AVD and gives you a specific action — not just a score.</div></div>
+        <div class="step"><div class="step-n">3</div><div class="step-t"><strong>If you changed the thumbnail:</strong> Wait 72 hours. Check CTR in Studio. Up = working. No change = change title too.</div></div>
+        <div class="step"><div class="step-n">4</div><div class="step-t"><strong>7 days after upload:</strong> Re-enter updated data. If score 60+ → mark Repost Candidate.</div></div>
+        <div class="step"><div class="step-n">5</div><div class="step-t"><strong>Before every Upload 3 / Upload 7 in the cycle:</strong> Check Repost Queue → pick #1 in the right category → post it.</div></div>
+      </div>
+
+      <div class="guide-card">
+        <div class="guide-title">🎯 Automatic Decision Logic — Why Each Action</div>
+        <div class="rule-row"><span class="rule-label">CTR below avg AND AVD below avg</span><span class="rule-val" style="color:var(--red)">→ Change Thumbnail first</span></div>
+        <div class="rule-row"><span class="rule-label">CTR below avg AND AVD above avg</span><span class="rule-val" style="color:var(--orange)">→ Thumbnail problem only — change it</span></div>
+        <div class="rule-row"><span class="rule-label">CTR above avg AND AVD below avg</span><span class="rule-val" style="color:var(--blue)">→ Hook/content problem — check first 5 seconds</span></div>
+        <div style="font-size:.82rem;color:var(--text3);margin-bottom:1rem;line-height:1.7">The app compares each video against the average of its category (High-Energy, Healing, or Hour-Long). These are the only two numbers that matter in the first 48 hours:</div>
+        <div class="rule-row"><span class="rule-label">✅ CTR above avg AND AVD above avg</span><span class="rule-val" style="color:var(--green)">→ Repost Candidate — it hooks AND holds. Add to repost queue.</span></div>
+        <div class="callout"><strong>Why CTR + AVD together?</strong> CTR tells you if the thumbnail/title makes people click. AVD tells you if the content keeps them watching. You need both to diagnose the problem correctly.</div>
+      </div>
+
+      <div class="guide-card">
+        <div class="guide-title">🖼 Three Thumbnail Styles to Test</div>
+        <div class="thumb-guide">
+          <div class="thumb-type"><div class="thumb-type-name">Style A — Clean (current)</div><div class="thumb-type-desc">Clear shot of performer, no heavy editing. Natural look. Good baseline.</div></div>
+          <div class="thumb-type"><div class="thumb-type-name">Style B — Shadow Edit (current)</div><div class="thumb-type-desc">Background blurred, person has dark shadow outline. Carl's standard edit. Gets solid CTR.</div></div>
+          <div class="thumb-type"><div class="thumb-type-name" style="color:var(--gold2)">Style C — Text Overlay ← TEST THIS MORE</div><div class="thumb-type-desc">Person slightly to one side, bold text on the left. Old videos using this got 8–10% CTR. High priority to test on new Healing videos.</div></div>
+        </div>
+        <div class="callout"><strong>For 1-Hour videos:</strong> Consider SEO-focused titles — "Study Music", "Sleep Aid", "Focus Deep Work" — these tap into search traffic, not just YouTube suggestions.</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="guide-card">
+        <div class="guide-title">🔄 Upload Rotation (8-video cycle)</div>
+        <div style="display:flex;flex-direction:column;gap:.4rem">
+          <div class="rule-row"><span class="rule-label">Upload 1</span><span class="rule-val">⚡ High Energy — new</span></div>
+          <div class="rule-row"><span class="rule-label">Upload 2</span><span class="rule-val">🌿 Healing — new</span></div>
+          <div class="rule-row" style="background:var(--goldbg);padding:.5rem;border-radius:4px"><span class="rule-label" style="color:var(--gold2);font-weight:700">Upload 3 — REPOST</span><span class="rule-val" style="color:var(--gold2)">Best ⚡ scorer from queue</span></div>
+          <div class="rule-row" style="background:rgba(147,197,253,.07);padding:.5rem;border-radius:4px"><span class="rule-label" style="color:var(--hour)">Upload 4 — 1-HOUR</span><span class="rule-val" style="color:var(--hour)">Only if qualified (see below)</span></div>
+          <div class="rule-row"><span class="rule-label">Upload 5</span><span class="rule-val">⚡ High Energy — new</span></div>
+          <div class="rule-row"><span class="rule-label">Upload 6</span><span class="rule-val">🌿 Healing — new</span></div>
+          <div class="rule-row" style="background:var(--goldbg);padding:.5rem;border-radius:4px"><span class="rule-label" style="color:var(--gold2);font-weight:700">Upload 7 — REPOST</span><span class="rule-val" style="color:var(--gold2)">Best 🌿 scorer from queue</span></div>
+          <div class="rule-row" style="background:rgba(147,197,253,.07);padding:.5rem;border-radius:4px"><span class="rule-label" style="color:var(--hour)">Upload 8 — 1-HOUR</span><span class="rule-val" style="color:var(--hour)">Only if qualified</span></div>
+        </div>
+      </div>
+
+      <div class="guide-card">
+        <div class="guide-title">🧘 When to Make a 1-Hour Version</div>
+        <div class="rule-row"><span class="rule-label">AVD% of full video length</span><span class="rule-val" style="color:var(--green)">Must be ≥ 35%</span></div>
+        <div class="rule-row"><span class="rule-label">CTR%</span><span class="rule-val" style="color:var(--green)">Must be ≥ 4.5%</span></div>
+        <div class="rule-row"><span class="rule-label">Category</span><span class="rule-val" style="color:var(--heal)">Healing only</span></div>
+        <div class="rule-row"><span class="rule-label">Decide when</span><span class="rule-val">After 7-day data</span></div>
+        <div class="callout"><strong>1-hour RPM is 3–5× higher.</strong> These are your highest-revenue videos. Don't skip making one when a Healing video qualifies.<br/><br/><strong>1-hour title idea:</strong> Add "Study / Sleep / Focus / Meditation" keywords alongside the main title for search traffic.</div>
+      </div>
+
+      <div class="guide-card">
+        <div class="guide-title">⏰ Google Calendar Reminders</div>
+        <div style="font-size:.85rem;color:var(--text3);line-height:1.8;margin-bottom:.85rem">After you post a video, create a 48h reminder so you don't forget to enter the data. Use the button inside each video card in the Content Queue.</div>
+        <button class="gcal-btn" onclick="createGCalReminder()">📅 Create 48h Reminder Now</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ INTEGRATIONS ════════ -->
+<div class="page-content" id="page-integrations" style="display:none">
+  <div style="max-width:700px">
+    <div style="font-size:.85rem;color:var(--text3);margin-bottom:1.5rem;line-height:1.7">API keys are stored in your browser only — never sent anywhere except the relevant service. Each person with a different account (e.g. Gal's Facebook) needs their own key.</div>
+    <div style="display:flex;flex-direction:column;gap:.75rem" id="integrationsList"></div>
+  </div>
+</div>
+
+  
 
 <div class="page-content" id="page-planner" style="display:none;padding:0">
   <!-- PLANNER TOPBAR -->
@@ -717,7 +3119,6 @@ tbody tr.expanded td{background:var(--goldbg)!important}
   </div>
 </div>
 
-
 <div class="page-content" id="page-decisions" style="display:none;padding-top:1.5rem">
   <div class="page-grid">
     <div style="margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
@@ -731,17 +3132,48 @@ tbody tr.expanded td{background:var(--goldbg)!important}
   </div>
 </div>
 
+</div><!-- end page scroll area -->
+</div><!-- end main -->
+</div><!-- end layout -->
+</div><!-- end app -->
+
+<!-- MODAL: 48H DATA -->
+
+
+
+
+
+
 <div class="modal-bg" id="modal48h">
   <div class="modal">
     <div class="modal-hd"><span class="modal-title">Enter 48-Hour Data</span><button class="modal-close" onclick="closeModal('modal48h')">✕</button></div>
     <div class="modal-body">
-      <div style="font-size:.8rem;color:var(--text3);margin-bottom:1rem;line-height:1.6">Enter the YouTube ID from the video URL (the part after <code style="color:var(--gold)">?v=</code>). The app will score it and tell you exactly what to do.</div>
-      <div class="form-row"><label class="form-label">YouTube Video ID</label><input class="inp" id="m-id" placeholder="e.g. dQw4w9WgXcQ"/></div>
+      <!-- VIDEO SELECTOR -->
+      <div class="form-row" style="margin-bottom:1rem">
+        <label class="form-label">Select Video</label>
+        <select class="inp" id="m-video-select" onchange="prefill48h(this.value)" style="font-size:.82rem">
+          <option value="">— Choose a video —</option>
+        </select>
+      </div>
+      <!-- PREFILLED INFO CARD -->
+      <div id="m-prefill-card" style="display:none;background:var(--s3);border:1px solid var(--border);border-radius:6px;padding:.75rem;margin-bottom:1rem">
+        <div style="display:flex;gap:.75rem;align-items:center">
+          <img id="m-thumb" src="" style="width:64px;height:36px;border-radius:4px;object-fit:cover;flex-shrink:0"/>
+          <div style="flex:1;min-width:0">
+            <div id="m-title-display" style="font-size:.82rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+            <div id="m-file-display" style="font-size:.72rem;color:var(--text3);margin-top:2px"></div>
+            <div id="m-id-display" style="font-size:.68rem;color:var(--gold);font-family:monospace;margin-top:2px"></div>
+          </div>
+        </div>
+        <div id="m-existing-stats" style="display:flex;gap:1rem;margin-top:.6rem;flex-wrap:wrap"></div>
+      </div>
+      <!-- 48H NEW DATA -->
+      <div style="font-size:.72rem;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem">Enter 48h YouTube Studio Data</div>
       <div class="form-grid2">
         <div class="form-row"><label class="form-label">Impressions (48h)</label><input class="inp" id="m-imp" placeholder="e.g. 1200"/></div>
         <div class="form-row"><label class="form-label">Views (48h)</label><input class="inp" id="m-views" placeholder="e.g. 95"/></div>
         <div class="form-row"><label class="form-label">CTR % (48h)</label><input class="inp" id="m-ctr" placeholder="e.g. 4.8"/></div>
-        <div class="form-row"><label class="form-label">AVD (1:15 format or seconds)</label><input class="inp" id="m-avd" placeholder="e.g. 1:15 or 75"/></div>
+        <div class="form-row"><label class="form-label">AVD (mm:ss)</label><input class="inp" id="m-avd" placeholder="e.g. 1:15"/></div>
         <div class="form-row"><label class="form-label">Avg % Viewed</label><input class="inp" id="m-avg" placeholder="e.g. 38.5"/></div>
         <div class="form-row"><label class="form-label">Browse %</label><input class="inp" id="m-browse" placeholder="e.g. 55"/></div>
         <div class="form-row"><label class="form-label">Subs Gained</label><input class="inp" id="m-subs" placeholder="e.g. 3"/></div>
@@ -769,9 +3201,8 @@ function toggleSidebar(){
     sb.classList.toggle('collapsed',!sidebarOpen);
     main.classList.toggle('expanded',!sidebarOpen);
     var tb=document.querySelector('.topbar');
-    if(tb) tb.style.left=sidebarOpen?'240px':'48px';
-    tgl.style.left=sidebarOpen?'240px':'0';
-    tgl.textContent=sidebarOpen?'◀':'▶';
+    if(tb) tb.style.left=sidebarOpen?'240px':'0px';
+    tgl.textContent=sidebarOpen?'☰':'☰';
   }
 }
 // Close sidebar on mobile when nav item clicked
@@ -789,38 +3220,38 @@ var UNDO_STACK=[];
 
 var VIDEOS=[
   // Pre-Oct 2025 era (older content)
-  {id:'dQw4w9WgXcQ',title:'Didgeridoo Healing Frequencies 432Hz',cat:'Healing',days:240,ctr:3.2,views:1840,avd_sec:88,avgpct:22.1,dur:320,format:'Static',era:'casual',decision:'Monitor',notes:'Pre-relaunch era'},
-  {id:'kJQP7kiw5Fk',title:'Aboriginal Didgeridoo Sound Bath',cat:'Healing',days:210,ctr:2.8,views:2100,avd_sec:72,avgpct:18.4,dur:240,format:'Static',era:'casual',decision:'Monitor',notes:'Pre-relaunch era'},
-  {id:'9bZkp7q19f0',title:'Raw Didgeridoo Improvisation Live',cat:'High-Energy',days:185,ctr:4.1,views:3200,avd_sec:45,avgpct:15.2,dur:180,format:'Live',era:'casual',decision:'Monitor',notes:'Pre-relaunch era'},
-  {id:'JGwWNGJdvx8',title:'Didgeridoo Deep Meditation 1 Hour',cat:'Healing 1 Hour',days:195,ctr:2.4,views:1560,avd_sec:920,avgpct:25.3,dur:3600,format:'Static',era:'casual',decision:'Monitor',notes:'Pre-relaunch era'},
-  {id:'hT_nvWreIhg',title:'Breathing Techniques with Didgeridoo',cat:'High-Energy',days:220,ctr:3.5,views:890,avd_sec:67,avgpct:19.8,dur:200,format:'Live',era:'casual',decision:'Monitor',notes:'Pre-relaunch era'},
-  {id:'xIfW_7W5mKw',title:'The #1 Sound for INSTANT CALM - 73 Hz',cat:'Healing',days:120,ctr:9.81,views:2355,avd_sec:54,avgpct:45.34,dur:120,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'Highest CTR — TEXT thumbnail'},
-  {id:'tKExIduceHw',title:'These 69Hz Didgeridoo Frequencies HIT DEEP',cat:'Healing',days:89,ctr:7.80,views:2637,avd_sec:66,avgpct:35.80,dur:187,format:'Edited',era:'serious',decision:'Repost Candidate',notes:''},
-  {id:'N3AX0Cjx4JE',title:'The #1 Sound for INSTANT CALM - 73 Hz Didgeridoo Tone',cat:'Healing',days:35,ctr:6.83,views:428,avd_sec:65,avgpct:57.43,dur:114,format:'Static',era:'serious',decision:'Repost Candidate',notes:'Highest avg% — TEXT thumbnail'},
-  {id:'aJNm1qZ2Tgs',title:'This Didgeridoo Sounds Makes Your Brain Stop',cat:'Healing',days:27,ctr:5.60,views:26149,avd_sec:104,avgpct:28.28,dur:370,format:'Static',era:'serious',decision:'Repost Candidate',notes:'VIRAL 307k impressions'},
-  {id:'ItAJz3RZqD4',title:'The #1 Sound For INSTANT CALM - 69Hz Didgeridoo',cat:'Healing',days:21,ctr:4.77,views:553,avd_sec:80,avgpct:36.52,dur:220,format:'Static',era:'serious',decision:'Repost Candidate',notes:''},
-  {id:'evUXopPSZG8',title:'This Didgeridoo Sound Will Put Your Brain to SLEEP',cat:'Healing',days:9,ctr:4.67,views:108,avd_sec:160,avgpct:40.82,dur:392,format:'Edited',era:'serious',decision:'Monitor',notes:''},
-  {id:'vA8NDWS2azY',title:'The Hidden Power of Didgeridoo Music For Healing',cat:'Healing',days:111,ctr:6.26,views:1735,avd_sec:112,avgpct:24.33,dur:463,format:'Edited',era:'serious',decision:'Repost Candidate',notes:''},
-  {id:'auUUg7jO9BA',title:'Didgeridoo Effects That Sound Unreal - Ear Candy',cat:'High-Energy',days:113,ctr:7.70,views:4476,avd_sec:80,avgpct:37.37,dur:216,format:'Edited',era:'serious',decision:'Repost Candidate',notes:''},
-  {id:'fslVf6Ndu7Q',title:'GOOSEBUMPS Didgeridoo Sound',cat:'High-Energy',days:96,ctr:6.63,views:49272,avd_sec:104,avgpct:36.84,dur:285,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'TOP 510k impressions'},
-  {id:'941zhOxiViU',title:'This Didgeridoo Sound Will BREAK Your Brain',cat:'High-Energy',days:66,ctr:6.06,views:26227,avd_sec:41,avgpct:46.06,dur:91,format:'Edited',era:'serious',decision:'Repost Candidate',notes:''},
-  {id:'kwdCP4HYLRw',title:'This Didgeridoo Sound Should NOT Be Possible',cat:'High-Energy',days:53,ctr:7.62,views:11208,avd_sec:66,avgpct:30.81,dur:215,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'Viral 115k'},
-  {id:'68SyXKsWOvk',title:'This Didgeridoo Vibration Is Way Too Powerful',cat:'High-Energy',days:58,ctr:7.42,views:2715,avd_sec:65,avgpct:38.08,dur:173,format:'Edited',era:'serious',decision:'Repost Candidate',notes:''},
+  {id:'dQw4w9WgXcQ',title:'Didgeridoo Healing Frequencies 432Hz',cat:'Healing',days:240,ctr:3.2,views:1840,avd_sec:88,avgpct:22.1,dur:320,format:'Static',era:'casual',decision:'Monitor',notes:'Pre-relaunch era',file:'Didgeridoo Healing Frequencies 432Hz'},
+  {id:'kJQP7kiw5Fk',title:'Aboriginal Didgeridoo Sound Bath',cat:'Healing',days:210,ctr:2.8,views:2100,avd_sec:72,avgpct:18.4,dur:240,format:'Static',era:'casual',decision:'Monitor',notes:'Pre-relaunch era',file:'Aboriginal Didgeridoo Sound Bath'},
+  {id:'9bZkp7q19f0',title:'Raw Didgeridoo Improvisation Live',cat:'High-Energy',days:185,ctr:4.1,views:3200,avd_sec:45,avgpct:15.2,dur:180,format:'Live',era:'casual',decision:'Monitor',notes:'Pre-relaunch era',file:'Raw Didgeridoo Improvisation Live'},
+  {id:'JGwWNGJdvx8',title:'Didgeridoo Deep Meditation 1 Hour',cat:'Healing 1 Hour',days:195,ctr:2.4,views:1560,avd_sec:920,avgpct:25.3,dur:3600,format:'Static',era:'casual',decision:'Monitor',notes:'Pre-relaunch era',file:'Didgeridoo Deep Meditation 1 Hour'},
+  {id:'hT_nvWreIhg',title:'Breathing Techniques with Didgeridoo',cat:'High-Energy',days:220,ctr:3.5,views:890,avd_sec:67,avgpct:19.8,dur:200,format:'Live',era:'casual',decision:'Monitor',notes:'Pre-relaunch era',file:'Breathing Techniques with Didgeridoo'},
+  {id:'xIfW_7W5mKw',title:'The #1 Sound for INSTANT CALM - 73 Hz',cat:'Healing',days:120,ctr:9.81,views:2355,avd_sec:54,avgpct:45.34,dur:120,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'Highest CTR — TEXT thumbnail',file:'The #1 Sound for INSTANT CALM - 73 Hz'},
+  {id:'tKExIduceHw',title:'These 69Hz Didgeridoo Frequencies HIT DEEP',cat:'Healing',days:89,ctr:7.80,views:2637,avd_sec:66,avgpct:35.80,dur:187,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',file:'These 69Hz Didgeridoo Frequencies HIT DEEP'},
+  {id:'N3AX0Cjx4JE',title:'The #1 Sound for INSTANT CALM - 73 Hz Didgeridoo Tone',cat:'Healing',days:35,ctr:6.83,views:428,avd_sec:65,avgpct:57.43,dur:114,format:'Static',era:'serious',decision:'Repost Candidate',notes:'Highest avg% — TEXT thumbnail',file:'The #1 Sound for INSTANT CALM - 73 Hz Didgeridoo T'},
+  {id:'aJNm1qZ2Tgs',title:'This Didgeridoo Sounds Makes Your Brain Stop',cat:'Healing',days:27,ctr:5.60,views:26149,avd_sec:104,avgpct:28.28,dur:370,format:'Static',era:'serious',decision:'Repost Candidate',notes:'VIRAL 307k impressions',file:'This Didgeridoo Sounds Makes Your Brain Stop'},
+  {id:'ItAJz3RZqD4',title:'The #1 Sound For INSTANT CALM - 69Hz Didgeridoo',cat:'Healing',days:21,ctr:4.77,views:553,avd_sec:80,avgpct:36.52,dur:220,format:'Static',era:'serious',decision:'Repost Candidate',notes:'',file:'The #1 Sound For INSTANT CALM - 69Hz Didgeridoo'},
+  {id:'evUXopPSZG8',title:'This Didgeridoo Sound Will Put Your Brain to SLEEP',cat:'Healing',days:9,ctr:4.67,views:108,avd_sec:160,avgpct:40.82,dur:392,format:'Edited',era:'serious',decision:'Monitor',notes:'',file:'This Didgeridoo Sound Will Put Your Brain to SLEEP'},
+  {id:'vA8NDWS2azY',title:'The Hidden Power of Didgeridoo Music For Healing',cat:'Healing',days:111,ctr:6.26,views:1735,avd_sec:112,avgpct:24.33,dur:463,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',file:'The Hidden Power of Didgeridoo Music For Healing'},
+  {id:'auUUg7jO9BA',title:'Didgeridoo Effects That Sound Unreal - Ear Candy',cat:'High-Energy',days:113,ctr:7.70,views:4476,avd_sec:80,avgpct:37.37,dur:216,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',file:'Didgeridoo Effects That Sound Unreal - Ear Candy'},
+  {id:'fslVf6Ndu7Q',title:'GOOSEBUMPS Didgeridoo Sound',cat:'High-Energy',days:96,ctr:6.63,views:49272,avd_sec:104,avgpct:36.84,dur:285,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'TOP 510k impressions',file:'GOOSEBUMPS Didgeridoo Sound'},
+  {id:'941zhOxiViU',title:'This Didgeridoo Sound Will BREAK Your Brain',cat:'High-Energy',days:66,ctr:6.06,views:26227,avd_sec:41,avgpct:46.06,dur:91,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',file:'This Didgeridoo Sound Will BREAK Your Brain'},
+  {id:'kwdCP4HYLRw',title:'This Didgeridoo Sound Should NOT Be Possible',cat:'High-Energy',days:53,ctr:7.62,views:11208,avd_sec:66,avgpct:30.81,dur:215,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'Viral 115k',file:'This Didgeridoo Sound Should NOT Be Possible'},
+  {id:'68SyXKsWOvk',title:'This Didgeridoo Vibration Is Way Too Powerful',cat:'High-Energy',days:58,ctr:7.42,views:2715,avd_sec:65,avgpct:38.08,dur:173,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',file:'This Didgeridoo Vibration Is Way Too Powerful'},
   {id:'iBPAPuB9qmY',title:"Is This the Most EPIC Didgeridoo Performance You've Ever Heard?",cat:'High-Energy',days:31,ctr:5.01,views:1010,avd_sec:91,avgpct:41.83,dur:219,format:'Static',era:'serious',decision:'Repost Candidate',notes:''},
-  {id:'p3JUJCftjRc',title:'Didgeridoo Effects That Sound Unreal - Ear Candy v2',cat:'High-Energy',days:41,ctr:4.85,views:519,avd_sec:81,avgpct:39.07,dur:208,format:'Static',era:'serious',decision:'Repost Candidate',notes:''},
-  {id:'etJLfkbkkVQ',title:'This Didgeridoo Sound Makes Your Brain Glitch',cat:'High-Energy',days:15,ctr:5.55,views:641,avd_sec:86,avgpct:30.29,dur:284,format:'Edited',era:'serious',decision:'Repost Candidate',notes:''},
-  {id:'yqGOfn5O9iQ',title:'This Didgeridoo Sound Should NOT Be Possible v2',cat:'High-Energy',days:17,ctr:4.04,views:264,avd_sec:116,avgpct:41.39,dur:281,format:'Static',era:'serious',decision:'Change Thumbnail',notes:''},
-  {id:'lSMJQthFetc',title:'This Didgeridoo Performance Is Pure Adrenaline',cat:'High-Energy',days:23,ctr:3.21,views:323,avd_sec:96,avgpct:41.07,dur:236,format:'Edited',era:'serious',decision:'Change Thumbnail',notes:''},
+  {id:'p3JUJCftjRc',title:'Didgeridoo Effects That Sound Unreal - Ear Candy v2',cat:'High-Energy',days:41,ctr:4.85,views:519,avd_sec:81,avgpct:39.07,dur:208,format:'Static',era:'serious',decision:'Repost Candidate',notes:'',file:'Didgeridoo Effects That Sound Unreal - Ear Candy v'},
+  {id:'etJLfkbkkVQ',title:'This Didgeridoo Sound Makes Your Brain Glitch',cat:'High-Energy',days:15,ctr:5.55,views:641,avd_sec:86,avgpct:30.29,dur:284,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',file:'This Didgeridoo Sound Makes Your Brain Glitch'},
+  {id:'yqGOfn5O9iQ',title:'This Didgeridoo Sound Should NOT Be Possible v2',cat:'High-Energy',days:17,ctr:4.04,views:264,avd_sec:116,avgpct:41.39,dur:281,format:'Static',era:'serious',decision:'Change Thumbnail',notes:'',file:'This Didgeridoo Sound Should NOT Be Possible v2'},
+  {id:'lSMJQthFetc',title:'This Didgeridoo Performance Is Pure Adrenaline',cat:'High-Energy',days:23,ctr:3.21,views:323,avd_sec:96,avgpct:41.07,dur:236,format:'Edited',era:'serious',decision:'Change Thumbnail',notes:'',file:'This Didgeridoo Performance Is Pure Adrenaline'},
   {id:'7h88uzZf6VE',title:"This Didgeridoo Sounds Like It's Possessed",cat:'High-Energy',days:29,ctr:3.68,views:403,avd_sec:74,avgpct:48.80,dur:152,format:'Static',era:'serious',decision:'Change Thumbnail',notes:''},
-  {id:'F_mxavVq_90',title:'This Didgeridoo Sound Gives You Instant Goosebumps',cat:'High-Energy',days:13,ctr:4.92,views:98,avd_sec:118,avgpct:40.48,dur:292,format:'Edited',era:'serious',decision:'Monitor',notes:''},
-  {id:'EJohVnzCm_g',title:'The #1 Sound for INSTANT CALM - 1 Hour 73 Hz',cat:'Healing 1 Hour',days:116,ctr:7.45,views:1479,avd_sec:741,avgpct:19.67,dur:3771,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'Highest AVD 1hr'},
-  {id:'4qIPQ9Fuz-M',title:'This Sound Deletes Stress | 1 Hour Didgeridoo',cat:'Healing 1 Hour',days:60,ctr:5.30,views:3048,avd_sec:322,avgpct:8.79,dur:3666,format:'Edited',era:'serious',decision:'Repost Candidate',notes:''},
-  {id:'7nhuUgUXc2c',title:'This Didgeridoo Feels Like a SEDATIVE | 1 Hour',cat:'Healing 1 Hour',days:54,ctr:6.49,views:2535,avd_sec:385,avgpct:10.50,dur:3666,format:'Edited',era:'serious',decision:'Repost Candidate',notes:''},
-  {id:'HcyzeHscz38',title:'This Didgeridoo Feels Like a SEDATIVE | 1 Hour v1',cat:'Healing 1 Hour',days:19,ctr:7.30,views:1213,avd_sec:203,avgpct:5.57,dur:3644,format:'Static',era:'serious',decision:'Repost Candidate',notes:'Best CTR 1hr'},
-  {id:'Xmx24mN9qKo',title:'This Didgeridoo Sound Removes ALL Tension | 1 Hour',cat:'Healing 1 Hour',days:25,ctr:5.10,views:510,avd_sec:602,avgpct:15.46,dur:3897,format:'Static',era:'serious',decision:'Repost Candidate',notes:''},
+  {id:'F_mxavVq_90',title:'This Didgeridoo Sound Gives You Instant Goosebumps',cat:'High-Energy',days:13,ctr:4.92,views:98,avd_sec:118,avgpct:40.48,dur:292,format:'Edited',era:'serious',decision:'Monitor',notes:'',file:'This Didgeridoo Sound Gives You Instant Goosebumps'},
+  {id:'EJohVnzCm_g',title:'The #1 Sound for INSTANT CALM - 1 Hour 73 Hz',cat:'Healing 1 Hour',days:116,ctr:7.45,views:1479,avd_sec:741,avgpct:19.67,dur:3771,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'Highest AVD 1hr',file:'The #1 Sound for INSTANT CALM 1H'},
+  {id:'4qIPQ9Fuz-M',title:'This Sound Deletes Stress | 1 Hour Didgeridoo',cat:'Healing 1 Hour',days:60,ctr:5.30,views:3048,avd_sec:322,avgpct:8.79,dur:3666,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',file:'This Sound Deletes Stress 1H'},
+  {id:'7nhuUgUXc2c',title:'This Didgeridoo Feels Like a SEDATIVE | 1 Hour',cat:'Healing 1 Hour',days:54,ctr:6.49,views:2535,avd_sec:385,avgpct:10.50,dur:3666,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',file:'This Didgeridoo Feels Like a SEDATIVE 1H'},
+  {id:'HcyzeHscz38',title:'This Didgeridoo Feels Like a SEDATIVE | 1 Hour v1',cat:'Healing 1 Hour',days:19,ctr:7.30,views:1213,avd_sec:203,avgpct:5.57,dur:3644,format:'Static',era:'serious',decision:'Repost Candidate',notes:'Best CTR 1hr',file:'This Didgeridoo Feels Like a SEDATIVE 1H'},
+  {id:'Xmx24mN9qKo',title:'This Didgeridoo Sound Removes ALL Tension | 1 Hour',cat:'Healing 1 Hour',days:25,ctr:5.10,views:510,avd_sec:602,avgpct:15.46,dur:3897,format:'Static',era:'serious',decision:'Repost Candidate',notes:'',file:'This Didgeridoo Sound Removes ALL Tension 1H'},
   // Archive
   {id:'EJioKvOcFY0',title:"Dan Flynn's Didgeridoo — Mind Blowing",cat:'High-Energy',days:151,ctr:10.69,views:2007,avd_sec:128,avgpct:18.54,dur:693,format:'Edited',era:'archive',decision:'Repost Candidate',notes:'HIGH CTR 10.69% — TEXT thumb'},
-  {id:'fy13tu3EELo',title:'Strawberry Man Meets Zach Bainter – Epic Didgeridoo Jam',cat:'High-Energy',days:82,ctr:7.87,views:2110,avd_sec:128,avgpct:43.27,dur:296,format:'Edited',era:'archive',decision:'Repost Candidate',notes:'High CTR + retention'},
+  {id:'fy13tu3EELo',title:'Strawberry Man Meets Zach Bainter – Epic Didgeridoo Jam',cat:'High-Energy',days:82,ctr:7.87,views:2110,avd_sec:128,avgpct:43.27,dur:296,format:'Edited',era:'archive',decision:'Repost Candidate',notes:'High CTR + retention',file:'Strawberry Man Meets Zach Bainter – Epic Didgerido'},
 ];
 
 var QUEUE=[
