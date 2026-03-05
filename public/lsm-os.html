@@ -478,7 +478,7 @@ tbody tr.expanded td{background:var(--goldbg)!important}
   <th class="th-sort" onclick="setTrackerSort('avd')" id="th-avd" title="Average View Duration">AVD</th>
   <th class="th-sort" onclick="setTrackerSort('avgpct')" id="th-avgpct">Avg%</th>
   <th class="th-sort" onclick="setTrackerSort('views')" id="th-views">Views</th>
-  <th class="th-sort" onclick="setTrackerSort('days')" id="th-days">Days</th>
+  <th class="th-sort" onclick="setTrackerSort('posted')" id="th-posted">Posted</th>
   <th>Format</th>
   <th>Decision</th>
   <th></th>
@@ -1160,6 +1160,10 @@ function renderTracker(){
   }).map(function(v){return Object.assign({},v,{s:calcScore(v)});});
   list.sort(function(a,b){
     var d=trackerSortDir==='asc'?1:-1;
+    if(trackerSort==='posted'){
+      var ap=(a.posted||'0000'), bp=(b.posted||'0000');
+      return ap<bp?d:-ap>-bp?-d:0;
+    }
     var av=trackerSort==='ctr'?a.ctr:trackerSort==='avd'?a.avd_sec:trackerSort==='avgpct'?a.avgpct:trackerSort==='views'?a.views:trackerSort==='days'?a.days:a.s;
     var bv=trackerSort==='ctr'?b.ctr:trackerSort==='avd'?b.avd_sec:trackerSort==='avgpct'?b.avgpct:trackerSort==='views'?b.views:trackerSort==='days'?b.days:b.s;
     return (bv-av)*d;
@@ -1195,7 +1199,7 @@ function renderTracker(){
       +'<td class="dr-val '+ag+'">'+avdStr(v.avd_sec)+'</td>'
       +'<td>'+v.avgpct+'%</td>'
       +'<td>'+fmt(v.views)+'</td>'
-      +'<td style="color:var(--text3)">'+v.days+'d</td>'
+      +'<td style="color:var(--text3);font-size:.75rem">'+( v.posted ? v.posted : (v.days ? v.days+\'d\' : \'—\') )+'</td>'
       +'<td><span class="pill p-muted">'+v.format+'</span></td>'
       +'<td style="color:'+dc+';font-size:.8rem;font-weight:700">'+v.decision+'</td>'
       +'<td><a href="https://youtube.com/watch?v='+v.id+'" target="_blank" onclick="event.stopPropagation()" style="color:var(--text3);text-decoration:none;font-size:1rem">▶</a></td>'
