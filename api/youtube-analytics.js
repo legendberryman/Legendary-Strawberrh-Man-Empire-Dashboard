@@ -89,8 +89,10 @@ async function getChannelVideos(accessToken) {
   for (let i = 0; i < videos.length; i += 50) {
     const batch = videos.slice(i, i + 50);
     const ids = batch.map(v => v.id).join(',');
+    // Use OAuth token for fileDetails (API key doesn't have access)
     const res = await fetch(
-      `https://www.googleapis.com/youtube/v3/videos?part=contentDetails,statistics&id=${ids}&key=${process.env.YOUTUBE_API_KEY}`
+      `https://www.googleapis.com/youtube/v3/videos?part=contentDetails,statistics,fileDetails&id=${ids}`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
     );
     const data = await res.json();
     const details = {};
@@ -98,6 +100,7 @@ async function getChannelVideos(accessToken) {
       details[item.id] = {
         dur: parseDuration(item.contentDetails?.duration),
         views: parseInt(item.statistics?.viewCount || 0),
+        file: item.fileDetails?.fileName || null,
       };
     }
     for (const v of batch) {
@@ -172,6 +175,7 @@ export default async function handler(req, res) {
       return {
         id: video.id,
         title: video.title,
+        file: video.file || null,
         posted,
         days: daysOld,
         dur: video.dur || 0,

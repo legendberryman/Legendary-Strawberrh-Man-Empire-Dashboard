@@ -1199,7 +1199,7 @@ function renderTracker(){
       +'<td class="dr-val '+ag+'">'+avdStr(v.avd_sec)+'</td>'
       +'<td>'+v.avgpct+'%</td>'
       +'<td>'+fmt(v.views)+'</td>'
-      +'<td style="color:var(--text3);font-size:.75rem">'+(v.posted||'-')+'</td>'
+      +'<td style="color:var(--text3);font-size:.75rem">'+(getPosted(v)||'-')+'</td>'
       +'<td><span class="pill p-muted">'+v.format+'</span></td>'
       +'<td style="color:'+dc+';font-size:.8rem;font-weight:700">'+v.decision+'</td>'
       +'<td><a href="https://youtube.com/watch?v='+v.id+'" target="_blank" onclick="event.stopPropagation()" style="color:var(--text3);text-decoration:none;font-size:1rem">&#9654;</a></td>'
@@ -2266,7 +2266,10 @@ var YT_CONNECTED = false;
 async function syncYouTubeAnalytics() {
   updateYTStatus('⏳ Syncing YouTube…');
   try {
-    var res = await fetch('/api/youtube-analytics?days=3650');
+    var controller = new AbortController();
+    var timeout = setTimeout(function(){ controller.abort(); }, 25000);
+    var res = await fetch('/api/youtube-analytics?days=3650', { signal: controller.signal });
+    clearTimeout(timeout);
     var data = await res.json();
 
     if (data.error === 'not_authenticated') {
@@ -2292,7 +2295,7 @@ async function syncYouTubeAnalytics() {
         var v = {
           id: row.id,
           title: row.title,
-          file: row.title,
+          file: row.file || row.title,
           cat: guessCategory(row.title, row.dur),
           posted: row.posted,
           days: row.days,
@@ -2315,7 +2318,11 @@ async function syncYouTubeAnalytics() {
       reRender();
     }
   } catch(e) {
-    updateYTStatus('⚠️ YouTube sync failed: ' + e.message);
+    if (e.name === 'AbortError') {
+      updateYTStatus('⚠️ YouTube sync timed out — reload to retry');
+    } else {
+      updateYTStatus('⚠️ Sync failed: ' + e.message);
+    }
   }
 }
 
