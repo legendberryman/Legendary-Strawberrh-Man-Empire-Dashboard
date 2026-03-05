@@ -2302,7 +2302,7 @@ var YT_CONNECTED = false;
 async function syncYouTubeAnalytics() {
   updateYTStatus('⏳ Syncing YouTube…');
   try {
-    var res = await fetch('/api/youtube-analytics?days=90');
+    var res = await fetch('/api/youtube-analytics?days=3650');
     var data = await res.json();
 
     if (data.error === 'not_authenticated') {
@@ -2322,8 +2322,6 @@ async function syncYouTubeAnalytics() {
       var added = 0;
 
       data.videos.forEach(function(row) {
-        if (row.noData) return;
-
         // Try to find existing video by ID
         var v = VIDEOS.find(function(x){ return x.id === row.id; });
 
