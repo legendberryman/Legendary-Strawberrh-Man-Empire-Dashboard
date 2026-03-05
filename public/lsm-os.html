@@ -398,7 +398,7 @@ tbody tr.expanded td{background:var(--goldbg)!important}
   <div id="homeAlert"></div>
   <div class="stat-grid stat-grid-4" id="homeStats" style="margin-bottom:1.25rem"></div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
-    <div class="card"><div class="card-label">▶ Post This Next</div><div id="homeNextRepost"></div></div>
+    <div class="card"><div class="card-label">&#9654; Post This Next</div><div id="homeNextRepost"></div></div>
     <div class="card"><div class="card-label">📋 Content Pipeline</div><div id="homePipeline"></div></div>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
@@ -1031,7 +1031,7 @@ function renderHome(){
       +'<div><div style="font-size:1.4rem;font-weight:800;font-family:\'JetBrains Mono\',monospace">'+best.ctr+'%</div><div style="font-size:.68rem;color:var(--text3)">CTR</div></div>'
       +'<div><div style="font-size:1.4rem;font-weight:800;font-family:\'JetBrains Mono\',monospace">'+avdStr(best.avd_sec)+'</div><div style="font-size:.68rem;color:var(--text3)">AVD</div></div>'
       +'</div><div style="display:flex;gap:.5rem">'
-      +'<a class="btn btn-gold btn-sm" href="https://youtube.com/watch?v='+best.id+'" target="_blank">▶ Watch</a>'
+      +'<a class="btn btn-gold btn-sm" href="https://youtube.com/watch?v='+best.id+'" target="_blank">&#9654; Watch</a>'
       +'<button class="btn btn-outline btn-sm" onclick="setDec(\''+best.id+'\',\'Reposted\')">✓ Mark Reposted</button>'
       +'</div></div>';
   }
@@ -1113,7 +1113,7 @@ function renderRepost(){
       +'</div></div>'
       +'<div style="display:flex;flex-direction:column;gap:.5rem;align-items:flex-end">'
       +'<div style="text-align:center;margin-bottom:.25rem"><div style="font-size:1.6rem;font-weight:800;color:'+scoreColor(v.s)+';font-family:\'JetBrains Mono\',monospace">'+v.s+'</div><div style="font-size:.65rem;color:var(--text3);text-transform:uppercase">Score</div></div>'
-      +'<a class="btn btn-gold btn-sm" href="https://youtube.com/watch?v='+v.id+'" target="_blank">▶ Watch</a>'
+      +'<a class="btn btn-gold btn-sm" href="https://youtube.com/watch?v='+v.id+'" target="_blank">&#9654; Watch</a>'
       +'<button class="btn btn-outline btn-sm" onclick="setDec(\''+v.id+'\',\'Reposted\')">✓ Reposted</button>'
       +'</div></div>';
   }).join(''):'<div style="padding:2rem;text-align:center;color:var(--text3)">No repost candidates in this category yet.</div>';
@@ -1199,10 +1199,10 @@ function renderTracker(){
       +'<td class="dr-val '+ag+'">'+avdStr(v.avd_sec)+'</td>'
       +'<td>'+v.avgpct+'%</td>'
       +'<td>'+fmt(v.views)+'</td>'
-      +'<td style="color:var(--text3);font-size:.75rem">'+(v.posted||'—')+'</td>'
+      +'<td style="color:var(--text3);font-size:.75rem">'+(v.posted||'-')+'</td>'
       +'<td><span class="pill p-muted">'+v.format+'</span></td>'
       +'<td style="color:'+dc+';font-size:.8rem;font-weight:700">'+v.decision+'</td>'
-      +'<td><a href="https://youtube.com/watch?v='+v.id+'" target="_blank" onclick="event.stopPropagation()" style="color:var(--text3);text-decoration:none;font-size:1rem">▶</a></td>'
+      +'<td><a href="https://youtube.com/watch?v='+v.id+'" target="_blank" onclick="event.stopPropagation()" style="color:var(--text3);text-decoration:none;font-size:1rem">&#9654;</a></td>'
       +'</tr>'
       +'<tr class="exp-row" id="exp-'+v.id+'"><td colspan="12" class="exp-cell"><div class="exp-inner">'+expRow(v)+'</div></td></tr>';
   }).join('');
@@ -1237,7 +1237,7 @@ function expRow(v){
       return'<button class="dec-btn'+(v.decision===d[0]?' sel':'')+'" onclick="setDec(\''+v.id+'\',\''+d[0]+'\')">'+d[1]+' '+d[0]+'</button>';
     }).join('')
     +'</div><div style="margin-top:1rem;display:flex;flex-direction:column;gap:.4rem">'
-    +'<a class="btn btn-outline btn-sm" href="https://youtube.com/watch?v='+v.id+'" target="_blank">▶ YouTube</a>'
+    +'<a class="btn btn-outline btn-sm" href="https://youtube.com/watch?v='+v.id+'" target="_blank">&#9654; YouTube</a>'
     +'<a class="btn btn-outline btn-sm" href="https://studio.youtube.com/video/'+v.id+'/edit" target="_blank">⚙ Studio</a>'
     +'<button class="btn btn-gold btn-sm" onclick="prefill48h(\''+v.id+'\')">+ Update 48h Data</button>'
     +'<button class="gcal-btn" onclick="createGCalReminderForVideo(\''+v.id+'\',\''+v.title.replace(/'/g,"\\'")+'\')" style="margin-top:.2rem">📅 48h Reminder</button>'
@@ -1678,7 +1678,7 @@ function createGCalReminder(){createGCalReminderForVideo('','latest upload');}
 // ═══ INTEGRATIONS ═══════════════════════════════════════════════════
 var INTEGRATIONS=[
   {key:'shopify',icon:'🛒',name:'Shopify',desc:'Sales, orders, inventory, revenue',status:'Not connected',placeholder:'shpat_xxxxxxxxxxxx'},
-  {key:'youtube',icon:'▶️',name:'YouTube Analytics API',desc:'Auto-pull CTR, AVD, views — no manual entry',status:'Not connected',placeholder:'AIzaSy...'},
+  {key:'youtube',icon:'&#9654;️',name:'YouTube Analytics API',desc:'Auto-pull CTR, AVD, views — no manual entry',status:'Not connected',placeholder:'AIzaSy...'},
   {key:'facebook',icon:'📘',name:'Facebook Ads (Gal)',desc:'Campaign spend, ROAS, top creatives — uses Gal\'s Business Manager token',status:'Not connected',placeholder:'EAAxxxxxxxxxx'},
   {key:'instagram',icon:'📸',name:'Instagram Insights',desc:'Reel performance, reach, saves',status:'Not connected',placeholder:'IGxxxxxxxxxx'},
   {key:'tiktok',icon:'🎵',name:'TikTok Analytics',desc:'Video performance on TikTok',status:'Not connected',placeholder:'ttxxxxxxxxxx'},
@@ -2000,7 +2000,7 @@ function renderDetailPanel(v, panel){
   byt.href='https://youtube.com/watch?v='+v.id;
   byt.target='_blank';
   byt.className='btn btn-outline btn-sm';
-  byt.textContent='▶ Watch';
+  byt.textContent='&#9654; Watch';
   btns.appendChild(byt);
   var bcl=document.createElement('button');
   bcl.className='btn btn-outline btn-sm';
@@ -2245,7 +2245,7 @@ function renderPlanner(){
     wa.href='https://youtube.com/watch?v='+sug2.id;
     wa.target='_blank';
     wa.style.cssText='font-size:.75rem;color:var(--text3);text-decoration:none';
-    wa.textContent='▶';
+    wa.textContent='&#9654;';
     wa.onclick=function(e){e.stopPropagation();};
     row.appendChild(wa);
     (function(sid2){row.onclick=function(){showPlannerDetail(sid2);};})(sug2.id);
