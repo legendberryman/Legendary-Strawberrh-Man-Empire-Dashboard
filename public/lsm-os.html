@@ -1,4 +1,10 @@
-<!DOCTYPE html>
+<!DOC
+        <div style="display:flex;gap:.4rem;align-items:center;margin-top:.4rem">
+          <span style="font-size:.68rem;color:var(--text3)">Era:</span>
+          <button class="flt-btn on" id="tEraAll" onclick="setTitleEra('all',this)">All</button>
+          <button class="flt-btn" id="tEraNew" onclick="setTitleEra('new',this)">After Oct '25</button>
+          <button class="flt-btn" id="tEraOld" onclick="setTitleEra('old',this)">Before Oct '25</button>
+        </div>TYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -45,7 +51,7 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 .layout{display:flex;min-height:100vh}
 .sidebar{width:240px;background:var(--s1);border-right:1px solid var(--border);position:fixed;left:0;top:0;bottom:0;z-index:100;transition:transform .25s ease;overflow-y:auto;display:flex;flex-direction:column}
 .sidebar.collapsed{transform:translateX(-240px)}
-.main{margin-left:240px;min-height:100vh;width:calc(100vw - 240px);max-width:calc(100vw - 240px);overflow-x:hidden;transition:margin-left .25s ease;display:flex;flex-direction:column;box-sizing:border-box}
+.main{margin-left:240px;min-height:100vh;width:calc(100vw - 240px);max-width:calc(100vw - 240px);overflow-x:hidden;overflow-y:auto;transition:margin-left .25s ease;display:flex;flex-direction:column;box-sizing:border-box}
 .main.expanded{margin-left:0}
 
 /* ── SIDEBAR ── */
@@ -91,7 +97,7 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 .btn-red{background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.2);color:var(--red);font-size:.72rem;padding:.35rem .75rem;border-radius:6px}.btn-red:hover{background:rgba(248,113,113,.2)}
 
 /* ── CONTENT ── */
-.page-content{padding:1.5rem;max-width:1400px;width:100%;box-sizing:border-box;overflow-x:hidden}
+.page-content{padding:1.5rem;width:100%;box-sizing:border-box;overflow-x:hidden}
 
 /* ── CARDS ── */
 .card{background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:1.25rem}
@@ -325,7 +331,7 @@ tbody tr.expanded td{background:var(--goldbg)!important}
 <div class="sidebar" id="sidebar">
   <div class="sb-header">
     <div class="sb-logo">⚡ LSM<span style="color:var(--text3);font-weight:400;font-size:.75rem;margin-left:.3rem">Empire OS</span></div>
-    <div class="sb-version">v2.4 · Thu 5 Mar 2026</div>
+    <div class="sb-version">v2.5 · Thu 5 Mar 2026</div>
   </div>
 
   <div class="sb-section">
@@ -341,21 +347,21 @@ tbody tr.expanded td{background:var(--goldbg)!important}
     <div class="nav-item" onclick="nav('planner')" data-page="planner"><span class="icon">📅</span>Monthly Planner</div>
     <div class="nav-item" onclick="nav('titles')" data-page="titles"><span class="icon">💡</span>Title Lab</div>
     <div class="nav-item" onclick="nav('queue')" data-page="queue"><span class="icon">📋</span>Content Queue</div>
-    <div class="nav-item" onclick="nav('filming')" data-page="filming"><span class="icon">🎥</span>Filming Planner</div>
-    <div class="nav-item" onclick="nav('editing')" data-page="editing"><span class="icon">✂️</span>Edit Queue</div>
+    
+    
   </div>
 
   <div class="sb-section">
     <div class="sb-section-label">Team</div>
-    <div class="nav-item" onclick="nav('instruments')" data-page="instruments"><span class="icon">🎵</span>Instruments (Lydia)</div>
-    <div class="nav-item" onclick="nav('sales')" data-page="sales"><span class="icon">💰</span>Sales (Shopify)</div>
-    <div class="nav-item" onclick="nav('ads')" data-page="ads"><span class="icon">📣</span>Campaigns (Gal)</div>
-    <div class="nav-item" onclick="nav('vertical')" data-page="vertical"><span class="icon">📱</span>Vertical Content</div>
+    
+    
+    
+    
   </div>
 
   <div class="sb-section">
     <div class="sb-section-label">Help & Settings</div>
-    <div class="nav-item" onclick="nav('chat')" data-page="chat"><span class="icon">💬</span>Ask AI</div>
+    
     <div class="nav-item" onclick="nav('guide')" data-page="guide"><span class="icon">📚</span>Decision Guide</div>
     <div class="nav-item" onclick="nav('integrations')" data-page="integrations"><span class="icon">🔌</span>Integrations & API</div>
   </div>
@@ -433,7 +439,7 @@ tbody tr.expanded td{background:var(--goldbg)!important}
     <div class="filter-bar" style="margin:0">
       <button class="flt-btn on" data-rc="all" onclick="setRC('all',this)">All</button>
       <button class="flt-btn" data-rc="High-Energy" onclick="setRC('High-Energy',this)">⚡ High Energy</button>
-      <button class="flt-btn" data-rc="Healing" onclick="setRC('Healing',this)">🌿 Healing</button>
+      <button class="flt-btn" data-rc="Healing',this)">🌿 Healing</button>
       <button class="flt-btn" data-rc="Healing 1 Hour" onclick="setRC('Healing 1 Hour',this)">🧘 1-Hour</button>
     </div>
   </div>
@@ -477,7 +483,7 @@ tbody tr.expanded td{background:var(--goldbg)!important}
     <div class="card">
       <div class="card-label">📋 Title Bank — Scored Suggestions</div>
       <div style="font-size:.78rem;color:var(--text3);margin-bottom:.75rem">Scored by formula strength. Click any title to copy.</div>
-      <div class="filter-bar" style="margin-bottom:.75rem">
+      <div class="filter-bar" style="margin-bottom:.5rem">
         <button class="flt-btn on" onclick="setTitleFilter('all',this)">All</button>
         <button class="flt-btn" onclick="setTitleFilter('High-Energy',this)">⚡ Energy</button>
         <button class="flt-btn" onclick="setTitleFilter('Healing',this)">🌿 Healing</button>
@@ -675,7 +681,7 @@ tbody tr.expanded td{background:var(--goldbg)!important}
 
   <!-- CALENDAR GRID -->
   <div style="padding:1rem 1.5rem">
-    <div id="plannerGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;width:100%"></div>
+    <div id="plannerGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;width:100%;box-sizing:border-box"></div>
   </div>
 
   <!-- SELECTED VIDEO DETAIL PANEL -->
@@ -751,39 +757,45 @@ document.querySelectorAll('.nav-item').forEach(function(ni){
 });
 
 // ═══ DATA ════════════════════════════════════════════════════════════════
-var TODAY=new Date('2026-03-03');
+var TODAY=new Date();
 var blDays=30;
 var rcFilter='all', tcFilter='all', tlFilter='all';
 var UNDO_STACK=[];
 
 var VIDEOS=[
-  {id:'xIfW_7W5mKw',title:'The #1 Sound for INSTANT CALM - 73 Hz',cat:'Healing',days:120,ctr:9.81,views:2355,avd_sec:54,avgpct:45.34,dur:120,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'Highest CTR — TEXT thumbnail',posted:'2025-11-05'},
-  {id:'tKExIduceHw',title:'These 69Hz Didgeridoo Frequencies HIT DEEP',cat:'Healing',days:89,ctr:7.80,views:2637,avd_sec:66,avgpct:35.80,dur:187,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',posted:'2025-12-06'},
-  {id:'N3AX0Cjx4JE',title:'The #1 Sound for INSTANT CALM - 73 Hz Didgeridoo Tone',cat:'Healing',days:35,ctr:6.83,views:428,avd_sec:65,avgpct:57.43,dur:114,format:'Static',era:'serious',decision:'Repost Candidate',notes:'Highest avg% — TEXT thumbnail',posted:'2026-01-29'},
-  {id:'aJNm1qZ2Tgs',title:'This Didgeridoo Sounds Makes Your Brain Stop',cat:'Healing',days:27,ctr:5.60,views:26149,avd_sec:104,avgpct:28.28,dur:370,format:'Static',era:'serious',decision:'Repost Candidate',notes:'VIRAL 307k impressions',posted:'2026-02-06'},
-  {id:'ItAJz3RZqD4',title:'The #1 Sound For INSTANT CALM - 69Hz Didgeridoo',cat:'Healing',days:21,ctr:4.77,views:553,avd_sec:80,avgpct:36.52,dur:220,format:'Static',era:'serious',decision:'Repost Candidate',notes:'',posted:'2026-02-12'},
-  {id:'evUXopPSZG8',title:'This Didgeridoo Sound Will Put Your Brain to SLEEP',cat:'Healing',days:9,ctr:4.67,views:108,avd_sec:160,avgpct:40.82,dur:392,format:'Edited',era:'serious',decision:'Monitor',notes:'',posted:'2026-02-24'},
-  {id:'vA8NDWS2azY',title:'The Hidden Power of Didgeridoo Music For Healing',cat:'Healing',days:111,ctr:6.26,views:1735,avd_sec:112,avgpct:24.33,dur:463,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',posted:'2025-11-14'},
-  {id:'auUUg7jO9BA',title:'Didgeridoo Effects That Sound Unreal - Ear Candy',cat:'High-Energy',days:113,ctr:7.70,views:4476,avd_sec:80,avgpct:37.37,dur:216,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',posted:'2025-11-12'},
-  {id:'fslVf6Ndu7Q',title:'GOOSEBUMPS Didgeridoo Sound',cat:'High-Energy',days:96,ctr:6.63,views:49272,avd_sec:104,avgpct:36.84,dur:285,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'TOP 510k impressions',posted:'2025-11-29'},
-  {id:'941zhOxiViU',title:'This Didgeridoo Sound Will BREAK Your Brain',cat:'High-Energy',days:66,ctr:6.06,views:26227,avd_sec:41,avgpct:46.06,dur:91,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',posted:'2025-12-29'},
-  {id:'kwdCP4HYLRw',title:'This Didgeridoo Sound Should NOT Be Possible',cat:'High-Energy',days:53,ctr:7.62,views:11208,avd_sec:66,avgpct:30.81,dur:215,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'Viral 115k',posted:'2026-01-11'},
-  {id:'68SyXKsWOvk',title:'This Didgeridoo Vibration Is Way Too Powerful',cat:'High-Energy',days:58,ctr:7.42,views:2715,avd_sec:65,avgpct:38.08,dur:173,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',posted:'2026-01-06'},
-  {id:'iBPAPuB9qmY',title:"Is This the Most EPIC Didgeridoo Performance You've Ever Heard?",cat:'High-Energy',days:31,ctr:5.01,views:1010,avd_sec:91,avgpct:41.83,dur:219,format:'Static',era:'serious',decision:'Repost Candidate',notes:'',posted:'2026-02-02'},
-  {id:'p3JUJCftjRc',title:'Didgeridoo Effects That Sound Unreal - Ear Candy v2',cat:'High-Energy',days:41,ctr:4.85,views:519,avd_sec:81,avgpct:39.07,dur:208,format:'Static',era:'serious',decision:'Repost Candidate',notes:'',posted:'2026-01-23'},
-  {id:'etJLfkbkkVQ',title:'This Didgeridoo Sound Makes Your Brain Glitch',cat:'High-Energy',days:15,ctr:5.55,views:641,avd_sec:86,avgpct:30.29,dur:284,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',posted:'2026-02-18'},
-  {id:'yqGOfn5O9iQ',title:'This Didgeridoo Sound Should NOT Be Possible v2',cat:'High-Energy',days:17,ctr:4.04,views:264,avd_sec:116,avgpct:41.39,dur:281,format:'Static',era:'serious',decision:'Change Thumbnail',notes:'',posted:'2026-02-16'},
-  {id:'lSMJQthFetc',title:'This Didgeridoo Performance Is Pure Adrenaline',cat:'High-Energy',days:23,ctr:3.21,views:323,avd_sec:96,avgpct:41.07,dur:236,format:'Edited',era:'serious',decision:'Change Thumbnail',notes:'',posted:'2026-02-10'},
-  {id:'7h88uzZf6VE',title:"This Didgeridoo Sounds Like It's Possessed",cat:'High-Energy',days:29,ctr:3.68,views:403,avd_sec:74,avgpct:48.80,dur:152,format:'Static',era:'serious',decision:'Change Thumbnail',notes:'',posted:'2026-02-04'},
-  {id:'F_mxavVq_90',title:'This Didgeridoo Sound Gives You Instant Goosebumps',cat:'High-Energy',days:13,ctr:4.92,views:98,avd_sec:118,avgpct:40.48,dur:292,format:'Edited',era:'serious',decision:'Monitor',notes:'',posted:'2026-02-20'},
-  {id:'EJohVnzCm_g',title:'The #1 Sound for INSTANT CALM - 1 Hour 73 Hz',cat:'Healing 1 Hour',days:116,ctr:7.45,views:1479,avd_sec:741,avgpct:19.67,dur:3771,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'Highest AVD 1hr',posted:'2025-11-09'},
-  {id:'4qIPQ9Fuz-M',title:'This Sound Deletes Stress | 1 Hour Didgeridoo',cat:'Healing 1 Hour',days:60,ctr:5.30,views:3048,avd_sec:322,avgpct:8.79,dur:3666,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',posted:'2026-01-04'},
-  {id:'7nhuUgUXc2c',title:'This Didgeridoo Feels Like a SEDATIVE | 1 Hour',cat:'Healing 1 Hour',days:54,ctr:6.49,views:2535,avd_sec:385,avgpct:10.50,dur:3666,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',posted:'2026-01-10'},
-  {id:'HcyzeHscz38',title:'This Didgeridoo Feels Like a SEDATIVE | 1 Hour v1',cat:'Healing 1 Hour',days:19,ctr:7.30,views:1213,avd_sec:203,avgpct:5.57,dur:3644,format:'Static',era:'serious',decision:'Repost Candidate',notes:'Best CTR 1hr',posted:'2026-02-14'},
-  {id:'Xmx24mN9qKo',title:'This Didgeridoo Sound Removes ALL Tension | 1 Hour',cat:'Healing 1 Hour',days:25,ctr:5.10,views:510,avd_sec:602,avgpct:15.46,dur:3897,format:'Static',era:'serious',decision:'Repost Candidate',notes:'',posted:'2026-02-08'},
+  // Pre-Oct 2025 era (older content)
+  {id:'dQw4w9WgXcQ',title:'Didgeridoo Healing Frequencies 432Hz',cat:'Healing',days:240,ctr:3.2,views:1840,avd_sec:88,avgpct:22.1,dur:320,format:'Static',era:'casual',decision:'Monitor',notes:'Pre-relaunch era'},
+  {id:'kJQP7kiw5Fk',title:'Aboriginal Didgeridoo Sound Bath',cat:'Healing',days:210,ctr:2.8,views:2100,avd_sec:72,avgpct:18.4,dur:240,format:'Static',era:'casual',decision:'Monitor',notes:'Pre-relaunch era'},
+  {id:'9bZkp7q19f0',title:'Raw Didgeridoo Improvisation Live',cat:'High-Energy',days:185,ctr:4.1,views:3200,avd_sec:45,avgpct:15.2,dur:180,format:'Live',era:'casual',decision:'Monitor',notes:'Pre-relaunch era'},
+  {id:'JGwWNGJdvx8',title:'Didgeridoo Deep Meditation 1 Hour',cat:'Healing 1 Hour',days:195,ctr:2.4,views:1560,avd_sec:920,avgpct:25.3,dur:3600,format:'Static',era:'casual',decision:'Monitor',notes:'Pre-relaunch era'},
+  {id:'hT_nvWreIhg',title:'Breathing Techniques with Didgeridoo',cat:'High-Energy',days:220,ctr:3.5,views:890,avd_sec:67,avgpct:19.8,dur:200,format:'Live',era:'casual',decision:'Monitor',notes:'Pre-relaunch era'},
+  {id:'xIfW_7W5mKw',title:'The #1 Sound for INSTANT CALM - 73 Hz',cat:'Healing',days:120,ctr:9.81,views:2355,avd_sec:54,avgpct:45.34,dur:120,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'Highest CTR — TEXT thumbnail'},
+  {id:'tKExIduceHw',title:'These 69Hz Didgeridoo Frequencies HIT DEEP',cat:'Healing',days:89,ctr:7.80,views:2637,avd_sec:66,avgpct:35.80,dur:187,format:'Edited',era:'serious',decision:'Repost Candidate',notes:''},
+  {id:'N3AX0Cjx4JE',title:'The #1 Sound for INSTANT CALM - 73 Hz Didgeridoo Tone',cat:'Healing',days:35,ctr:6.83,views:428,avd_sec:65,avgpct:57.43,dur:114,format:'Static',era:'serious',decision:'Repost Candidate',notes:'Highest avg% — TEXT thumbnail'},
+  {id:'aJNm1qZ2Tgs',title:'This Didgeridoo Sounds Makes Your Brain Stop',cat:'Healing',days:27,ctr:5.60,views:26149,avd_sec:104,avgpct:28.28,dur:370,format:'Static',era:'serious',decision:'Repost Candidate',notes:'VIRAL 307k impressions'},
+  {id:'ItAJz3RZqD4',title:'The #1 Sound For INSTANT CALM - 69Hz Didgeridoo',cat:'Healing',days:21,ctr:4.77,views:553,avd_sec:80,avgpct:36.52,dur:220,format:'Static',era:'serious',decision:'Repost Candidate',notes:''},
+  {id:'evUXopPSZG8',title:'This Didgeridoo Sound Will Put Your Brain to SLEEP',cat:'Healing',days:9,ctr:4.67,views:108,avd_sec:160,avgpct:40.82,dur:392,format:'Edited',era:'serious',decision:'Monitor',notes:''},
+  {id:'vA8NDWS2azY',title:'The Hidden Power of Didgeridoo Music For Healing',cat:'Healing',days:111,ctr:6.26,views:1735,avd_sec:112,avgpct:24.33,dur:463,format:'Edited',era:'serious',decision:'Repost Candidate',notes:''},
+  {id:'auUUg7jO9BA',title:'Didgeridoo Effects That Sound Unreal - Ear Candy',cat:'High-Energy',days:113,ctr:7.70,views:4476,avd_sec:80,avgpct:37.37,dur:216,format:'Edited',era:'serious',decision:'Repost Candidate',notes:''},
+  {id:'fslVf6Ndu7Q',title:'GOOSEBUMPS Didgeridoo Sound',cat:'High-Energy',days:96,ctr:6.63,views:49272,avd_sec:104,avgpct:36.84,dur:285,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'TOP 510k impressions'},
+  {id:'941zhOxiViU',title:'This Didgeridoo Sound Will BREAK Your Brain',cat:'High-Energy',days:66,ctr:6.06,views:26227,avd_sec:41,avgpct:46.06,dur:91,format:'Edited',era:'serious',decision:'Repost Candidate',notes:''},
+  {id:'kwdCP4HYLRw',title:'This Didgeridoo Sound Should NOT Be Possible',cat:'High-Energy',days:53,ctr:7.62,views:11208,avd_sec:66,avgpct:30.81,dur:215,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'Viral 115k'},
+  {id:'68SyXKsWOvk',title:'This Didgeridoo Vibration Is Way Too Powerful',cat:'High-Energy',days:58,ctr:7.42,views:2715,avd_sec:65,avgpct:38.08,dur:173,format:'Edited',era:'serious',decision:'Repost Candidate',notes:''},
+  {id:'iBPAPuB9qmY',title:"Is This the Most EPIC Didgeridoo Performance You've Ever Heard?",cat:'High-Energy',days:31,ctr:5.01,views:1010,avd_sec:91,avgpct:41.83,dur:219,format:'Static',era:'serious',decision:'Repost Candidate',notes:''},
+  {id:'p3JUJCftjRc',title:'Didgeridoo Effects That Sound Unreal - Ear Candy v2',cat:'High-Energy',days:41,ctr:4.85,views:519,avd_sec:81,avgpct:39.07,dur:208,format:'Static',era:'serious',decision:'Repost Candidate',notes:''},
+  {id:'etJLfkbkkVQ',title:'This Didgeridoo Sound Makes Your Brain Glitch',cat:'High-Energy',days:15,ctr:5.55,views:641,avd_sec:86,avgpct:30.29,dur:284,format:'Edited',era:'serious',decision:'Repost Candidate',notes:''},
+  {id:'yqGOfn5O9iQ',title:'This Didgeridoo Sound Should NOT Be Possible v2',cat:'High-Energy',days:17,ctr:4.04,views:264,avd_sec:116,avgpct:41.39,dur:281,format:'Static',era:'serious',decision:'Change Thumbnail',notes:''},
+  {id:'lSMJQthFetc',title:'This Didgeridoo Performance Is Pure Adrenaline',cat:'High-Energy',days:23,ctr:3.21,views:323,avd_sec:96,avgpct:41.07,dur:236,format:'Edited',era:'serious',decision:'Change Thumbnail',notes:''},
+  {id:'7h88uzZf6VE',title:"This Didgeridoo Sounds Like It's Possessed",cat:'High-Energy',days:29,ctr:3.68,views:403,avd_sec:74,avgpct:48.80,dur:152,format:'Static',era:'serious',decision:'Change Thumbnail',notes:''},
+  {id:'F_mxavVq_90',title:'This Didgeridoo Sound Gives You Instant Goosebumps',cat:'High-Energy',days:13,ctr:4.92,views:98,avd_sec:118,avgpct:40.48,dur:292,format:'Edited',era:'serious',decision:'Monitor',notes:''},
+  {id:'EJohVnzCm_g',title:'The #1 Sound for INSTANT CALM - 1 Hour 73 Hz',cat:'Healing 1 Hour',days:116,ctr:7.45,views:1479,avd_sec:741,avgpct:19.67,dur:3771,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'Highest AVD 1hr'},
+  {id:'4qIPQ9Fuz-M',title:'This Sound Deletes Stress | 1 Hour Didgeridoo',cat:'Healing 1 Hour',days:60,ctr:5.30,views:3048,avd_sec:322,avgpct:8.79,dur:3666,format:'Edited',era:'serious',decision:'Repost Candidate',notes:''},
+  {id:'7nhuUgUXc2c',title:'This Didgeridoo Feels Like a SEDATIVE | 1 Hour',cat:'Healing 1 Hour',days:54,ctr:6.49,views:2535,avd_sec:385,avgpct:10.50,dur:3666,format:'Edited',era:'serious',decision:'Repost Candidate',notes:''},
+  {id:'HcyzeHscz38',title:'This Didgeridoo Feels Like a SEDATIVE | 1 Hour v1',cat:'Healing 1 Hour',days:19,ctr:7.30,views:1213,avd_sec:203,avgpct:5.57,dur:3644,format:'Static',era:'serious',decision:'Repost Candidate',notes:'Best CTR 1hr'},
+  {id:'Xmx24mN9qKo',title:'This Didgeridoo Sound Removes ALL Tension | 1 Hour',cat:'Healing 1 Hour',days:25,ctr:5.10,views:510,avd_sec:602,avgpct:15.46,dur:3897,format:'Static',era:'serious',decision:'Repost Candidate',notes:''},
   // Archive
-  {id:'EJioKvOcFY0',title:"Dan Flynn's Didgeridoo — Mind Blowing",cat:'High-Energy',days:151,ctr:10.69,views:2007,avd_sec:128,avgpct:18.54,dur:693,format:'Edited',era:'archive',decision:'Repost Candidate',notes:'HIGH CTR 10.69% — TEXT thumb',posted:'2025-10-05'},
-  {id:'fy13tu3EELo',title:'Strawberry Man Meets Zach Bainter – Epic Didgeridoo Jam',cat:'High-Energy',days:82,ctr:7.87,views:2110,avd_sec:128,avgpct:43.27,dur:296,format:'Edited',era:'archive',decision:'Repost Candidate',notes:'High CTR + retention',posted:'2025-12-13'},
+  {id:'EJioKvOcFY0',title:"Dan Flynn's Didgeridoo — Mind Blowing",cat:'High-Energy',days:151,ctr:10.69,views:2007,avd_sec:128,avgpct:18.54,dur:693,format:'Edited',era:'archive',decision:'Repost Candidate',notes:'HIGH CTR 10.69% — TEXT thumb'},
+  {id:'fy13tu3EELo',title:'Strawberry Man Meets Zach Bainter – Epic Didgeridoo Jam',cat:'High-Energy',days:82,ctr:7.87,views:2110,avd_sec:128,avgpct:43.27,dur:296,format:'Edited',era:'archive',decision:'Repost Candidate',notes:'High CTR + retention'},
 ];
 
 var QUEUE=[
@@ -1041,7 +1053,12 @@ function setBL(d,btn){blDays=d;btn.closest('.tgl-group').querySelectorAll('.tgl'
 function setRC(c,btn){rcFilter=c;document.querySelectorAll('[data-rc]').forEach(function(b){b.classList.toggle('on',b.dataset.rc===c);});renderRepost();}
 
 function renderRepost(){
-  var list=VIDEOS.filter(function(v){return v.decision==='Repost Candidate'&&(rcFilter==='all'||v.cat===rcFilter);})
+  var list=VIDEOS.filter(function(v){
+    if(v.decision!=='Repost Candidate') return false;
+    if(rcFilter!=='all' && v.cat!==rcFilter) return false;
+    if(rcEraFilter!=='all'){var vp=getPosted(v); var isNew=!vp||vp>='2025-10-01'; if(rcEraFilter==='new'&&!isNew) return false; if(rcEraFilter==='old'&&isNew) return false;}
+    return true;
+  })
     .map(function(v){return Object.assign({},v,{s:calcScore(v)});}).sort(function(a,b){return b.s-a.s;});
   document.getElementById('repostList').innerHTML=list.length?list.map(function(v,i){
     var avg=catAvg(v.cat);
@@ -1270,6 +1287,13 @@ var TITLE_BANK=[
 ];
 
 var titleFilter='all';
+var titleEraFilter='all';
+function setTitleEra(e,btn){
+  titleEraFilter=e;
+  ['tEraAll','tEraNew','tEraOld'].forEach(function(id){var el=document.getElementById(id);if(el)el.classList.remove('on');});
+  if(btn) btn.classList.add('on');
+  genTitles();
+}
 function setTitleFilter(f,btn){
   titleFilter=f;
   btn.closest('.filter-bar').querySelectorAll('.flt-btn').forEach(function(b){b.classList.remove('on');});
@@ -1277,6 +1301,13 @@ function setTitleFilter(f,btn){
   genTitles();
 }
 
+var titleEraFilter='all';
+function setTitleEra(e,btn){
+  titleEraFilter=e;
+  ['titleEraAll','titleEraNew','titleEraOld'].forEach(function(id){var el=document.getElementById(id);if(el)el.classList.remove('on');});
+  if(btn) btn.classList.add('on');
+  genTitles();
+}
 function genTitles(){
   var list=TITLE_BANK.filter(function(t){return titleFilter==='all'||t.cat===titleFilter;})
     .sort(function(a,b){return b.score-a.score;});
@@ -1749,8 +1780,9 @@ function plannerNextMonth(){ plannerDate.setMonth(plannerDate.getMonth()+1); ren
 
 function getFilteredVideos(){
   return VIDEOS.filter(function(v){
-    if(plannerFilter==='new') return !v.posted || v.posted>='2025-10-01';
-    if(plannerFilter==='old') return v.posted && v.posted<'2025-10-01';
+    var vp=getPosted(v);
+    if(plannerFilter==='new') return !vp || vp>='2025-10-01';
+    if(plannerFilter==='old') return vp && vp<'2025-10-01';
     return true;
   });
 }
@@ -1761,15 +1793,23 @@ function getEligibleReposts(){
     if(v.era!=='serious') return false;
     var score=calcScore(v); if(score<55) return false;
     var minDays=score>=75?60:90;
-    var postedMs=v.posted?new Date(v.posted).getTime():0;
+    var vp2=getPosted(v); var postedMs=vp2?new Date(vp2).getTime():0;
     return (now-postedMs)/86400000>=minDays;
   }).sort(function(a,b){return calcScore(b)-calcScore(a);});
 }
 
+function getPosted(v){
+  // Use stored posted date, or compute from days field
+  if(v.posted) return v.posted;
+  if(!v.days && v.days!==0) return null;
+  var d=new Date(Date.now() - v.days*86400000);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
 function needs48h(v){
-  if(!v.posted) return false;
-  var h=(Date.now()-new Date(v.posted).getTime())/3600000;
-  return h>=40 && h<=120 && !v.lastEntry48;
+  var posted=getPosted(v);
+  if(!posted) return false;
+  var h=(Date.now()-new Date(posted).getTime())/3600000;
+  return h>=40 && h<=168 && !v.lastEntry48; // 40h-7d window
 }
 
 function showPlannerDetail(videoId){
@@ -1828,7 +1868,7 @@ function renderDetailPanel(v, panel){
   pill.className='pill '+tcf(v.cat);
   pill.textContent=tci(v.cat)+' '+v.cat;
   pillRow.appendChild(pill);
-  if(v.posted){var pd=document.createElement('span');pd.style.cssText='font-size:.72rem;color:var(--text3)';pd.textContent='Posted: '+v.posted;pillRow.appendChild(pd);}
+  var vPosted=getPosted(v); if(vPosted){var pd=document.createElement('span');pd.style.cssText='font-size:.72rem;color:var(--text3)';pd.textContent='Posted: '+vPosted;pillRow.appendChild(pd);}
   if(isNeeds){var badge=document.createElement('span');badge.style.cssText='background:rgba(251,146,60,.2);color:var(--orange);font-size:.7rem;font-weight:700;padding:.15rem .4rem;border-radius:4px';badge.textContent='⚡ 48h data due!';pillRow.appendChild(badge);}
   titleBlock.appendChild(pillRow);
   left.appendChild(titleBlock);
@@ -1962,8 +2002,9 @@ function renderPlanner(){
   // Build posted map
   var postedMap={};
   getFilteredVideos().forEach(function(v){
-    if(!v.posted) return;
-    var d=new Date(v.posted);
+    var vpost=getPosted(v);
+    if(!vpost) return;
+    var d=new Date(vpost);
     if(d.getFullYear()===year && d.getMonth()===month){
       var k=d.getDate(); postedMap[k]=postedMap[k]||[]; postedMap[k].push(v);
     }
@@ -1987,7 +2028,7 @@ function renderPlanner(){
     var isToday=dateStr===todayStr;
     var isFuture=dateStr>todayStr;
     var cell=document.createElement('div');
-    cell.style.cssText='min-height:72px;border-radius:6px;padding:.35rem;cursor:pointer;transition:all .15s;border:1px solid var(--border);background:var(--s2)';
+    cell.style.cssText='min-height:80px;border-radius:6px;padding:.35rem;cursor:pointer;transition:all .15s;border:1px solid var(--border);background:var(--s2)';
 
     if(isToday) cell.style.borderColor='var(--gold)';
 
@@ -2007,7 +2048,19 @@ function renderPlanner(){
           +';color:'+(isSelected?'#fff':isN48?'var(--orange)':'var(--gold)')
           +';border:1px solid '+(isN48&&!isSelected?'var(--orange)':'transparent');
         chip.title=v.title+(isN48?' — 48h data due!':'');
-        chip.textContent=(isN48?'⚡ ':tci(v.cat)+' ')+v.title.substring(0,15);
+        // Thumbnail + title chip
+        var chipInner=document.createElement('div');
+        chipInner.style.cssText='display:flex;align-items:center;gap:.25rem';
+        var thumb=document.createElement('img');
+        thumb.src='https://img.youtube.com/vi/'+v.id+'/mqdefault.jpg';
+        thumb.style.cssText='width:28px;height:16px;object-fit:cover;border-radius:2px;flex-shrink:0';
+        thumb.onerror=function(){this.style.opacity=0;this.style.width='0';this.style.marginRight='0';};
+        var titleSpan=document.createElement('span');
+        titleSpan.style.cssText='overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+        titleSpan.textContent=(isN48?'⚡ ':'')+v.title.substring(0,16);
+        chipInner.appendChild(thumb);
+        chipInner.appendChild(titleSpan);
+        chip.appendChild(chipInner);
         (function(vid){chip.onclick=function(e){e.stopPropagation();showPlannerDetail(vid);};})(v.id);
         cell.appendChild(chip);
         if(!isSelected) cell.style.borderColor='var(--border2)';
@@ -2024,6 +2077,12 @@ function renderPlanner(){
           sugChip.title='Suggested repost: '+sug.title;
           sugChip.textContent='↩ '+sug.title.substring(0,14);
           (function(sid){sugChip.onclick=function(e){e.stopPropagation();showPlannerDetail(sid);};})(sug.id);
+          // Add thumbnail to sug chip
+          var sugThumb=document.createElement('img');
+          sugThumb.src='https://img.youtube.com/vi/'+sug.id+'/mqdefault.jpg';
+          sugThumb.style.cssText='width:28px;height:16px;object-fit:cover;border-radius:2px;flex-shrink:0;display:block;margin-bottom:2px';
+          sugThumb.onerror=function(){this.style.opacity=0;};
+          cell.insertBefore(sugThumb, sugChip);
           cell.appendChild(sugChip);
           var scLabel=document.createElement('div');
           scLabel.style.cssText='font-size:.55rem;color:var(--text3);margin-top:1px';
@@ -2145,13 +2204,11 @@ async function init(){
   
   try{ await loadFromSupabase(); }catch(e){ console.warn('Supabase load failed',e); }
   try{ renderHome(); }catch(e){ console.error('renderHome failed',e); }
-  try{ renderPlanner(); }catch(e){ console.error('renderPlanner failed',e); }
   try{ renderRepost(); }catch(e){ console.error('renderRepost failed',e); }
   try{ renderTitles(); }catch(e){ console.error('renderTitles failed',e); }
-  try{ renderVertical(); }catch(e){ console.error('renderVertical failed',e); }
-  try{ syncYouTubeAnalytics(); }catch(e){ console.warn('YT sync failed',e); }
   try{ loadDecisions(); }catch(e){ console.warn('loadDecisions failed',e); }
-  // Default page = planner
+  try{ syncYouTubeAnalytics(); }catch(e){ console.warn('YT sync failed',e); }
+  // Default page = planner (after data loaded)
   nav('planner');
   // Handle OAuth redirect back to app
   var params=new URLSearchParams(window.location.search);
