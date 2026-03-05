@@ -2319,8 +2319,10 @@ async function syncYouTubeAnalytics() {
     if (data.videos && data.videos.length) {
       YT_CONNECTED = true;
 
-      // Replace VIDEOS entirely with real YouTube data
-      VIDEOS = data.videos.map(function(row) {
+      // Replace VIDEOS entirely with real YouTube data — filter out Shorts (<62s)
+      VIDEOS = data.videos.filter(function(row) {
+        return (row.dur || 0) >= 62;
+      }).map(function(row) {
         var v = {
           id: row.id,
           title: row.title,
@@ -2338,6 +2340,7 @@ async function syncYouTubeAnalytics() {
           decision: 'Monitor',
           notes: '',
         };
+        v.score = calcScore(v);
         v.decision = autoDecision(v);
         return v;
       });

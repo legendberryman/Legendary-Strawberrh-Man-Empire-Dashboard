@@ -98,6 +98,8 @@ async function getChannelVideos(accessToken) {
     });
   }
 
+  // Filter out Shorts (under 62 seconds)
+  videos = videos.filter(v => (v.dur || 0) >= 62);
   return videos;
 }
 
@@ -141,22 +143,38 @@ export default async function handler(req, res) {
           });
           const data = await r.json();
 
+          const posted = video.published ? video.published.split('T')[0] : null;
+          const daysOld = posted ? Math.round((Date.now() - new Date(posted).getTime()) / 86400000) : 0;
+
           if (!data.rows || !data.rows.length) {
-            results.push({ ...video, noData: true });
+            // No analytics data — still include with Data API views
+            results.push({
+              id: video.id,
+              title: video.title,
+              posted: posted,
+              days: daysOld,
+              dur: video.dur || 0,
+              views: video.views || 0,
+              avd_sec: 0,
+              avgpct: 0,
+              subs: 0,
+              impressions: 0,
+              ctr: 0,
+              thumbnail: video.thumbnail,
+              era: posted && posted >= '2025-10-01' ? 'serious' : 'casual',
+              noAnalytics: true,
+            });
             return;
           }
 
           const row = data.rows[0];
-          const posted = video.published ? video.published.split('T')[0] : null;
-          const daysOld = posted ? Math.round((Date.now() - new Date(posted).getTime()) / 86400000) : 0;
-
           results.push({
             id: video.id,
             title: video.title,
             posted: posted,
             days: daysOld,
             dur: video.dur || 0,
-            views: row[1] || 0,
+            views: row[1] || video.views || 0,
             avd_sec: Math.round(row[3] || 0),
             avgpct: parseFloat((row[4] || 0).toFixed(2)),
             subs: row[5] || 0,
