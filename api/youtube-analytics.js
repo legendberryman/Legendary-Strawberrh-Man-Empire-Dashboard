@@ -102,7 +102,7 @@ export default async function handler(req, res) {
 
     // ── Check cache (valid for 6 hours) ───────────────────────────────────
     if (!forceRefresh) {
-      const { data: cached } = await supabase.from('config').select('value').eq('key', 'youtube_video_cache_v3').single();
+      const { data: cached } = await supabase.from('config').select('value').eq('key', 'youtube_video_cache_v4').single();
       if (cached) {
         try {
           const cache = JSON.parse(cached.value);
@@ -147,10 +147,12 @@ export default async function handler(req, res) {
           }
           if (d.rows?.[0]) {
             const row = d.rows[0];
+            // metrics order: views(0), estimatedMinutesWatched(1), averageViewDuration(2),
+            // averageViewPercentage(3), subscribersGained(4), impressions(5), impressionClickThroughRate(6)
             analyticsMap[video.id] = {
-              avd_sec: Math.round(row[3]||0),
-              avgpct: parseFloat((row[4]||0).toFixed(2)),
-              ctr: parseFloat(((row[7]||0)*100).toFixed(2)),
+              avd_sec: Math.round(row[2]||0),
+              avgpct: parseFloat((row[3]||0).toFixed(2)),
+              ctr: parseFloat(((row[6]||0)*100).toFixed(2)),
             };
           }
         } catch(e) { console.error('Analytics fetch error:', e.message); }
@@ -174,7 +176,7 @@ export default async function handler(req, res) {
 
     // Save to cache
     await supabase.from('config').upsert(
-      { key: 'youtube_video_cache_v3', value: JSON.stringify({ videos: results, timestamp: Date.now() }) },
+      { key: 'youtube_video_cache_v4', value: JSON.stringify({ videos: results, timestamp: Date.now() }) },
       { onConflict: 'key' }
     );
 
@@ -184,7 +186,7 @@ export default async function handler(req, res) {
     console.error('YouTube API error:', e);
     // Try to serve stale cache on error
     try {
-      const { data: cached } = await supabase.from('config').select('value').eq('key', 'youtube_video_cache_v3').single();
+      const { data: cached } = await supabase.from('config').select('value').eq('key', 'youtube_video_cache_v4').single();
       if (cached) {
         const cache = JSON.parse(cached.value);
         return res.status(200).json({ videos: cache.videos, period: 'all time', cached: true, stale: true });
