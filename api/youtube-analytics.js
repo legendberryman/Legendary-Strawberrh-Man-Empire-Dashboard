@@ -1,112 +1,115 @@
-// api/youtube-analytics.js
-// Fetches real video list from YouTube Data API, then gets analytics via OAuth
-// Fully automatic - no video IDs needed from frontend
+import { createClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
-const CLIENT_ID = process.env.YOUTUBE_CLIENT_ID;
-const CLIENT_SECRET = process.env.YOUTUBE_CLIENT_SECRET;
-const API_KEY = process.env.YOUTUBE_API_KEY;
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+);
+
+function getAuthUrl() {
+  const params = new URLSearchParams({
+    client_id: process.env.YOUTUBE_CLIENT_ID,
+    redirect_uri: 'https://legendary-strawberrh-man-empire-das.vercel.app/api/auth/callback',
+    response_type: 'code',
+    scope: 'https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/yt-analytics.readonly',
+    access_type: 'offline',
+    prompt: 'consent',
+  });
+  return `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
+}
 
 async function getTokens() {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/config?key=eq.youtube_tokens&select=value`, {
-    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` },
-  });
-  const rows = await res.json();
-  if (!rows || !rows.length) return null;
-  return JSON.parse(rows[0].value);
+  const { data, error } = await supabase
+    .from('config')
+    .select('value')
+    .eq('key', 'youtube_tokens')
+    .single();
+  if (error || !data) return null;
+  try { return JSON.parse(data.value); } catch { return null; }
 }
 
 async function refreshAccessToken(refreshToken) {
-  const res = await fetch('https://oauth2.google.com/token', {
+  const r = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
+      client_id: process.env.YOUTUBE_CLIENT_ID,
+      client_secret: process.env.YOUTUBE_CLIENT_SECRET,
       refresh_token: refreshToken,
-      client_id: CLIENT_ID,
-      client_secret: CLIENT_SECRET,
       grant_type: 'refresh_token',
     }),
   });
-  const data = await res.json();
-  if (data.error) throw new Error(data.error);
-  const newTokens = {
+  const data = await r.json();
+  const tokens = {
     access_token: data.access_token,
     refresh_token: refreshToken,
-    expiry: Date.now() + (data.expires_in * 1000),
+    expiry: Date.now() + (data.expires_in || 3600) * 1000,
   };
-  await fetch(`${SUPABASE_URL}/rest/v1/config?key=eq.youtube_tokens`, {
-    method: 'PATCH',
-    headers: {
-      'apikey': SUPABASE_KEY,
-      'Authorization': `Bearer ${SUPABASE_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ value: JSON.stringify(newTokens) }),
-  });
-  return newTokens;
+  await supabase.from('config').upsert(
+    { key: 'youtube_tokens', value: JSON.stringify(tokens) },
+    { onConflict: 'key' }
+  );
+  return tokens;
+}
+
+function parseDuration(iso) {
+  const m = /PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/.exec(iso || '');
+  if (!m) return 0;
+  return (parseInt(m[1] || 0) * 3600) + (parseInt(m[2] || 0) * 60) + parseInt(m[3] || 0);
 }
 
 async function getChannelVideos(accessToken) {
-  // Step 1: get channel ID
+  // 1. Get channel ID
   const chRes = await fetch(
-    'https://www.googleapis.com/youtube/v3/channels?part=id,snippet&mine=true',
-    { headers: { 'Authorization': `Bearer ${accessToken}` } }
+    'https://www.googleapis.com/youtube/v3/channels?part=id,contentDetails&mine=true',
+    { headers: { Authorization: `Bearer ${accessToken}` } }
   );
   const chData = await chRes.json();
-  if (!chData.items || !chData.items.length) throw new Error('No channel found');
-  const channelId = chData.items[0].id;
+  const uploadsId = chData.items?.[0]?.contentDetails?.relatedPlaylists?.uploads;
+  if (!uploadsId) return [];
 
-  // Step 2: get uploads playlist ID
-  const uploadsPlaylistId = chData.items[0].id.replace('UC', 'UU');
-
-  // Step 3: fetch all videos from uploads playlist (up to 200)
-  let videos = [];
+  // 2. Fetch all videos from uploads playlist (paginate)
+  const videos = [];
   let pageToken = '';
-  do {
-    const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uploadsPlaylistId}&maxResults=50${pageToken ? '&pageToken=' + pageToken : ''}&key=${API_KEY}`;
-    const res = await fetch(url);
+  while (true) {
+    const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uploadsId}&maxResults=50${pageToken ? '&pageToken=' + pageToken : ''}`;
+    const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
     const data = await res.json();
-    if (data.error) throw new Error(data.error.message);
-    if (data.items) {
-      videos = videos.concat(data.items.map(item => ({
-        id: item.snippet.resourceId.videoId,
-        title: item.snippet.title,
-        published: item.snippet.publishedAt,
-        thumbnail: item.snippet.thumbnails?.medium?.url || '',
-      })));
+    if (!data.items) break;
+    for (const item of data.items) {
+      const vid = item.snippet?.resourceId?.videoId;
+      if (vid) videos.push({ id: vid, published: item.snippet.publishedAt, title: item.snippet.title, thumbnail: item.snippet.thumbnails?.medium?.url });
     }
-    pageToken = data.nextPageToken || '';
-  } while (pageToken && videos.length < 200);
-
-  // Step 4: get durations for all videos
-  const ids = videos.map(v => v.id).join(',');
-  const detailRes = await fetch(
-    `https://www.googleapis.com/youtube/v3/videos?part=contentDetails,statistics&id=${ids}&key=${API_KEY}`
-  );
-  const detailData = await detailRes.json();
-  if (detailData.items) {
-    detailData.items.forEach(item => {
-      const v = videos.find(x => x.id === item.id);
-      if (v) {
-        // Parse ISO 8601 duration to seconds
-        const dur = item.contentDetails.duration;
-        const match = dur.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
-        v.dur = ((parseInt(match[1]||0)*3600) + (parseInt(match[2]||0)*60) + parseInt(match[3]||0));
-        v.views = parseInt(item.statistics.viewCount || 0);
-      }
-    });
+    if (!data.nextPageToken) break;
+    pageToken = data.nextPageToken;
+    if (videos.length >= 200) break;
   }
 
-  // Filter out Shorts — YouTube Shorts always have #shorts in title or description
-  // Also filter by duration < 60s as secondary check
-  videos = videos.filter(v => {
+  // 3. Get durations + view counts in batches of 50
+  const enriched = [];
+  for (let i = 0; i < videos.length; i += 50) {
+    const batch = videos.slice(i, i + 50);
+    const ids = batch.map(v => v.id).join(',');
+    const res = await fetch(
+      `https://www.googleapis.com/youtube/v3/videos?part=contentDetails,statistics&id=${ids}&key=${process.env.YOUTUBE_API_KEY}`
+    );
+    const data = await res.json();
+    const details = {};
+    for (const item of (data.items || [])) {
+      details[item.id] = {
+        dur: parseDuration(item.contentDetails?.duration),
+        views: parseInt(item.statistics?.viewCount || 0),
+      };
+    }
+    for (const v of batch) {
+      enriched.push({ ...v, ...(details[v.id] || {}) });
+    }
+  }
+
+  // 4. Filter out Shorts
+  return enriched.filter(v => {
     const title = (v.title || '').toLowerCase();
-    const hasShortTag = title.includes('#shorts') || title.includes('#short');
-    const isTooShort = (v.dur || 0) < 60;
-    return !hasShortTag && !isTooShort;
+    return !title.includes('#shorts') && !title.includes('#short') && (v.dur || 0) >= 60;
   });
-  return videos;
 }
 
 export default async function handler(req, res) {
@@ -124,97 +127,69 @@ export default async function handler(req, res) {
       tokens = await refreshAccessToken(tokens.refresh_token);
     }
 
-    // Get real video list from YouTube
     const videos = await getChannelVideos(tokens.access_token);
 
     const endDate = new Date().toISOString().split('T')[0];
     const startDate = new Date(Date.now() - days * 86400000).toISOString().split('T')[0];
 
-    // Get analytics for all videos in batches of 10
-    const results = [];
-    for (let i = 0; i < videos.length; i += 10) {
-      const batch = videos.slice(i, i + 10);
-      await Promise.all(batch.map(async (video) => {
-        try {
-          const url = `https://youtubeanalytics.googleapis.com/v2/reports?` +
-            `ids=channel==MINE` +
-            `&startDate=${startDate}` +
-            `&endDate=${endDate}` +
-            `&metrics=views,estimatedMinutesWatched,averageViewDuration,averageViewPercentage,subscribersGained,impressions,impressionClickThroughRate` +
-            `&filters=video==${video.id}` +
-            `&dimensions=video`;
+    // ONE Analytics API call per batch of 200 video IDs using comma-separated filters
+    // YouTube Analytics supports up to 500 filters at once
+    const analyticsMap = {};
+    for (let i = 0; i < videos.length; i += 200) {
+      const batch = videos.slice(i, i + 200);
+      const filterStr = batch.map(v => `video==${v.id}`).join(',');
+      const url = `https://youtubeanalytics.googleapis.com/v2/reports?` +
+        `ids=channel==MINE` +
+        `&startDate=${startDate}` +
+        `&endDate=${endDate}` +
+        `&metrics=views,estimatedMinutesWatched,averageViewDuration,averageViewPercentage,subscribersGained,impressions,impressionClickThroughRate` +
+        `&filters=${encodeURIComponent(filterStr)}` +
+        `&dimensions=video` +
+        `&maxResults=200`;
 
-          const r = await fetch(url, {
-            headers: { 'Authorization': `Bearer ${tokens.access_token}` },
-          });
-          const data = await r.json();
+      const r = await fetch(url, {
+        headers: { Authorization: `Bearer ${tokens.access_token}` },
+      });
+      const data = await r.json();
 
-          const posted = video.published ? video.published.split('T')[0] : null;
-          const daysOld = posted ? Math.round((Date.now() - new Date(posted).getTime()) / 86400000) : 0;
-
-          if (!data.rows || !data.rows.length) {
-            // No analytics data — still include with Data API views
-            results.push({
-              id: video.id,
-              title: video.title,
-              posted: posted,
-              days: daysOld,
-              dur: video.dur || 0,
-              views: video.views || 0,
-              avd_sec: 0,
-              avgpct: 0,
-              subs: 0,
-              impressions: 0,
-              ctr: 0,
-              thumbnail: video.thumbnail,
-              era: posted && posted >= '2025-10-01' ? 'serious' : 'casual',
-              noAnalytics: true,
-            });
-            return;
-          }
-
-          const row = data.rows[0];
-          results.push({
-            id: video.id,
-            title: video.title,
-            posted: posted,
-            days: daysOld,
-            dur: video.dur || 0,
-            views: row[1] || video.views || 0,
-            avd_sec: Math.round(row[3] || 0),
-            avgpct: parseFloat((row[4] || 0).toFixed(2)),
-            subs: row[5] || 0,
-            impressions: row[6] || 0,
-            ctr: parseFloat(((row[7] || 0) * 100).toFixed(2)),
-            thumbnail: video.thumbnail,
-            era: posted && posted >= '2025-10-01' ? 'serious' : 'casual',
-          });
-        } catch(e) {
-          results.push({ ...video, noData: true });
-        }
-      }));
+      for (const row of (data.rows || [])) {
+        // row: [videoId, views, estimatedMinutes, avgViewDuration, avgViewPct, subs, impressions, ctr]
+        analyticsMap[row[0]] = {
+          views: row[1] || 0,
+          avd_sec: Math.round(row[3] || 0),
+          avgpct: parseFloat((row[4] || 0).toFixed(2)),
+          impressions: row[6] || 0,
+          ctr: parseFloat(((row[7] || 0) * 100).toFixed(2)),
+        };
+      }
     }
 
-    return res.status(200).json({
-      videos: results,
-      period: `${days}d`,
-      updated: new Date().toISOString(),
-      total: results.length,
+    // Merge
+    const results = videos.map(video => {
+      const posted = video.published ? video.published.split('T')[0] : null;
+      const daysOld = posted ? Math.round((Date.now() - new Date(posted).getTime()) / 86400000) : 0;
+      const a = analyticsMap[video.id];
+      return {
+        id: video.id,
+        title: video.title,
+        posted,
+        days: daysOld,
+        dur: video.dur || 0,
+        views: a ? a.views : (video.views || 0),
+        avd_sec: a ? a.avd_sec : 0,
+        avgpct: a ? a.avgpct : 0,
+        impressions: a ? a.impressions : 0,
+        ctr: a ? a.ctr : 0,
+        thumbnail: video.thumbnail,
+        era: posted && posted >= '2025-10-01' ? 'serious' : 'casual',
+        noAnalytics: !a,
+      };
     });
 
-  } catch (err) {
-    return res.status(500).json({ error: err.message });
-  }
-}
+    res.status(200).json({ videos: results, period: 'all time' });
 
-function getAuthUrl() {
-  const params = new URLSearchParams({
-    client_id: CLIENT_ID,
-    redirect_uri: 'https://legendary-strawberrh-man-empire-das.vercel.app/api/auth/callback',
-    response_type: 'code',
-    scope: 'https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/yt-analytics.readonly',
-    access_type: 'offline',
-    prompt: 'consent',
-  });
-  return `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
+  } catch (e) {
+    console.error('YouTube analytics error:', e);
+    res.status(500).json({ error: e.message });
+  }
 }
