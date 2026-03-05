@@ -9,7 +9,7 @@ const CLIENT_SECRET = process.env.YOUTUBE_CLIENT_SECRET;
 const API_KEY = process.env.YOUTUBE_API_KEY;
 
 async function getTokens() {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/config?eq.key=youtube_tokens&select=value`, {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/config?key=eq.youtube_tokens&select=value`, {
     headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` },
   });
   const rows = await res.json();
@@ -35,7 +35,7 @@ async function refreshAccessToken(refreshToken) {
     refresh_token: refreshToken,
     expiry: Date.now() + (data.expires_in * 1000),
   };
-  await fetch(`${SUPABASE_URL}/rest/v1/config?eq.key=youtube_tokens`, {
+  await fetch(`${SUPABASE_URL}/rest/v1/config?key=eq.youtube_tokens`, {
     method: 'PATCH',
     headers: {
       'apikey': SUPABASE_KEY,
