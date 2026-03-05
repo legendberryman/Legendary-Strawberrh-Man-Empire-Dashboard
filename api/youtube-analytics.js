@@ -98,8 +98,14 @@ async function getChannelVideos(accessToken) {
     });
   }
 
-  // Filter out Shorts (under 62 seconds)
-  videos = videos.filter(v => (v.dur || 0) >= 62);
+  // Filter out Shorts — YouTube Shorts always have #shorts in title or description
+  // Also filter by duration < 60s as secondary check
+  videos = videos.filter(v => {
+    const title = (v.title || '').toLowerCase();
+    const hasShortTag = title.includes('#shorts') || title.includes('#short');
+    const isTooShort = (v.dur || 0) < 60;
+    return !hasShortTag && !isTooShort;
+  });
   return videos;
 }
 

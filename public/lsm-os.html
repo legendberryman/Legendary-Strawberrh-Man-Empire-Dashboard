@@ -809,47 +809,7 @@ var blDays=30;
 var rcFilter='all', rcEraFilter='all', titleEraFilter='all', tcFilter='all', tlFilter='all';
 var UNDO_STACK=[];
 
-var VIDEOS=[
-  // ═══ RECENT (March 2026) - need 48h data ═══
-  {id:'LSM_MAR05A',title:'This Didgeridoo Performance Is Pure Adrenaline',file:'Elephant Anyuta C – Dragon – High Energy',cat:'High-Energy',days:1,ctr:0,views:0,avd_sec:0,avgpct:0,dur:420,format:'Edited',era:'serious',decision:'Needs 48h Data',posted:'2026-03-04'},
-  {id:'LSM_MAR03A',title:'GOOSEBUMPS Didgeridoo Sound',file:'Elephant Major D – Dragon – High Energy',cat:'High-Energy',days:3,ctr:5.8,views:412,avd_sec:74,avgpct:27.3,dur:380,format:'Edited',era:'serious',decision:'Repost Candidate',posted:'2026-03-02'},
-  {id:'LSM_MAR01A',title:'The #1 Sound for INSTANT CALM – 73 Hz',file:'Gypsy C – Healing – 73Hz',cat:'Healing',days:5,ctr:4.9,views:289,avd_sec:82,avgpct:30.1,dur:440,format:'Static',era:'serious',decision:'Monitor',posted:'2026-02-28'},
-  {id:'LSM_FEB28A',title:'Didgeridoo Effects That Sound Unreal – Ear Candy',file:'Elephant Major D – Ear Candy',cat:'High-Energy',days:6,ctr:6.1,views:523,avd_sec:68,avgpct:24.8,dur:360,format:'Edited',era:'serious',decision:'Repost Candidate',posted:'2026-02-27'},
-  {id:'LSM_FEB27A',title:'The #1 Sound for INSTANT CALM – 1 Hour 73 Hz',file:'Gypsy C – Healing 1H – 73Hz',cat:'Healing 1 Hour',days:7,ctr:3.8,views:178,avd_sec:210,avgpct:35.4,dur:3600,format:'Static',era:'serious',decision:'Monitor',posted:'2026-02-26'},
-  // ═══ Pre-Oct 2025 era (older content) ═══
-  {id:'dQw4w9WgXcQ',title:'Didgeridoo Healing Frequencies 432Hz',cat:'Healing',days:240,ctr:3.2,views:1840,avd_sec:88,avgpct:22.1,dur:320,format:'Static',era:'casual',decision:'Monitor',notes:'Pre-relaunch era',file:'Didgeridoo Healing Frequencies 432Hz'},
-  {id:'kJQP7kiw5Fk',title:'Aboriginal Didgeridoo Sound Bath',cat:'Healing',days:210,ctr:2.8,views:2100,avd_sec:72,avgpct:18.4,dur:240,format:'Static',era:'casual',decision:'Monitor',notes:'Pre-relaunch era',file:'Aboriginal Didgeridoo Sound Bath'},
-  {id:'9bZkp7q19f0',title:'Raw Didgeridoo Improvisation Live',cat:'High-Energy',days:185,ctr:4.1,views:3200,avd_sec:45,avgpct:15.2,dur:180,format:'Live',era:'casual',decision:'Monitor',notes:'Pre-relaunch era',file:'Raw Didgeridoo Improvisation Live'},
-  {id:'JGwWNGJdvx8',title:'Didgeridoo Deep Meditation 1 Hour',cat:'Healing 1 Hour',days:195,ctr:2.4,views:1560,avd_sec:920,avgpct:25.3,dur:3600,format:'Static',era:'casual',decision:'Monitor',notes:'Pre-relaunch era',file:'Didgeridoo Deep Meditation 1 Hour'},
-  {id:'hT_nvWreIhg',title:'Breathing Techniques with Didgeridoo',cat:'High-Energy',days:220,ctr:3.5,views:890,avd_sec:67,avgpct:19.8,dur:200,format:'Live',era:'casual',decision:'Monitor',notes:'Pre-relaunch era',file:'Breathing Techniques with Didgeridoo'},
-  {id:'xIfW_7W5mKw',title:'The #1 Sound for INSTANT CALM - 73 Hz',cat:'Healing',days:120,ctr:9.81,views:2355,avd_sec:54,avgpct:45.34,dur:120,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'Highest CTR — TEXT thumbnail',file:'The #1 Sound for INSTANT CALM - 73 Hz'},
-  {id:'tKExIduceHw',title:'These 69Hz Didgeridoo Frequencies HIT DEEP',cat:'Healing',days:89,ctr:7.80,views:2637,avd_sec:66,avgpct:35.80,dur:187,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',file:'These 69Hz Didgeridoo Frequencies HIT DEEP'},
-  {id:'N3AX0Cjx4JE',title:'The #1 Sound for INSTANT CALM - 73 Hz Didgeridoo Tone',cat:'Healing',days:35,ctr:6.83,views:428,avd_sec:65,avgpct:57.43,dur:114,format:'Static',era:'serious',decision:'Repost Candidate',notes:'Highest avg% — TEXT thumbnail',file:'The #1 Sound for INSTANT CALM - 73 Hz Didgeridoo T'},
-  {id:'aJNm1qZ2Tgs',title:'This Didgeridoo Sounds Makes Your Brain Stop',cat:'Healing',days:27,ctr:5.60,views:26149,avd_sec:104,avgpct:28.28,dur:370,format:'Static',era:'serious',decision:'Repost Candidate',notes:'VIRAL 307k impressions',file:'This Didgeridoo Sounds Makes Your Brain Stop'},
-  {id:'ItAJz3RZqD4',title:'The #1 Sound For INSTANT CALM - 69Hz Didgeridoo',cat:'Healing',days:21,ctr:4.77,views:553,avd_sec:80,avgpct:36.52,dur:220,format:'Static',era:'serious',decision:'Repost Candidate',notes:'',file:'The #1 Sound For INSTANT CALM - 69Hz Didgeridoo'},
-  {id:'evUXopPSZG8',title:'This Didgeridoo Sound Will Put Your Brain to SLEEP',cat:'Healing',days:9,ctr:4.67,views:108,avd_sec:160,avgpct:40.82,dur:392,format:'Edited',era:'serious',decision:'Monitor',notes:'',file:'This Didgeridoo Sound Will Put Your Brain to SLEEP'},
-  {id:'vA8NDWS2azY',title:'The Hidden Power of Didgeridoo Music For Healing',cat:'Healing',days:111,ctr:6.26,views:1735,avd_sec:112,avgpct:24.33,dur:463,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',file:'The Hidden Power of Didgeridoo Music For Healing'},
-  {id:'auUUg7jO9BA',title:'Didgeridoo Effects That Sound Unreal - Ear Candy',cat:'High-Energy',days:113,ctr:7.70,views:4476,avd_sec:80,avgpct:37.37,dur:216,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',file:'Didgeridoo Effects That Sound Unreal - Ear Candy'},
-  {id:'fslVf6Ndu7Q',title:'GOOSEBUMPS Didgeridoo Sound',cat:'High-Energy',days:96,ctr:6.63,views:49272,avd_sec:104,avgpct:36.84,dur:285,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'TOP 510k impressions',file:'GOOSEBUMPS Didgeridoo Sound'},
-  {id:'941zhOxiViU',title:'This Didgeridoo Sound Will BREAK Your Brain',cat:'High-Energy',days:66,ctr:6.06,views:26227,avd_sec:41,avgpct:46.06,dur:91,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',file:'This Didgeridoo Sound Will BREAK Your Brain'},
-  {id:'kwdCP4HYLRw',title:'This Didgeridoo Sound Should NOT Be Possible',cat:'High-Energy',days:53,ctr:7.62,views:11208,avd_sec:66,avgpct:30.81,dur:215,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'Viral 115k',file:'This Didgeridoo Sound Should NOT Be Possible'},
-  {id:'68SyXKsWOvk',title:'This Didgeridoo Vibration Is Way Too Powerful',cat:'High-Energy',days:58,ctr:7.42,views:2715,avd_sec:65,avgpct:38.08,dur:173,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',file:'This Didgeridoo Vibration Is Way Too Powerful'},
-  {id:'iBPAPuB9qmY',title:"Is This the Most EPIC Didgeridoo Performance You've Ever Heard?",cat:'High-Energy',days:31,ctr:5.01,views:1010,avd_sec:91,avgpct:41.83,dur:219,format:'Static',era:'serious',decision:'Repost Candidate',notes:''},
-  {id:'p3JUJCftjRc',title:'Didgeridoo Effects That Sound Unreal - Ear Candy v2',cat:'High-Energy',days:41,ctr:4.85,views:519,avd_sec:81,avgpct:39.07,dur:208,format:'Static',era:'serious',decision:'Repost Candidate',notes:'',file:'Didgeridoo Effects That Sound Unreal - Ear Candy v'},
-  {id:'etJLfkbkkVQ',title:'This Didgeridoo Sound Makes Your Brain Glitch',cat:'High-Energy',days:15,ctr:5.55,views:641,avd_sec:86,avgpct:30.29,dur:284,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',file:'This Didgeridoo Sound Makes Your Brain Glitch'},
-  {id:'yqGOfn5O9iQ',title:'This Didgeridoo Sound Should NOT Be Possible v2',cat:'High-Energy',days:17,ctr:4.04,views:264,avd_sec:116,avgpct:41.39,dur:281,format:'Static',era:'serious',decision:'Change Thumbnail',notes:'',file:'This Didgeridoo Sound Should NOT Be Possible v2'},
-  {id:'lSMJQthFetc',title:'This Didgeridoo Performance Is Pure Adrenaline',cat:'High-Energy',days:23,ctr:3.21,views:323,avd_sec:96,avgpct:41.07,dur:236,format:'Edited',era:'serious',decision:'Change Thumbnail',notes:'',file:'This Didgeridoo Performance Is Pure Adrenaline'},
-  {id:'7h88uzZf6VE',title:"This Didgeridoo Sounds Like It's Possessed",cat:'High-Energy',days:29,ctr:3.68,views:403,avd_sec:74,avgpct:48.80,dur:152,format:'Static',era:'serious',decision:'Change Thumbnail',notes:''},
-  {id:'F_mxavVq_90',title:'This Didgeridoo Sound Gives You Instant Goosebumps',cat:'High-Energy',days:13,ctr:4.92,views:98,avd_sec:118,avgpct:40.48,dur:292,format:'Edited',era:'serious',decision:'Monitor',notes:'',file:'This Didgeridoo Sound Gives You Instant Goosebumps'},
-  {id:'EJohVnzCm_g',title:'The #1 Sound for INSTANT CALM - 1 Hour 73 Hz',cat:'Healing 1 Hour',days:116,ctr:7.45,views:1479,avd_sec:741,avgpct:19.67,dur:3771,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'Highest AVD 1hr',file:'The #1 Sound for INSTANT CALM 1H'},
-  {id:'4qIPQ9Fuz-M',title:'This Sound Deletes Stress | 1 Hour Didgeridoo',cat:'Healing 1 Hour',days:60,ctr:5.30,views:3048,avd_sec:322,avgpct:8.79,dur:3666,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',file:'This Sound Deletes Stress 1H'},
-  {id:'7nhuUgUXc2c',title:'This Didgeridoo Feels Like a SEDATIVE | 1 Hour',cat:'Healing 1 Hour',days:54,ctr:6.49,views:2535,avd_sec:385,avgpct:10.50,dur:3666,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',file:'This Didgeridoo Feels Like a SEDATIVE 1H'},
-  {id:'HcyzeHscz38',title:'This Didgeridoo Feels Like a SEDATIVE | 1 Hour v1',cat:'Healing 1 Hour',days:19,ctr:7.30,views:1213,avd_sec:203,avgpct:5.57,dur:3644,format:'Static',era:'serious',decision:'Repost Candidate',notes:'Best CTR 1hr',file:'This Didgeridoo Feels Like a SEDATIVE 1H'},
-  {id:'Xmx24mN9qKo',title:'This Didgeridoo Sound Removes ALL Tension | 1 Hour',cat:'Healing 1 Hour',days:25,ctr:5.10,views:510,avd_sec:602,avgpct:15.46,dur:3897,format:'Static',era:'serious',decision:'Repost Candidate',notes:'',file:'This Didgeridoo Sound Removes ALL Tension 1H'},
-  // Archive
-  {id:'EJioKvOcFY0',title:"Dan Flynn's Didgeridoo — Mind Blowing",cat:'High-Energy',days:151,ctr:10.69,views:2007,avd_sec:128,avgpct:18.54,dur:693,format:'Edited',era:'archive',decision:'Repost Candidate',notes:'HIGH CTR 10.69% — TEXT thumb'},
-  {id:'fy13tu3EELo',title:'Strawberry Man Meets Zach Bainter – Epic Didgeridoo Jam',cat:'High-Energy',days:82,ctr:7.87,views:2110,avd_sec:128,avgpct:43.27,dur:296,format:'Edited',era:'archive',decision:'Repost Candidate',notes:'High CTR + retention',file:'Strawberry Man Meets Zach Bainter – Epic Didgerido'},
-];
+var VIDEOS=[];
 
 var QUEUE=[
   {id:'q1',title:'3 Elephant Anyuta C - Healing 1 Hour Loop',file:'Elephant Anyuta C – Healing – 1H Loop',stage:'Ready',type:'Healing 1 Hour',priority:'high',notes:''},
@@ -2321,7 +2281,9 @@ async function syncYouTubeAnalytics() {
 
       // Replace VIDEOS entirely with real YouTube data — filter out Shorts (<62s)
       VIDEOS = data.videos.filter(function(row) {
-        return (row.dur || 0) >= 62;
+        var title = (row.title || '').toLowerCase();
+        var isShort = title.includes('#shorts') || title.includes('#short') || (row.dur || 0) < 60;
+        return !isShort;
       }).map(function(row) {
         var v = {
           id: row.id,
