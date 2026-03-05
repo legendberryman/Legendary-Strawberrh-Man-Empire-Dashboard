@@ -1933,8 +1933,10 @@ async function init(){
   if(params.get('auth_success')){showToast('✅ YouTube connected! Syncing data…');window.history.replaceState({},'','/lsm-os.html');setTimeout(syncYouTubeAnalytics,1500);}
   if(params.get('auth_error')){showToast('❌ YouTube error: '+params.get('auth_error'));window.history.replaceState({},'','/lsm-os.html');}
 }
-if(localStorage.getItem('lsm_auth')==='1') init();
-window.addEventListener('load', function(){ if(typeof init === 'function') init(); });
+// Single safe init on DOM ready
+document.addEventListener('DOMContentLoaded', function(){ 
+  if(typeof init === 'function') init(); 
+});
 </script>
 </body>
 </html>
