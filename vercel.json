@@ -1,1 +1,7 @@
-{"buildCommand":null,"outputDirectory":"public","framework":null}
+{
+  "functions": {
+    "api/youtube-analytics.js": {
+      "maxDuration": 60
+    }
+  }
+}
