@@ -102,7 +102,7 @@ export default async function handler(req, res) {
 
     // ── Check cache (valid for 6 hours) ───────────────────────────────────
     if (!forceRefresh) {
-      const { data: cached } = await supabase.from('config').select('value').eq('key', 'youtube_video_cache_v2').single();
+      const { data: cached } = await supabase.from('config').select('value').eq('key', 'youtube_video_cache_v3').single();
       if (cached) {
         try {
           const cache = JSON.parse(cached.value);
@@ -139,9 +139,12 @@ export default async function handler(req, res) {
       const batch = longform.slice(i, i+10);
       await Promise.all(batch.map(async (video) => {
         try {
-          const url = `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel==MINE&startDate=2020-01-01&endDate=${endDate}&metrics=views,estimatedMinutesWatched,averageViewDuration,averageViewPercentage,subscribersGained,impressions,impressionClickThroughRate&filters=video==${video.id}&dimensions=video`;
+          const url = `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel==MINE&startDate=2020-01-01&endDate=${endDate}&metrics=views,estimatedMinutesWatched,averageViewDuration,averageViewPercentage,subscribersGained,impressions,impressionClickThroughRate&filters=video==${video.id}&dimensions=video&maxResults=1`;
           const r = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
           const d = await r.json();
+          if (d.error) {
+            console.error('Analytics API error for', video.id, JSON.stringify(d.error));
+          }
           if (d.rows?.[0]) {
             const row = d.rows[0];
             analyticsMap[video.id] = {
@@ -150,7 +153,7 @@ export default async function handler(req, res) {
               ctr: parseFloat(((row[7]||0)*100).toFixed(2)),
             };
           }
-        } catch(e) {}
+        } catch(e) { console.error('Analytics fetch error:', e.message); }
       }));
     }
 
@@ -171,7 +174,7 @@ export default async function handler(req, res) {
 
     // Save to cache
     await supabase.from('config').upsert(
-      { key: 'youtube_video_cache_v2', value: JSON.stringify({ videos: results, timestamp: Date.now() }) },
+      { key: 'youtube_video_cache_v3', value: JSON.stringify({ videos: results, timestamp: Date.now() }) },
       { onConflict: 'key' }
     );
 
@@ -181,7 +184,7 @@ export default async function handler(req, res) {
     console.error('YouTube API error:', e);
     // Try to serve stale cache on error
     try {
-      const { data: cached } = await supabase.from('config').select('value').eq('key', 'youtube_video_cache_v2').single();
+      const { data: cached } = await supabase.from('config').select('value').eq('key', 'youtube_video_cache_v3').single();
       if (cached) {
         const cache = JSON.parse(cached.value);
         return res.status(200).json({ videos: cache.videos, period: 'all time', cached: true, stale: true });
