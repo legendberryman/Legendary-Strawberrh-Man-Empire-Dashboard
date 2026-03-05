@@ -2300,40 +2300,90 @@ function renderPlanner(){
 var YT_CONNECTED = false;
 
 async function syncYouTubeAnalytics() {
+  updateYTStatus('⏳ Syncing YouTube…');
   try {
-    var ids = VIDEOS.filter(function(v){return v.era==='serious';}).map(function(v){return v.id;}).join(',');
-    var res = await fetch('/api/youtube-analytics?videoIds='+ids+'&days=30');
+    var res = await fetch('/api/youtube-analytics?days=90');
     var data = await res.json();
 
     if (data.error === 'not_authenticated') {
-      // Show connect button
       showYTConnectBanner(data.authUrl);
+      updateYTStatus('⚠️ YouTube not connected');
       return;
     }
 
-    if (data.videos) {
+    if (data.error) {
+      updateYTStatus('⚠️ ' + data.error);
+      return;
+    }
+
+    if (data.videos && data.videos.length) {
       YT_CONNECTED = true;
       var updated = 0;
+      var added = 0;
+
       data.videos.forEach(function(row) {
         if (row.noData) return;
-        var v = VIDEOS.find(function(x){return x.id === row.id;});
-        if (!v) return;
-        // Only update if we got real data
-        if (row.ctr > 0) v.ctr = row.ctr;
-        if (row.avd_sec > 0) v.avd_sec = row.avd_sec;
-        if (row.avgpct > 0) v.avgpct = row.avgpct;
-        if (row.views > 0) v.views = row.views;
-        // Auto-update decision based on fresh data
-        v.decision = autoDecision(v);
-        saveV(v);
-        updated++;
+
+        // Try to find existing video by ID
+        var v = VIDEOS.find(function(x){ return x.id === row.id; });
+
+        if (v) {
+          // Update existing video with fresh data
+          if (row.ctr > 0) v.ctr = row.ctr;
+          if (row.avd_sec > 0) v.avd_sec = row.avd_sec;
+          if (row.avgpct > 0) v.avgpct = row.avgpct;
+          if (row.views > 0) v.views = row.views;
+          if (row.posted) v.posted = row.posted;
+          if (row.days) v.days = row.days;
+          if (row.era) v.era = row.era;
+          v.decision = autoDecision(v);
+          saveV(v);
+          updated++;
+        } else {
+          // New video not in hardcoded list — add it automatically
+          var newV = {
+            id: row.id,
+            title: row.title,
+            file: row.title, // use title as file until manually set
+            cat: guessCategory(row.title, row.dur),
+            posted: row.posted,
+            days: row.days,
+            dur: row.dur || 0,
+            ctr: row.ctr || 0,
+            views: row.views || 0,
+            avd_sec: row.avd_sec || 0,
+            avgpct: row.avgpct || 0,
+            format: row.dur > 1800 ? 'Static' : 'Edited',
+            era: row.era || 'serious',
+            decision: 'Monitor',
+            notes: '',
+          };
+          newV.decision = autoDecision(newV);
+          VIDEOS.push(newV);
+          saveV(newV);
+          added++;
+        }
       });
-      updateYTStatus('✅ YouTube data live · '+updated+' videos · '+data.period);
+
+      var msg = '✅ YouTube live · ' + updated + ' updated';
+      if (added > 0) msg += ' · ' + added + ' new';
+      msg += ' · ' + data.period;
+      updateYTStatus(msg);
       reRender();
     }
   } catch(e) {
-    updateYTStatus('⚠️ YouTube sync failed');
+    updateYTStatus('⚠️ YouTube sync failed: ' + e.message);
   }
+}
+
+// Guess video category from title and duration
+function guessCategory(title, dur) {
+  var t = (title || '').toLowerCase();
+  if (dur > 1800) return 'Healing 1 Hour';
+  if (t.includes('calm') || t.includes('heal') || t.includes('sleep') ||
+      t.includes('meditat') || t.includes('relax') || t.includes('stress') ||
+      t.includes('hz') || t.includes('frequency')) return 'Healing';
+  return 'High-Energy';
 }
 
 function showYTConnectBanner(authUrl) {
