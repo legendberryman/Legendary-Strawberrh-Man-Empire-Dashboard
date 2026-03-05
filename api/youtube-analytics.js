@@ -52,6 +52,7 @@ async function getVideoList(accessToken) {
 
   // Paginate ALL videos
   const videos = [];
+  const seenIds = new Set();
   let pageToken = null;
   do {
     const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uploadsId}&maxResults=50${pageToken ? '&pageToken='+pageToken : ''}`;
@@ -59,7 +60,8 @@ async function getVideoList(accessToken) {
     const d = await r.json();
     for (const item of (d.items||[])) {
       const vid = item.snippet?.resourceId?.videoId;
-      if (vid && !videos.find(v => v.id === vid)) { // deduplicate
+      if (vid && !seenIds.has(vid)) { // deduplicate with Set (O(1))
+        seenIds.add(vid);
         videos.push({ id: vid, title: item.snippet.title, published: item.snippet.publishedAt, thumbnail: item.snippet.thumbnails?.medium?.url });
       }
     }
@@ -100,13 +102,19 @@ export default async function handler(req, res) {
 
     // ── Check cache (valid for 6 hours) ───────────────────────────────────
     if (!forceRefresh) {
-      const { data: cached } = await supabase.from('config').select('value').eq('key', 'youtube_video_cache').single();
+      const { data: cached } = await supabase.from('config').select('value').eq('key', 'youtube_video_cache_v2').single();
       if (cached) {
         try {
           const cache = JSON.parse(cached.value);
           const ageHours = (Date.now() - cache.timestamp) / 3600000;
           if (ageHours < 6) {
-            return res.status(200).json({ videos: cache.videos, period: 'all time', cached: true, cacheAge: Math.round(ageHours*10)/10 });
+            // Validate cache has real analytics — if >90% have 0 CTR, it's bad cache
+            const zeroCtr = cache.videos.filter(v => v.ctr === 0).length;
+            const badCache = zeroCtr > cache.videos.length * 0.9;
+            if (!badCache) {
+              return res.status(200).json({ videos: cache.videos, period: 'all time', cached: true, cacheAge: Math.round(ageHours*10)/10 });
+            }
+            // Fall through to fresh fetch if bad cache
           }
         } catch(e) {}
       }
@@ -156,14 +164,14 @@ export default async function handler(req, res) {
         id: v.id, title: v.title, file: det.file||null, posted, days: daysOld,
         dur: det.dur||0, views: det.views||0,
         avd_sec: an?.avd_sec||0, avgpct: an?.avgpct||0, ctr: an?.ctr||0,
-        thumbnail: v.thumbnail,
+        thumbnail: v.id ? `https://i.ytimg.com/vi/${v.id}/mqdefault.jpg` : v.thumbnail,
         era: posted && posted >= '2025-10-01' ? 'serious' : 'casual',
       };
     });
 
     // Save to cache
     await supabase.from('config').upsert(
-      { key: 'youtube_video_cache', value: JSON.stringify({ videos: results, timestamp: Date.now() }) },
+      { key: 'youtube_video_cache_v2', value: JSON.stringify({ videos: results, timestamp: Date.now() }) },
       { onConflict: 'key' }
     );
 
@@ -173,7 +181,7 @@ export default async function handler(req, res) {
     console.error('YouTube API error:', e);
     // Try to serve stale cache on error
     try {
-      const { data: cached } = await supabase.from('config').select('value').eq('key', 'youtube_video_cache').single();
+      const { data: cached } = await supabase.from('config').select('value').eq('key', 'youtube_video_cache_v2').single();
       if (cached) {
         const cache = JSON.parse(cached.value);
         return res.status(200).json({ videos: cache.videos, period: 'all time', cached: true, stale: true });

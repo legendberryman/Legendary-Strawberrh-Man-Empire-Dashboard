@@ -504,12 +504,7 @@ tbody tr.expanded td{background:var(--goldbg)!important}
         <button class="flt-btn" onclick="setTitleFilter('Healing',this)">🌿 Healing</button>
         <button class="flt-btn" onclick="setTitleFilter('Healing 1 Hour',this)">🧘 1 Hour</button>
       </div>
-      <div style="display:flex;gap:.4rem;align-items:center;margin-bottom:.5rem">
-        <span style="font-size:.68rem;color:var(--text3)">Era:</span>
-        <button class="flt-btn on" id="tEraAll" onclick="setTitleEra('all',this)">All</button>
-        <button class="flt-btn" id="tEraNew" onclick="setTitleEra('new',this)">After Oct '25</button>
-        <button class="flt-btn" id="tEraOld" onclick="setTitleEra('old',this)">Before Oct '25</button>
-      </div>
+
       <div id="titleSugs" style="max-height:600px;overflow-y:auto;padding-right:.25rem"></div>
       <button class="btn btn-outline btn-sm" style="margin-top:.75rem;width:100%" onclick="genTitles()">↻ Shuffle</button>
     </div>
@@ -686,7 +681,6 @@ tbody tr.expanded td{background:var(--goldbg)!important}
         <button class="tgl" id="plannerToggleNew" onclick="setPlannerFilter('new',this)">After Oct 2025</button>
         <button class="tgl" id="plannerToggleOld" onclick="setPlannerFilter('old',this)">Before Oct 2025</button>
       </div>
-      <span style="font-size:.72rem;color:var(--text3)" title="Filter videos by era to compare performance before vs after channel relaunch">Era filter ⓘ</span>
     </div>
     <div style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:center">
       <span style="display:flex;align-items:center;gap:.35rem;font-size:.72rem;color:var(--text2)"><span style="width:9px;height:9px;border-radius:2px;background:var(--gold);display:inline-block"></span>Posted</span>
@@ -936,16 +930,23 @@ function catAvg(cat){
 }
 
 function calcScore(v){
-  var avg=catAvg(v.cat);
-  var isLong=v.dur>1800;
-  var avdPct=v.dur>0?(v.avd_sec/v.dur)*100:v.avgpct;
-  var hasAnalytics=v.ctr>0||v.avd_sec>0;
-  if(!hasAnalytics){
-    // No analytics yet — score based on views only
-    return Math.round(Math.min(Math.log10(v.views+1)*20,100));
-  }
-  var ctrAvg=avg.ctr>0?avg.ctr:4;
-  return Math.round(Math.min(avdPct*(isLong?4:1.5),100)*.35+Math.min((v.ctr/ctrAvg)*50,100)*.25+Math.min(v.avgpct*1.5,100)*.25+Math.min(Math.log10(v.views+1)*20,100)*.15);
+  var views = v.views||0;
+  var ctr = v.ctr||0;
+  var avd_sec = v.avd_sec||0;
+  var avgpct = v.avgpct||0;
+  var dur = v.dur||0;
+  var hasAnalytics = ctr>0 || avd_sec>0;
+  var viewScore = Math.min(Math.log10(views+1)*20, 100);
+  if(!hasAnalytics) return Math.round(viewScore);
+  var avg = catAvg(v.cat);
+  var isLong = dur>1800;
+  var avdPct = dur>0 ? (avd_sec/dur)*100 : avgpct;
+  var ctrAvg = (avg.ctr && avg.ctr>0) ? avg.ctr : 4;
+  var s = Math.min(avdPct*(isLong?4:1.5),100)*.35
+        + Math.min((ctr/ctrAvg)*50,100)*.25
+        + Math.min(avgpct*1.5,100)*.25
+        + viewScore*.15;
+  return isNaN(s) ? Math.round(viewScore) : Math.round(s);
 }
 
 function autoDecision(v){
@@ -1032,7 +1033,7 @@ function renderHome(){
     var s=calcScore(best);
     document.getElementById('homeNextRepost').innerHTML=
       '<div style="background:var(--s2);border:1px solid var(--gold);border-radius:8px;padding:1rem">'
-      +'<img src="https://img.youtube.com/vi/'+best.id+'/mqdefault.jpg" style="width:100%;border-radius:4px;margin-bottom:.75rem;display:block"/>'
+      +'<img src="https://i.ytimg.com/vi/'+best.id+'/mqdefault.jpg" style="width:100%;border-radius:4px;margin-bottom:.75rem;display:block"/>'
       +'<span class="pill '+tcp(best.cat)+'">'+tci(best.cat)+' '+best.cat+'</span>'
       +'<div style="font-size:.88rem;font-weight:700;margin:.5rem 0;line-height:1.4">'+best.title+'</div>'
       +'<div style="display:flex;gap:1.2rem;margin-bottom:.75rem">'
@@ -1108,7 +1109,7 @@ function renderRepost(){
     var isTop=i===0;
     return'<div style="background:'+(isTop?'var(--s2)':'var(--s1)')+';border:1px solid '+(isTop?'var(--gold)':'var(--border)')+';border-radius:8px;padding:'+(isTop?'1.1rem':'0.85rem')+';margin-bottom:.6rem;display:grid;grid-template-columns:3rem 1fr auto;gap:1rem;align-items:center">'
       +'<div style="text-align:center"><div style="font-size:'+(isTop?'2rem':'1.3rem')+';font-weight:800;color:'+(isTop?'var(--gold)':'var(--text3)')+';font-family:\'JetBrains Mono\',monospace">'+(i+1)+'</div></div>'
-      +'<div><img src="https://img.youtube.com/vi/'+v.id+'/mqdefault.jpg" style="width:100%;max-width:200px;border-radius:4px;margin-bottom:.5rem;display:block"/>'
+      +'<div><img src="https://i.ytimg.com/vi/'+v.id+'/mqdefault.jpg" style="width:100%;max-width:200px;border-radius:4px;margin-bottom:.5rem;display:block"/>'
       +'<span class="pill '+tcp(v.cat)+'">'+tci(v.cat)+' '+v.cat+'</span>'
       +(isTop?'<span style="font-size:.7rem;color:var(--gold);font-weight:700;margin-left:.5rem">← POST THIS NEXT</span>':'')
       +'<div style="font-size:'+(isTop?'.9rem':'.82rem')+';font-weight:700;margin:.4rem 0;line-height:1.4">'+v.title+'</div>'
@@ -1225,7 +1226,7 @@ function expRow(v){
   // Only use YouTube thumbnail if it looks like a real YT id (not LSM_xxx)
   var isRealYTId=/^[a-zA-Z0-9_\-]{11}$/.test(v.id);
   var thumbHtml=isRealYTId
-    ?'<img src="https://img.youtube.com/vi/'+v.id+'/mqdefault.jpg" style="width:100%;border-radius:4px;margin-bottom:.75rem" onerror="this.style.display=\'none\'"/>'
+    ?'<img src="https://i.ytimg.com/vi/'+v.id+'/mqdefault.jpg" style="width:100%;border-radius:4px;margin-bottom:.75rem" onerror="this.style.display=\'none\'"/>'
     :'<div style="width:100%;aspect-ratio:16/9;background:var(--s3);border-radius:4px;margin-bottom:.75rem;display:flex;align-items:center;justify-content:center;font-size:2rem">'+tci(v.cat)+'</div>';
   return'<div class="exp-grid">'
     +'<div><div class="exp-section-title">Performance Data</div>'
@@ -1451,7 +1452,7 @@ function renderThumbGrid(){
   document.getElementById('thumbGrid').innerHTML=list.map(function(v){
     var hasText=v.notes&&v.notes.toLowerCase().includes('text');
     return'<div class="thumb-card" onclick="window.open(\'https://youtube.com/watch?v='+v.id+'\',\'_blank\')">'
-      +'<img class="thumb-img" src="https://img.youtube.com/vi/'+v.id+'/mqdefault.jpg" loading="lazy" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'"/>'
+      +'<img class="thumb-img" src="https://i.ytimg.com/vi/'+v.id+'/mqdefault.jpg" loading="lazy" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'"/>'
       +'<div class="thumb-img-placeholder" style="display:none">'+tci(v.cat)+'</div>'
       +'<div class="thumb-info">'
       +(hasText?'<span class="text-thumb-badge">TEXT THUMB</span>':'')
@@ -1626,7 +1627,7 @@ function renderVertical(){
     +all.map(function(v,i){
       return'<div style="display:flex;align-items:center;gap:.75rem;padding:.45rem 0;border-bottom:1px solid var(--border)">'
         +'<span style="font-size:.78rem;color:var(--text3);min-width:1.5rem;font-family:\'JetBrains Mono\',monospace">'+(i+1)+'</span>'
-        +'<img src="https://img.youtube.com/vi/'+v.id+'/default.jpg" style="width:50px;height:28px;object-fit:cover;border-radius:3px;flex-shrink:0"/>'
+        +'<img src="https://i.ytimg.com/vi/'+v.id+'/default.jpg" style="width:50px;height:28px;object-fit:cover;border-radius:3px;flex-shrink:0"/>'
         +'<span style="font-size:.8rem;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+v.title+'</span>'
         +'<span style="font-size:.78rem;font-weight:800;color:var(--gold);font-family:\'JetBrains Mono\',monospace">'+v.ctr+'%</span>'
         +'</div>';
@@ -1967,7 +1968,7 @@ function renderDetailPanel(v, panel){
   
   var thumb=document.createElement('img');
   var isRealYTIdP=/^[a-zA-Z0-9_\-]{11}$/.test(v.id);
-  thumb.src=isRealYTIdP?'https://img.youtube.com/vi/'+v.id+'/mqdefault.jpg':'';
+  thumb.src=isRealYTIdP?'https://i.ytimg.com/vi/'+v.id+'/mqdefault.jpg':'';
   thumb.style.cssText='width:100px;height:56px;object-fit:cover;border-radius:6px;flex-shrink:0'+(isRealYTIdP?'':';display:none');
   thumb.onerror=function(){this.style.display='none';};
   left.appendChild(thumb);
@@ -2175,7 +2176,7 @@ function renderPlanner(){
         chipInner.style.cssText='display:flex;align-items:center;gap:.25rem';
         var thumb=document.createElement('img');
         var isRealYTId2=/^[a-zA-Z0-9_\-]{11}$/.test(v.id);
-        thumb.src=isRealYTId2?'https://img.youtube.com/vi/'+v.id+'/mqdefault.jpg':'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+        thumb.src=isRealYTId2?'https://i.ytimg.com/vi/'+v.id+'/mqdefault.jpg':'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
         thumb.style.cssText='width:28px;height:16px;object-fit:cover;border-radius:2px;flex-shrink:0';
         thumb.onerror=function(){this.style.opacity=0;this.style.width='0';this.style.marginRight='0';};
         var titleSpan=document.createElement('span');
@@ -2202,7 +2203,7 @@ function renderPlanner(){
           (function(sid){sugChip.onclick=function(e){e.stopPropagation();showPlannerDetail(sid);};})(sug.id);
           // Add thumbnail then chip
           var sugThumb=document.createElement('img');
-          sugThumb.src='https://img.youtube.com/vi/'+sug.id+'/mqdefault.jpg';
+          sugThumb.src='https://i.ytimg.com/vi/'+sug.id+'/mqdefault.jpg';
           sugThumb.style.cssText='width:28px;height:16px;object-fit:cover;border-radius:2px;flex-shrink:0;display:block;margin-bottom:2px';
           sugThumb.onerror=function(){this.style.opacity=0;};
           cell.appendChild(sugThumb);
@@ -2235,7 +2236,7 @@ function renderPlanner(){
     row.onmouseover=function(){this.style.borderColor='var(--border2)';};
     row.onmouseout=function(){this.style.borderColor='var(--border)';};
     var img2=document.createElement('img');
-    img2.src='https://img.youtube.com/vi/'+sug2.id+'/mqdefault.jpg';
+    img2.src='https://i.ytimg.com/vi/'+sug2.id+'/mqdefault.jpg';
     img2.style.cssText='width:48px;height:27px;object-fit:cover;border-radius:4px;flex-shrink:0';
     img2.onerror=function(){this.style.opacity='0';};
     row.appendChild(img2);
@@ -2281,11 +2282,15 @@ async function forceYTRefresh() {
     clearTimeout(timeout);
     var data = await res.json();
     if (data.videos && data.videos.length) {
+      var seenIds = new Set();
       VIDEOS = data.videos.filter(function(row) {
         var title = (row.title||'').toLowerCase();
-        return !title.includes('#shorts') && !title.includes('#short') && (row.dur||0) >= 60;
+        if (title.includes('#shorts') || title.includes('#short') || (row.dur||0) < 60) return false;
+        if (seenIds.has(row.id)) return false;
+        seenIds.add(row.id);
+        return true;
       }).map(function(row) {
-        var v = { id:row.id, title:row.title, file:row.file||row.title, cat:guessCategory(row.title,row.dur), posted:row.posted, days:row.days, dur:row.dur||0, ctr:row.ctr||0, views:row.views||0, avd_sec:row.avd_sec||0, avgpct:row.avgpct||0, format:(row.dur||0)>3000?'Static':'Edited', era:row.era||'serious', decision:'Monitor', notes:'' };
+        var v = { id:row.id, title:row.title, file:row.file||row.title, thumbnail:row.thumbnail||('https://i.ytimg.com/vi/'+row.id+'/mqdefault.jpg'), cat:guessCategory(row.title,row.dur), posted:row.posted, days:row.days, dur:row.dur||0, ctr:row.ctr||0, views:row.views||0, avd_sec:row.avd_sec||0, avgpct:row.avgpct||0, format:(row.dur||0)>3000?'Static':'Edited', era:row.era||'serious', decision:'Monitor', notes:'' };
         v.score = calcScore(v); v.decision = autoDecision(v); return v;
       });
       updateYTStatus('✅ YouTube live · ' + VIDEOS.length + ' videos · just refreshed');
@@ -2319,16 +2324,20 @@ async function syncYouTubeAnalytics() {
     if (data.videos && data.videos.length) {
       YT_CONNECTED = true;
 
-      // Replace VIDEOS entirely with real YouTube data — filter out Shorts (<62s)
+      // Replace VIDEOS entirely with real YouTube data — filter out Shorts + deduplicate
+      var _seenIds = new Set();
       VIDEOS = data.videos.filter(function(row) {
         var title = (row.title || '').toLowerCase();
-        var isShort = title.includes('#shorts') || title.includes('#short') || (row.dur || 0) < 60;
-        return !isShort;
+        if (title.includes('#shorts') || title.includes('#short') || (row.dur || 0) < 60) return false;
+        if (_seenIds.has(row.id)) return false;
+        _seenIds.add(row.id);
+        return true;
       }).map(function(row) {
         var v = {
           id: row.id,
           title: row.title,
           file: row.file || row.title,
+          thumbnail: 'https://i.ytimg.com/vi/' + row.id + '/mqdefault.jpg',
           cat: guessCategory(row.title, row.dur),
           posted: row.posted,
           days: row.days,
@@ -2347,10 +2356,13 @@ async function syncYouTubeAnalytics() {
         return v;
       });
 
+      var zeroCtr = VIDEOS.filter(function(v){ return v.ctr === 0; }).length;
+      var hasAnalytics = zeroCtr < VIDEOS.length * 0.9;
       var statusMsg = '✅ YouTube live · ' + VIDEOS.length + ' videos';
       if (data.cached) statusMsg += ' · cached ' + (data.cacheAge||0) + 'h ago';
       if (data.stale) statusMsg += ' · ⚠️ stale';
-      statusMsg += ' · <a href="#" onclick="forceYTRefresh();return false;" style="color:var(--gold)">↻ refresh</a>';
+      if (!hasAnalytics && data.cached) { statusMsg += ' · <a href="#" onclick="forceYTRefresh();return false;" style="color:var(--red)">⚠️ no analytics — click to refresh</a>'; }
+      else { statusMsg += ' · <a href="#" onclick="forceYTRefresh();return false;" style="color:var(--gold)">↻ refresh</a>'; }
       updateYTStatus(statusMsg);
       reRender();
     }
