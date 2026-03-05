@@ -7,12 +7,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
 :root{
-  --bg:#16141a;--s1:#1d1b22;--s2:#242230;--s3:#2c2a38;
-  --border:#2d2d35;--border2:#3a3a44;
-  --gold:#e0453a;--gold2:#f06b62;--goldbg:rgba(224,69,58,.1);
+  --bg:#1c1917;--s1:#28251f;--s2:#302d27;--s3:#3a362f;
+  --border:#3f3b34;--border2:#524d44;
+  --gold:#d97757;--gold2:#e8906e;--goldbg:rgba(217,119,87,.13);
   --green:#4ade80;--red:#f87171;--blue:#60a5fa;--purple:#a78bfa;--orange:#fb923c;
   --heal:#6ee7b7;--energy:#fb923c;--hour:#93c5fd;
-  --text:#ebebef;--text2:#8e8ea0;--text3:#52525e;
+  --text:#e7e2db;--text2:#9c9288;--text3:#635d55;
   --fw:600;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -25,6 +25,8 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 
 
 /* ── PLANNER ── */
+.planner-sugg-row{display:flex;align-items:center;gap:.75rem;padding:.6rem .85rem;background:var(--s2);border-radius:8px;margin-bottom:.4rem;cursor:pointer;border:1px solid var(--border);transition:border-color .15s}
+.planner-sugg-row:hover{border-color:var(--border2)}
 .planner-day{background:var(--s2);border:1px solid var(--border);border-radius:6px;min-height:80px;padding:.4rem;cursor:pointer;transition:border-color .15s}
 .planner-day:hover{border-color:var(--border2)}
 .planner-day.today{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
@@ -323,7 +325,7 @@ tbody tr.expanded td{background:var(--goldbg)!important}
 <div class="sidebar" id="sidebar">
   <div class="sb-header">
     <div class="sb-logo">⚡ LSM<span style="color:var(--text3);font-weight:400;font-size:.75rem;margin-left:.3rem">Empire OS</span></div>
-    <div class="sb-version">v2.3 · Wed 4 Mar 2026</div>
+    <div class="sb-version">v2.4 · Thu 5 Mar 2026</div>
   </div>
 
   <div class="sb-section">
@@ -648,25 +650,41 @@ tbody tr.expanded td{background:var(--goldbg)!important}
 
 <!-- MODAL: 48H DATA -->
 
-<div class="page-content" id="page-planner" style="display:none">
-  <div class="page-grid">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:.75rem">
-      <div style="display:flex;align-items:center;gap:.75rem">
-        <button class="btn btn-outline btn-sm" onclick="plannerPrevMonth()">← Prev</button>
-        <span style="font-size:1rem;font-weight:700;color:var(--text)" id="plannerMonthLabel">March 2026</span>
-        <button class="btn btn-outline btn-sm" onclick="plannerNextMonth()">Next →</button>
-      </div>
-      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-        <span style="display:flex;align-items:center;gap:.35rem;font-size:.75rem;color:var(--text2)"><span style="width:10px;height:10px;border-radius:2px;background:var(--gold);display:inline-block"></span>New upload</span>
-        <span style="display:flex;align-items:center;gap:.35rem;font-size:.75rem;color:var(--text2)"><span style="width:10px;height:10px;border-radius:2px;background:var(--green);display:inline-block"></span>Repost</span>
-        <span style="display:flex;align-items:center;gap:.35rem;font-size:.75rem;color:var(--text2)"><span style="width:10px;height:10px;border-radius:2px;background:var(--s3);border:1px dashed var(--border2);display:inline-block"></span>Empty slot</span>
-      </div>
+<div class="page-content" id="page-planner" style="display:none;padding:0;min-height:100vh">
+  <!-- PLANNER TOPBAR -->
+  <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);background:var(--s1);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;position:sticky;top:52px;z-index:40">
+    <div style="display:flex;align-items:center;gap:.75rem">
+      <button class="btn btn-outline btn-sm" onclick="plannerPrevMonth()">←</button>
+      <span style="font-size:1rem;font-weight:700;min-width:130px;text-align:center" id="plannerMonthLabel">March 2026</span>
+      <button class="btn btn-outline btn-sm" onclick="plannerNextMonth()">→</button>
     </div>
-    <div id="plannerGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;width:100%"></div>
-    <div style="margin-top:1.5rem" id="plannerUpcoming">
-      <div style="font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:.75rem">Upcoming Repost Suggestions</div>
-      <div id="plannerSuggestions"></div>
+    <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+      <div class="tgl-group">
+        <button class="tgl on" id="plannerToggleAll" onclick="setPlannerFilter('all',this)">All videos</button>
+        <button class="tgl" id="plannerToggleNew" onclick="setPlannerFilter('new',this)">After Oct 2025</button>
+        <button class="tgl" id="plannerToggleOld" onclick="setPlannerFilter('old',this)">Before Oct 2025</button>
+      </div>
+      <span style="font-size:.72rem;color:var(--text3)" title="Filter videos by era to compare performance before vs after channel relaunch">Era filter ⓘ</span>
     </div>
+    <div style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:center">
+      <span style="display:flex;align-items:center;gap:.35rem;font-size:.72rem;color:var(--text2)"><span style="width:9px;height:9px;border-radius:2px;background:var(--gold);display:inline-block"></span>Posted</span>
+      <span style="display:flex;align-items:center;gap:.35rem;font-size:.72rem;color:var(--text2)"><span style="width:9px;height:9px;border-radius:2px;background:rgba(251,146,60,.4);border:1px dashed var(--orange);display:inline-block"></span>48h due</span>
+      <span style="display:flex;align-items:center;gap:.35rem;font-size:.72rem;color:var(--text2)"><span style="width:9px;height:9px;border-radius:2px;background:rgba(96,165,250,.15);border:1px dashed var(--blue);display:inline-block"></span>Suggested repost</span>
+    </div>
+  </div>
+
+  <!-- CALENDAR GRID -->
+  <div style="padding:1rem 1.5rem">
+    <div id="plannerGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;width:100%"></div>
+  </div>
+
+  <!-- SELECTED VIDEO DETAIL PANEL -->
+  <div id="plannerDetail" style="display:none;margin:0 1.5rem 1rem;background:var(--s2);border:1px solid var(--border2);border-radius:10px;padding:1.4rem;box-shadow:0 2px 12px rgba(0,0,0,.3)"></div>
+
+  <!-- UPCOMING SUGGESTIONS -->
+  <div style="padding:0 1.5rem 1.5rem">
+    <div style="font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:.65rem">Next Repost Suggestions</div>
+    <div id="plannerSuggestions"></div>
   </div>
 </div>
 
@@ -739,33 +757,33 @@ var rcFilter='all', tcFilter='all', tlFilter='all';
 var UNDO_STACK=[];
 
 var VIDEOS=[
-  {id:'xIfW_7W5mKw',title:'The #1 Sound for INSTANT CALM - 73 Hz',cat:'Healing',days:120,ctr:9.81,views:2355,avd_sec:54,avgpct:45.34,dur:120,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'Highest CTR — TEXT thumbnail'},
-  {id:'tKExIduceHw',title:'These 69Hz Didgeridoo Frequencies HIT DEEP',cat:'Healing',days:89,ctr:7.80,views:2637,avd_sec:66,avgpct:35.80,dur:187,format:'Edited',era:'serious',decision:'Repost Candidate',notes:''},
-  {id:'N3AX0Cjx4JE',title:'The #1 Sound for INSTANT CALM - 73 Hz Didgeridoo Tone',cat:'Healing',days:35,ctr:6.83,views:428,avd_sec:65,avgpct:57.43,dur:114,format:'Static',era:'serious',decision:'Repost Candidate',notes:'Highest avg% — TEXT thumbnail'},
-  {id:'aJNm1qZ2Tgs',title:'This Didgeridoo Sounds Makes Your Brain Stop',cat:'Healing',days:27,ctr:5.60,views:26149,avd_sec:104,avgpct:28.28,dur:370,format:'Static',era:'serious',decision:'Repost Candidate',notes:'VIRAL 307k impressions'},
-  {id:'ItAJz3RZqD4',title:'The #1 Sound For INSTANT CALM - 69Hz Didgeridoo',cat:'Healing',days:21,ctr:4.77,views:553,avd_sec:80,avgpct:36.52,dur:220,format:'Static',era:'serious',decision:'Repost Candidate',notes:''},
-  {id:'evUXopPSZG8',title:'This Didgeridoo Sound Will Put Your Brain to SLEEP',cat:'Healing',days:9,ctr:4.67,views:108,avd_sec:160,avgpct:40.82,dur:392,format:'Edited',era:'serious',decision:'Monitor',notes:''},
-  {id:'vA8NDWS2azY',title:'The Hidden Power of Didgeridoo Music For Healing',cat:'Healing',days:111,ctr:6.26,views:1735,avd_sec:112,avgpct:24.33,dur:463,format:'Edited',era:'serious',decision:'Repost Candidate',notes:''},
-  {id:'auUUg7jO9BA',title:'Didgeridoo Effects That Sound Unreal - Ear Candy',cat:'High-Energy',days:113,ctr:7.70,views:4476,avd_sec:80,avgpct:37.37,dur:216,format:'Edited',era:'serious',decision:'Repost Candidate',notes:''},
-  {id:'fslVf6Ndu7Q',title:'GOOSEBUMPS Didgeridoo Sound',cat:'High-Energy',days:96,ctr:6.63,views:49272,avd_sec:104,avgpct:36.84,dur:285,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'TOP 510k impressions'},
-  {id:'941zhOxiViU',title:'This Didgeridoo Sound Will BREAK Your Brain',cat:'High-Energy',days:66,ctr:6.06,views:26227,avd_sec:41,avgpct:46.06,dur:91,format:'Edited',era:'serious',decision:'Repost Candidate',notes:''},
-  {id:'kwdCP4HYLRw',title:'This Didgeridoo Sound Should NOT Be Possible',cat:'High-Energy',days:53,ctr:7.62,views:11208,avd_sec:66,avgpct:30.81,dur:215,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'Viral 115k'},
-  {id:'68SyXKsWOvk',title:'This Didgeridoo Vibration Is Way Too Powerful',cat:'High-Energy',days:58,ctr:7.42,views:2715,avd_sec:65,avgpct:38.08,dur:173,format:'Edited',era:'serious',decision:'Repost Candidate',notes:''},
-  {id:'iBPAPuB9qmY',title:"Is This the Most EPIC Didgeridoo Performance You've Ever Heard?",cat:'High-Energy',days:31,ctr:5.01,views:1010,avd_sec:91,avgpct:41.83,dur:219,format:'Static',era:'serious',decision:'Repost Candidate',notes:''},
-  {id:'p3JUJCftjRc',title:'Didgeridoo Effects That Sound Unreal - Ear Candy v2',cat:'High-Energy',days:41,ctr:4.85,views:519,avd_sec:81,avgpct:39.07,dur:208,format:'Static',era:'serious',decision:'Repost Candidate',notes:''},
-  {id:'etJLfkbkkVQ',title:'This Didgeridoo Sound Makes Your Brain Glitch',cat:'High-Energy',days:15,ctr:5.55,views:641,avd_sec:86,avgpct:30.29,dur:284,format:'Edited',era:'serious',decision:'Repost Candidate',notes:''},
-  {id:'yqGOfn5O9iQ',title:'This Didgeridoo Sound Should NOT Be Possible v2',cat:'High-Energy',days:17,ctr:4.04,views:264,avd_sec:116,avgpct:41.39,dur:281,format:'Static',era:'serious',decision:'Change Thumbnail',notes:''},
-  {id:'lSMJQthFetc',title:'This Didgeridoo Performance Is Pure Adrenaline',cat:'High-Energy',days:23,ctr:3.21,views:323,avd_sec:96,avgpct:41.07,dur:236,format:'Edited',era:'serious',decision:'Change Thumbnail',notes:''},
-  {id:'7h88uzZf6VE',title:"This Didgeridoo Sounds Like It's Possessed",cat:'High-Energy',days:29,ctr:3.68,views:403,avd_sec:74,avgpct:48.80,dur:152,format:'Static',era:'serious',decision:'Change Thumbnail',notes:''},
-  {id:'F_mxavVq_90',title:'This Didgeridoo Sound Gives You Instant Goosebumps',cat:'High-Energy',days:13,ctr:4.92,views:98,avd_sec:118,avgpct:40.48,dur:292,format:'Edited',era:'serious',decision:'Monitor',notes:''},
-  {id:'EJohVnzCm_g',title:'The #1 Sound for INSTANT CALM - 1 Hour 73 Hz',cat:'Healing 1 Hour',days:116,ctr:7.45,views:1479,avd_sec:741,avgpct:19.67,dur:3771,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'Highest AVD 1hr'},
-  {id:'4qIPQ9Fuz-M',title:'This Sound Deletes Stress | 1 Hour Didgeridoo',cat:'Healing 1 Hour',days:60,ctr:5.30,views:3048,avd_sec:322,avgpct:8.79,dur:3666,format:'Edited',era:'serious',decision:'Repost Candidate',notes:''},
-  {id:'7nhuUgUXc2c',title:'This Didgeridoo Feels Like a SEDATIVE | 1 Hour',cat:'Healing 1 Hour',days:54,ctr:6.49,views:2535,avd_sec:385,avgpct:10.50,dur:3666,format:'Edited',era:'serious',decision:'Repost Candidate',notes:''},
-  {id:'HcyzeHscz38',title:'This Didgeridoo Feels Like a SEDATIVE | 1 Hour v1',cat:'Healing 1 Hour',days:19,ctr:7.30,views:1213,avd_sec:203,avgpct:5.57,dur:3644,format:'Static',era:'serious',decision:'Repost Candidate',notes:'Best CTR 1hr'},
-  {id:'Xmx24mN9qKo',title:'This Didgeridoo Sound Removes ALL Tension | 1 Hour',cat:'Healing 1 Hour',days:25,ctr:5.10,views:510,avd_sec:602,avgpct:15.46,dur:3897,format:'Static',era:'serious',decision:'Repost Candidate',notes:''},
+  {id:'xIfW_7W5mKw',title:'The #1 Sound for INSTANT CALM - 73 Hz',cat:'Healing',days:120,ctr:9.81,views:2355,avd_sec:54,avgpct:45.34,dur:120,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'Highest CTR — TEXT thumbnail',posted:'2025-11-05'},
+  {id:'tKExIduceHw',title:'These 69Hz Didgeridoo Frequencies HIT DEEP',cat:'Healing',days:89,ctr:7.80,views:2637,avd_sec:66,avgpct:35.80,dur:187,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',posted:'2025-12-06'},
+  {id:'N3AX0Cjx4JE',title:'The #1 Sound for INSTANT CALM - 73 Hz Didgeridoo Tone',cat:'Healing',days:35,ctr:6.83,views:428,avd_sec:65,avgpct:57.43,dur:114,format:'Static',era:'serious',decision:'Repost Candidate',notes:'Highest avg% — TEXT thumbnail',posted:'2026-01-29'},
+  {id:'aJNm1qZ2Tgs',title:'This Didgeridoo Sounds Makes Your Brain Stop',cat:'Healing',days:27,ctr:5.60,views:26149,avd_sec:104,avgpct:28.28,dur:370,format:'Static',era:'serious',decision:'Repost Candidate',notes:'VIRAL 307k impressions',posted:'2026-02-06'},
+  {id:'ItAJz3RZqD4',title:'The #1 Sound For INSTANT CALM - 69Hz Didgeridoo',cat:'Healing',days:21,ctr:4.77,views:553,avd_sec:80,avgpct:36.52,dur:220,format:'Static',era:'serious',decision:'Repost Candidate',notes:'',posted:'2026-02-12'},
+  {id:'evUXopPSZG8',title:'This Didgeridoo Sound Will Put Your Brain to SLEEP',cat:'Healing',days:9,ctr:4.67,views:108,avd_sec:160,avgpct:40.82,dur:392,format:'Edited',era:'serious',decision:'Monitor',notes:'',posted:'2026-02-24'},
+  {id:'vA8NDWS2azY',title:'The Hidden Power of Didgeridoo Music For Healing',cat:'Healing',days:111,ctr:6.26,views:1735,avd_sec:112,avgpct:24.33,dur:463,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',posted:'2025-11-14'},
+  {id:'auUUg7jO9BA',title:'Didgeridoo Effects That Sound Unreal - Ear Candy',cat:'High-Energy',days:113,ctr:7.70,views:4476,avd_sec:80,avgpct:37.37,dur:216,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',posted:'2025-11-12'},
+  {id:'fslVf6Ndu7Q',title:'GOOSEBUMPS Didgeridoo Sound',cat:'High-Energy',days:96,ctr:6.63,views:49272,avd_sec:104,avgpct:36.84,dur:285,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'TOP 510k impressions',posted:'2025-11-29'},
+  {id:'941zhOxiViU',title:'This Didgeridoo Sound Will BREAK Your Brain',cat:'High-Energy',days:66,ctr:6.06,views:26227,avd_sec:41,avgpct:46.06,dur:91,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',posted:'2025-12-29'},
+  {id:'kwdCP4HYLRw',title:'This Didgeridoo Sound Should NOT Be Possible',cat:'High-Energy',days:53,ctr:7.62,views:11208,avd_sec:66,avgpct:30.81,dur:215,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'Viral 115k',posted:'2026-01-11'},
+  {id:'68SyXKsWOvk',title:'This Didgeridoo Vibration Is Way Too Powerful',cat:'High-Energy',days:58,ctr:7.42,views:2715,avd_sec:65,avgpct:38.08,dur:173,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',posted:'2026-01-06'},
+  {id:'iBPAPuB9qmY',title:"Is This the Most EPIC Didgeridoo Performance You've Ever Heard?",cat:'High-Energy',days:31,ctr:5.01,views:1010,avd_sec:91,avgpct:41.83,dur:219,format:'Static',era:'serious',decision:'Repost Candidate',notes:'',posted:'2026-02-02'},
+  {id:'p3JUJCftjRc',title:'Didgeridoo Effects That Sound Unreal - Ear Candy v2',cat:'High-Energy',days:41,ctr:4.85,views:519,avd_sec:81,avgpct:39.07,dur:208,format:'Static',era:'serious',decision:'Repost Candidate',notes:'',posted:'2026-01-23'},
+  {id:'etJLfkbkkVQ',title:'This Didgeridoo Sound Makes Your Brain Glitch',cat:'High-Energy',days:15,ctr:5.55,views:641,avd_sec:86,avgpct:30.29,dur:284,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',posted:'2026-02-18'},
+  {id:'yqGOfn5O9iQ',title:'This Didgeridoo Sound Should NOT Be Possible v2',cat:'High-Energy',days:17,ctr:4.04,views:264,avd_sec:116,avgpct:41.39,dur:281,format:'Static',era:'serious',decision:'Change Thumbnail',notes:'',posted:'2026-02-16'},
+  {id:'lSMJQthFetc',title:'This Didgeridoo Performance Is Pure Adrenaline',cat:'High-Energy',days:23,ctr:3.21,views:323,avd_sec:96,avgpct:41.07,dur:236,format:'Edited',era:'serious',decision:'Change Thumbnail',notes:'',posted:'2026-02-10'},
+  {id:'7h88uzZf6VE',title:"This Didgeridoo Sounds Like It's Possessed",cat:'High-Energy',days:29,ctr:3.68,views:403,avd_sec:74,avgpct:48.80,dur:152,format:'Static',era:'serious',decision:'Change Thumbnail',notes:'',posted:'2026-02-04'},
+  {id:'F_mxavVq_90',title:'This Didgeridoo Sound Gives You Instant Goosebumps',cat:'High-Energy',days:13,ctr:4.92,views:98,avd_sec:118,avgpct:40.48,dur:292,format:'Edited',era:'serious',decision:'Monitor',notes:'',posted:'2026-02-20'},
+  {id:'EJohVnzCm_g',title:'The #1 Sound for INSTANT CALM - 1 Hour 73 Hz',cat:'Healing 1 Hour',days:116,ctr:7.45,views:1479,avd_sec:741,avgpct:19.67,dur:3771,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'Highest AVD 1hr',posted:'2025-11-09'},
+  {id:'4qIPQ9Fuz-M',title:'This Sound Deletes Stress | 1 Hour Didgeridoo',cat:'Healing 1 Hour',days:60,ctr:5.30,views:3048,avd_sec:322,avgpct:8.79,dur:3666,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',posted:'2026-01-04'},
+  {id:'7nhuUgUXc2c',title:'This Didgeridoo Feels Like a SEDATIVE | 1 Hour',cat:'Healing 1 Hour',days:54,ctr:6.49,views:2535,avd_sec:385,avgpct:10.50,dur:3666,format:'Edited',era:'serious',decision:'Repost Candidate',notes:'',posted:'2026-01-10'},
+  {id:'HcyzeHscz38',title:'This Didgeridoo Feels Like a SEDATIVE | 1 Hour v1',cat:'Healing 1 Hour',days:19,ctr:7.30,views:1213,avd_sec:203,avgpct:5.57,dur:3644,format:'Static',era:'serious',decision:'Repost Candidate',notes:'Best CTR 1hr',posted:'2026-02-14'},
+  {id:'Xmx24mN9qKo',title:'This Didgeridoo Sound Removes ALL Tension | 1 Hour',cat:'Healing 1 Hour',days:25,ctr:5.10,views:510,avd_sec:602,avgpct:15.46,dur:3897,format:'Static',era:'serious',decision:'Repost Candidate',notes:'',posted:'2026-02-08'},
   // Archive
-  {id:'EJioKvOcFY0',title:"Dan Flynn's Didgeridoo — Mind Blowing",cat:'High-Energy',days:151,ctr:10.69,views:2007,avd_sec:128,avgpct:18.54,dur:693,format:'Edited',era:'archive',decision:'Repost Candidate',notes:'HIGH CTR 10.69% — TEXT thumb'},
-  {id:'fy13tu3EELo',title:'Strawberry Man Meets Zach Bainter – Epic Didgeridoo Jam',cat:'High-Energy',days:82,ctr:7.87,views:2110,avd_sec:128,avgpct:43.27,dur:296,format:'Edited',era:'archive',decision:'Repost Candidate',notes:'High CTR + retention'},
+  {id:'EJioKvOcFY0',title:"Dan Flynn's Didgeridoo — Mind Blowing",cat:'High-Energy',days:151,ctr:10.69,views:2007,avd_sec:128,avgpct:18.54,dur:693,format:'Edited',era:'archive',decision:'Repost Candidate',notes:'HIGH CTR 10.69% — TEXT thumb',posted:'2025-10-05'},
+  {id:'fy13tu3EELo',title:'Strawberry Man Meets Zach Bainter – Epic Didgeridoo Jam',cat:'High-Energy',days:82,ctr:7.87,views:2110,avd_sec:128,avgpct:43.27,dur:296,format:'Edited',era:'archive',decision:'Repost Candidate',notes:'High CTR + retention',posted:'2025-12-13'},
 ];
 
 var QUEUE=[
@@ -1712,152 +1730,361 @@ function showDecisionDetail(i){
 
 
 // ═══ MONTHLY PLANNER ════════════════════════════════════════════════════
-var plannerDate = new Date();
+var plannerDate = new Date(2026,2,1);
+var plannerFilter = 'all';
+var plannerSelected = null;
 
+function plannerSelectVid(vid){ showPlannerDetail(vid); }
+function closePlannerDetail(){ plannerSelected=null; var el=document.getElementById('plannerDetail'); if(el) el.style.display='none'; renderPlanner(); }
+function prefill48hFromPlanner(vid){ prefill48h(vid); }
+
+function setPlannerFilter(f,btn){
+  plannerFilter=f;
+  ['plannerToggleAll','plannerToggleNew','plannerToggleOld'].forEach(function(id){var e=document.getElementById(id);if(e)e.classList.remove('on');});
+  if(btn) btn.classList.add('on');
+  renderPlanner();
+}
 function plannerPrevMonth(){ plannerDate.setMonth(plannerDate.getMonth()-1); renderPlanner(); }
 function plannerNextMonth(){ plannerDate.setMonth(plannerDate.getMonth()+1); renderPlanner(); }
 
-function getEligibleReposts(){
-  var now = Date.now();
+function getFilteredVideos(){
   return VIDEOS.filter(function(v){
-    if(v.era !== 'serious') return false;
-    var score = calcScore(v);
-    if(score < 55) return false;
-    var minDays = score >= 75 ? 60 : 90;
-    // Check last repost date
-    var lastRep = v.lastReposted ? new Date(v.lastReposted).getTime() : 0;
-    var daysSince = (now - lastRep) / 86400000;
-    if(lastRep && daysSince < minDays) return false;
-    if(v.decision === 'Reposted' && daysSince < minDays) return false;
+    if(plannerFilter==='new') return !v.posted || v.posted>='2025-10-01';
+    if(plannerFilter==='old') return v.posted && v.posted<'2025-10-01';
     return true;
-  }).sort(function(a,b){ return calcScore(b) - calcScore(a); });
+  });
 }
 
-function getCategoryForSlot(slotIndex){
-  // Alternate: Healing, High-Energy, Healing, High-Energy...
-  // Every 5th slot = Healing 1 Hour
-  if(slotIndex % 5 === 4) return 'Healing';
-  return slotIndex % 2 === 0 ? 'Healing' : 'High-Energy';
+function getEligibleReposts(){
+  var now=Date.now();
+  return getFilteredVideos().filter(function(v){
+    if(v.era!=='serious') return false;
+    var score=calcScore(v); if(score<55) return false;
+    var minDays=score>=75?60:90;
+    var postedMs=v.posted?new Date(v.posted).getTime():0;
+    return (now-postedMs)/86400000>=minDays;
+  }).sort(function(a,b){return calcScore(b)-calcScore(a);});
 }
+
+function needs48h(v){
+  if(!v.posted) return false;
+  var h=(Date.now()-new Date(v.posted).getTime())/3600000;
+  return h>=40 && h<=120 && !v.lastEntry48;
+}
+
+function showPlannerDetail(videoId){
+  plannerSelected=videoId;
+  var panel=document.getElementById('plannerDetail');
+  if(!videoId){ if(panel) panel.style.display='none'; renderPlanner(); return; }
+  var v=VIDEOS.find(function(x){return x.id===videoId;});
+  if(!v){ if(panel) panel.style.display='none'; return; }
+  panel.style.display='block';
+  renderDetailPanel(v,panel);
+  renderPlanner();
+  panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function renderDetailPanel(v, panel){
+  var score=calcScore(v);
+  var avdFmt=avdStr(v.avd_sec||0);
+  var isNeeds=needs48h(v);
+  var sc=scoreColor(score);
+  var titles=TITLE_BANK.filter(function(t){return t.cat===v.cat;}).slice(0,4);
+  var desc=v.cat==='Healing'
+    ?'Deep healing didgeridoo frequencies for stress relief and relaxation.\n\nThis video features healing frequencies.\n\nPerfect for: meditation, sleep, anxiety relief, deep focus\n\nSubscribe for new healing frequencies every 2 days\n#didgeridoo #healing #frequency #meditation #432hz'
+    :v.cat==='High-Energy'
+    ?'Raw didgeridoo power — unfiltered, live performance energy.\n\nFilmed live with no editing tricks. Just pure didgeridoo.\n\nSubscribe for new videos every 2 days\n#didgeridoo #livemusic #viral #musicperformance'
+    :'1 hour of continuous didgeridoo healing frequencies. No ads. No interruptions.\n\nSet a timer and let this run while you sleep or meditate.\n\n#didgeridoo #sleep #meditation #1hour #healing';
+  var tags=v.cat==='Healing'
+    ?'didgeridoo, healing frequencies, 432hz, stress relief, meditation music, sleep music, anxiety relief, deep relaxation, frequency healing, aboriginal music'
+    :v.cat==='High-Energy'
+    ?'didgeridoo, live music, aboriginal instrument, street performance, viral music, world music, unique instrument, circular breathing'
+    :'didgeridoo, sleep music, 1 hour meditation, healing frequencies, deep sleep, relaxation music, white noise alternative, meditation';
+
+  var d=document.createElement('div');
+
+  // Header row
+  var hdr=document.createElement('div');
+  hdr.style.cssText='display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1rem';
+  
+  var left=document.createElement('div');
+  left.style.cssText='display:flex;align-items:center;gap:.85rem';
+  
+  var thumb=document.createElement('img');
+  thumb.src='https://img.youtube.com/vi/'+v.id+'/mqdefault.jpg';
+  thumb.style.cssText='width:100px;height:56px;object-fit:cover;border-radius:6px;flex-shrink:0';
+  thumb.onerror=function(){this.style.opacity='0';};
+  left.appendChild(thumb);
+  
+  var titleBlock=document.createElement('div');
+  var titleEl=document.createElement('div');
+  titleEl.style.cssText='font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:.3rem';
+  titleEl.textContent=v.title;
+  titleBlock.appendChild(titleEl);
+  
+  var pillRow=document.createElement('div');
+  pillRow.style.cssText='display:flex;gap:.4rem;flex-wrap:wrap;align-items:center';
+  var pill=document.createElement('span');
+  pill.className='pill '+tcf(v.cat);
+  pill.textContent=tci(v.cat)+' '+v.cat;
+  pillRow.appendChild(pill);
+  if(v.posted){var pd=document.createElement('span');pd.style.cssText='font-size:.72rem;color:var(--text3)';pd.textContent='Posted: '+v.posted;pillRow.appendChild(pd);}
+  if(isNeeds){var badge=document.createElement('span');badge.style.cssText='background:rgba(251,146,60,.2);color:var(--orange);font-size:.7rem;font-weight:700;padding:.15rem .4rem;border-radius:4px';badge.textContent='⚡ 48h data due!';pillRow.appendChild(badge);}
+  titleBlock.appendChild(pillRow);
+  left.appendChild(titleBlock);
+  hdr.appendChild(left);
+
+  var btns=document.createElement('div');
+  btns.style.cssText='display:flex;gap:.5rem;flex-wrap:wrap';
+  if(isNeeds){
+    var b48=document.createElement('button');
+    b48.className='btn btn-gold btn-sm';
+    b48.textContent='Enter 48h Data';
+    b48.onclick=function(){prefill48hFromPlanner(v.id);};
+    btns.appendChild(b48);
+  }
+  var byt=document.createElement('a');
+  byt.href='https://youtube.com/watch?v='+v.id;
+  byt.target='_blank';
+  byt.className='btn btn-outline btn-sm';
+  byt.textContent='▶ Watch';
+  btns.appendChild(byt);
+  var bcl=document.createElement('button');
+  bcl.className='btn btn-outline btn-sm';
+  bcl.textContent='✕ Close';
+  bcl.onclick=closePlannerDetail;
+  btns.appendChild(bcl);
+  hdr.appendChild(btns);
+  d.appendChild(hdr);
+
+  // Stats bar
+  var stats=[
+    {l:'Score',val:score,col:sc,bold:true},
+    {l:'CTR',val:(v.ctr||0)+'%'},
+    {l:'AVD',val:avdFmt},
+    {l:'Avg%',val:(v.avgpct||0)+'%'},
+    {l:'Views',val:(v.views||0).toLocaleString()},
+    {l:'Decision',val:v.decision||'—'}
+  ];
+  var statGrid=document.createElement('div');
+  statGrid.style.cssText='display:grid;grid-template-columns:repeat(6,1fr);gap:.5rem;margin-bottom:1rem';
+  stats.forEach(function(s){
+    var cell=document.createElement('div');
+    cell.style.cssText='background:var(--s3);border-radius:6px;padding:.5rem;text-align:center';
+    var val=document.createElement('div');
+    val.style.cssText='font-size:'+(s.bold?'1.1rem':'.85rem')+';font-weight:700;color:'+(s.col||'var(--text)');
+    val.textContent=s.val;
+    var lbl=document.createElement('div');
+    lbl.style.cssText='font-size:.63rem;color:var(--text3);margin-top:.1rem';
+    lbl.textContent=s.l;
+    cell.appendChild(val); cell.appendChild(lbl);
+    statGrid.appendChild(cell);
+  });
+  d.appendChild(statGrid);
+
+  // 3-col: Titles | Description | Tags
+  var cols=document.createElement('div');
+  cols.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem';
+
+  // Titles col
+  var tcol=document.createElement('div');
+  var th=document.createElement('div');
+  th.style.cssText='font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--text3);margin-bottom:.45rem';
+  th.textContent='💡 Title Ideas (click to copy)';
+  tcol.appendChild(th);
+  titles.forEach(function(t){
+    var ti=document.createElement('div');
+    ti.style.cssText='font-size:.76rem;background:var(--s3);border-radius:5px;padding:.4rem .6rem;margin-bottom:.3rem;cursor:pointer;color:var(--text2);transition:background .15s;line-height:1.4';
+    ti.title='Click to copy';
+    ti.textContent=t.t;
+    ti.onclick=function(){navigator.clipboard.writeText(t.t);this.style.background='var(--gold)';this.style.color='#fff';var el=this;setTimeout(function(){el.style.background='var(--s3)';el.style.color='var(--text2)';},900);};
+    tcol.appendChild(ti);
+  });
+  // Score info
+  if(v.ctr||v.avd_sec){
+    var perf=document.createElement('div');
+    perf.style.cssText='font-size:.68rem;color:var(--text3);margin-top:.5rem;padding:.4rem;background:var(--s3);border-radius:5px';
+    perf.textContent='Best test: '+(score>=75?'TEXT thumbnail on proven concept':'Test new hook angle against this CTR');
+    tcol.appendChild(perf);
+  }
+  cols.appendChild(tcol);
+
+  // Description col
+  var dcol=document.createElement('div');
+  var dh=document.createElement('div');
+  dh.style.cssText='font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--text3);margin-bottom:.45rem';
+  dh.textContent='📝 Description Template (click to copy)';
+  dcol.appendChild(dh);
+  var dtxt=document.createElement('div');
+  dtxt.style.cssText='font-size:.73rem;color:var(--text2);background:var(--s3);border-radius:5px;padding:.5rem .65rem;white-space:pre-wrap;cursor:pointer;max-height:140px;overflow-y:auto;line-height:1.5';
+  dtxt.title='Click to copy';
+  dtxt.textContent=desc;
+  dtxt.onclick=function(){navigator.clipboard.writeText(desc);this.style.background='var(--gold)';var el=this;setTimeout(function(){el.style.background='var(--s3)';},700);};
+  dcol.appendChild(dtxt);
+  cols.appendChild(dcol);
+
+  // Tags col
+  var tagcol=document.createElement('div');
+  var tagh=document.createElement('div');
+  tagh.style.cssText='font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--text3);margin-bottom:.45rem';
+  tagh.textContent='🏷️ Tags (click to copy)';
+  tagcol.appendChild(tagh);
+  var tagtxt=document.createElement('div');
+  tagtxt.style.cssText='font-size:.73rem;color:var(--text2);background:var(--s3);border-radius:5px;padding:.5rem .65rem;cursor:pointer;line-height:1.8';
+  tagtxt.title='Click to copy';
+  tagtxt.textContent=tags;
+  tagtxt.onclick=function(){navigator.clipboard.writeText(tags);this.style.background='var(--gold)';var el=this;setTimeout(function(){el.style.background='var(--s3)';},700);};
+  tagcol.appendChild(tagtxt);
+  cols.appendChild(tagcol);
+
+  d.appendChild(cols);
+  panel.innerHTML='';
+  panel.appendChild(d);
+}
+
+function tcf(cat){return cat==='Healing'?'pill-heal':cat==='High-Energy'?'pill-energy':'pill-hour';}
 
 function renderPlanner(){
-  var el = document.getElementById('plannerGrid');
-  var sugEl = document.getElementById('plannerSuggestions');
+  var el=document.getElementById('plannerGrid');
+  var sugEl=document.getElementById('plannerSuggestions');
   if(!el) return;
 
-  var year = plannerDate.getFullYear();
-  var month = plannerDate.getMonth();
-  var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  document.getElementById('plannerMonthLabel').textContent = months[month] + ' ' + year;
+  var year=plannerDate.getFullYear(), month=plannerDate.getMonth();
+  var months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var lbl=document.getElementById('plannerMonthLabel');
+  if(lbl) lbl.textContent=months[month]+' '+year;
 
-  var today = new Date();
-  var firstDay = new Date(year, month, 1).getDay();
-  var daysInMonth = new Date(year, month+1, 0).getDate();
+  var now=new Date();
+  var todayStr=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+  var firstDay=new Date(year,month,1).getDay();
+  var daysInMonth=new Date(year,month+1,0).getDate();
 
-  // Build posting schedule - every 2 days starting from channel start
-  // Use actual video dates if available
-  var postedDates = {};
-  VIDEOS.forEach(function(v){
-    if(v.posted){
-      var d = new Date(v.posted);
-      if(d.getFullYear() === year && d.getMonth() === month){
-        var key = d.getDate();
-        postedDates[key] = postedDates[key] || [];
-        postedDates[key].push(v);
-      }
+  // Build posted map
+  var postedMap={};
+  getFilteredVideos().forEach(function(v){
+    if(!v.posted) return;
+    var d=new Date(v.posted);
+    if(d.getFullYear()===year && d.getMonth()===month){
+      var k=d.getDate(); postedMap[k]=postedMap[k]||[]; postedMap[k].push(v);
     }
   });
 
-  // Determine which days are "posting days" (every 2 days)
-  // Find the cadence anchor - use today or first of month
-  var anchor = new Date(year, month, 1);
-  var postingDays = {};
-  var slotIdx = 0;
-  for(var d = 1; d <= daysInMonth; d++){
-    var dayDate = new Date(year, month, d);
-    var diffFromToday = Math.floor((dayDate - today) / 86400000);
-    // Every 2 days from today
-    if(Math.abs(diffFromToday) % 2 === 0){
-      postingDays[d] = {slotIdx: slotIdx, isFuture: diffFromToday > 0};
-      slotIdx++;
-    }
-  }
+  var eligible=getEligibleReposts();
+  var usedSug={};
 
-  var eligible = getEligibleReposts();
-  var usedInPlanner = {};
+  // Render grid
+  el.innerHTML='';
+  var dayNames=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  dayNames.forEach(function(dn){
+    var h=document.createElement('div');
+    h.style.cssText='font-size:.64rem;font-weight:700;color:var(--text3);padding:.3rem;text-align:center;background:var(--s1);border-radius:4px;margin-bottom:3px';
+    h.textContent=dn; el.appendChild(h);
+  });
+  for(var i=0;i<firstDay;i++){var emp=document.createElement('div');emp.style.minHeight='72px';el.appendChild(emp);}
 
-  // Day headers
-  var dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  var html = dayNames.map(function(d){
-    return '<div class="planner-day-hd">'+d+'</div>';
-  }).join('');
+  for(var day=1;day<=daysInMonth;day++){
+    var dateStr=year+'-'+String(month+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+    var isToday=dateStr===todayStr;
+    var isFuture=dateStr>todayStr;
+    var cell=document.createElement('div');
+    cell.style.cssText='min-height:72px;border-radius:6px;padding:.35rem;cursor:pointer;transition:all .15s;border:1px solid var(--border);background:var(--s2)';
 
-  // Empty cells before month start
-  for(var i = 0; i < firstDay; i++){
-    html += '<div style="min-height:80px"></div>';
-  }
+    if(isToday) cell.style.borderColor='var(--gold)';
 
-  // Day cells
-  for(var day = 1; day <= daysInMonth; day++){
-    var isToday = today.getDate() === day && today.getMonth() === month && today.getFullYear() === year;
-    var dayClass = 'planner-day';
-    if(isToday) dayClass += ' today';
+    var dayLbl=document.createElement('div');
+    dayLbl.style.cssText='font-size:.68rem;font-weight:700;color:'+(isToday?'var(--gold)':'var(--text3)')+';margin-bottom:.2rem';
+    dayLbl.textContent=day+(isToday?' ●':'');
+    cell.appendChild(dayLbl);
 
-    var chips = '';
-    var hasPosted = postedDates[day];
-    var slot = postingDays[day];
-
-    if(hasPosted){
-      hasPosted.forEach(function(v){
-        var isRep = v.decision === 'Reposted';
-        chips += '<div class="planner-chip '+(isRep?'repost':'upload')+'" title="'+v.title+'">'+(isRep?'♻':'🆕')+' '+v.title.substring(0,18)+'</div>';
+    if(postedMap[day]){
+      cell.style.background='rgba(204,120,92,.05)';
+      postedMap[day].forEach(function(v){
+        var isSelected=v.id===plannerSelected;
+        var isN48=needs48h(v);
+        var chip=document.createElement('div');
+        chip.style.cssText='font-size:.6rem;font-weight:600;padding:.1rem .28rem;border-radius:3px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;cursor:pointer;'
+          +'background:'+(isSelected?'var(--gold)':isN48?'rgba(251,146,60,.2)':'var(--goldbg)')
+          +';color:'+(isSelected?'#fff':isN48?'var(--orange)':'var(--gold)')
+          +';border:1px solid '+(isN48&&!isSelected?'var(--orange)':'transparent');
+        chip.title=v.title+(isN48?' — 48h data due!':'');
+        chip.textContent=(isN48?'⚡ ':tci(v.cat)+' ')+v.title.substring(0,15);
+        (function(vid){chip.onclick=function(e){e.stopPropagation();showPlannerDetail(vid);};})(v.id);
+        cell.appendChild(chip);
+        if(!isSelected) cell.style.borderColor='var(--border2)';
+        if(isSelected) cell.style.borderColor='var(--gold)';
       });
-      dayClass += ' posting';
-    } else if(slot && slot.isFuture){
-      // Suggest best eligible repost for this category
-      var cat = getCategoryForSlot(slot.slotIdx);
-      var suggested = eligible.filter(function(v){
-        return v.cat === cat && !usedInPlanner[v.id];
-      })[0];
-      if(!suggested) suggested = eligible.filter(function(v){ return !usedInPlanner[v.id]; })[0];
-      if(suggested){
-        usedInPlanner[suggested.id] = true;
-        chips += '<div class="planner-chip suggested" title="'+suggested.title+'">'+tci(suggested.cat)+' '+suggested.title.substring(0,16)+'</div>';
-        chips += '<div style="font-size:.58rem;color:var(--text3)">Score '+calcScore(suggested)+'</div>';
-        dayClass += ' empty-slot';
-      } else {
-        chips += '<div style="font-size:.62rem;color:var(--text3)">No eligible repost</div>';
-        dayClass += ' empty-slot';
+    } else if(isFuture){
+      var diff=Math.round((new Date(dateStr)-now)/86400000);
+      if(diff>0 && diff%2===0){
+        var sug=eligible.filter(function(v){return !usedSug[v.id];})[0];
+        if(sug){
+          usedSug[sug.id]=true;
+          var sugChip=document.createElement('div');
+          sugChip.style.cssText='font-size:.58rem;font-weight:600;padding:.1rem .25rem;border-radius:3px;background:rgba(96,165,250,.1);color:var(--blue);border:1px dashed rgba(96,165,250,.4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;cursor:pointer';
+          sugChip.title='Suggested repost: '+sug.title;
+          sugChip.textContent='↩ '+sug.title.substring(0,14);
+          (function(sid){sugChip.onclick=function(e){e.stopPropagation();showPlannerDetail(sid);};})(sug.id);
+          cell.appendChild(sugChip);
+          var scLabel=document.createElement('div');
+          scLabel.style.cssText='font-size:.55rem;color:var(--text3);margin-top:1px';
+          scLabel.textContent='Score '+calcScore(sug);
+          cell.appendChild(scLabel);
+          cell.style.borderColor='rgba(96,165,250,.2)';
+        }
       }
     }
-
-    html += '<div class="'+dayClass+'">';
-    html += '<div class="planner-day-num">'+day+'</div>';
-    html += chips;
-    html += '</div>';
+    cell.onclick=function(){showPlannerDetail(null);};
+    el.appendChild(cell);
   }
-
-  el.innerHTML = html;
 
   // Upcoming suggestions list
-  var upcomingHtml = '';
-  var futureSlots = Object.keys(postingDays).filter(function(d){ return postingDays[d].isFuture; }).slice(0,6);
-  var usedSugg = {};
-  futureSlots.forEach(function(d, i){
-    var cat = getCategoryForSlot(postingDays[d].slotIdx);
-    var v = eligible.filter(function(x){ return x.cat===cat && !usedSugg[x.id]; })[0]
-         || eligible.filter(function(x){ return !usedSugg[x.id]; })[0];
-    if(!v) return;
-    usedSugg[v.id] = true;
-    var score = calcScore(v);
-    upcomingHtml += '<div style="display:flex;align-items:center;gap:.75rem;padding:.65rem .85rem;background:var(--s2);border-radius:8px;margin-bottom:.5rem">';
-    upcomingHtml += '<div style="font-size:1.1rem">'+tci(v.cat)+'</div>';
-    upcomingHtml += '<div style="flex:1;min-width:0"><div style="font-size:.82rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+v.title+'</div>';
-    upcomingHtml += '<div style="font-size:.72rem;color:var(--text3)">'+v.cat+' · Score <span style="color:'+scoreColor(score)+'">'+score+'</span> · Post on '+months[month]+' '+d+'</div></div>';
-    upcomingHtml += '<a href="https://youtube.com/watch?v='+v.id+'" target="_blank" style="font-size:.75rem;color:var(--text3);text-decoration:none">▶</a>';
-    upcomingHtml += '</div>';
-  });
-  sugEl.innerHTML = upcomingHtml || '<div style="color:var(--text3);font-size:.82rem">No eligible repost candidates yet. Videos need score 55+ and 60-90 days since last repost.</div>';
+  sugEl.innerHTML='';
+  var used2={},count=0;
+  for(var d2=1;d2<=daysInMonth&&count<5;d2++){
+    var ds2=year+'-'+String(month+1).padStart(2,'0')+'-'+String(d2).padStart(2,'0');
+    if(ds2<=todayStr) continue;
+    var diff2=Math.round((new Date(ds2)-now)/86400000);
+    if(diff2<=0||diff2%2!==0) continue;
+    var sug2=eligible.filter(function(v){return !used2[v.id];})[0];
+    if(!sug2) break;
+    used2[sug2.id]=true; count++;
+    var row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:.75rem;padding:.6rem .85rem;background:var(--s2);border-radius:8px;margin-bottom:.4rem;cursor:pointer;border:1px solid var(--border);transition:border-color .15s';
+    row.onmouseover=function(){this.style.borderColor='var(--border2)';};
+    row.onmouseout=function(){this.style.borderColor='var(--border)';};
+    var img2=document.createElement('img');
+    img2.src='https://img.youtube.com/vi/'+sug2.id+'/mqdefault.jpg';
+    img2.style.cssText='width:48px;height:27px;object-fit:cover;border-radius:4px;flex-shrink:0';
+    img2.onerror=function(){this.style.opacity='0';};
+    row.appendChild(img2);
+    var info2=document.createElement('div');
+    info2.style.cssText='flex:1;min-width:0';
+    var t2=document.createElement('div');
+    t2.style.cssText='font-size:.8rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
+    t2.textContent=sug2.title;
+    var sc2=calcScore(sug2);
+    var sub2=document.createElement('div');
+    sub2.style.cssText='font-size:.7rem;color:var(--text3)';
+    sub2.textContent=sug2.cat+' · Score '+sc2+' · Post '+ds2;
+    info2.appendChild(t2); info2.appendChild(sub2);
+    row.appendChild(info2);
+    var wa=document.createElement('a');
+    wa.href='https://youtube.com/watch?v='+sug2.id;
+    wa.target='_blank';
+    wa.style.cssText='font-size:.75rem;color:var(--text3);text-decoration:none';
+    wa.textContent='▶';
+    wa.onclick=function(e){e.stopPropagation();};
+    row.appendChild(wa);
+    (function(sid2){row.onclick=function(){showPlannerDetail(sid2);};})(sug2.id);
+    sugEl.appendChild(row);
+  }
+  if(!sugEl.children.length){
+    var nm=document.createElement('div');
+    nm.style.cssText='color:var(--text3);font-size:.82rem;padding:.5rem';
+    nm.textContent='No repost candidates this month. Videos need score 55+ and 60-90 days since posting.';
+    sugEl.appendChild(nm);
+  }
+  if(plannerSelected) showPlannerDetail(plannerSelected);
 }
 
 // ═══ YOUTUBE ANALYTICS SYNC ════════════════════════════════════════════
@@ -1918,11 +2145,14 @@ async function init(){
   
   try{ await loadFromSupabase(); }catch(e){ console.warn('Supabase load failed',e); }
   try{ renderHome(); }catch(e){ console.error('renderHome failed',e); }
+  try{ renderPlanner(); }catch(e){ console.error('renderPlanner failed',e); }
   try{ renderRepost(); }catch(e){ console.error('renderRepost failed',e); }
   try{ renderTitles(); }catch(e){ console.error('renderTitles failed',e); }
   try{ renderVertical(); }catch(e){ console.error('renderVertical failed',e); }
   try{ syncYouTubeAnalytics(); }catch(e){ console.warn('YT sync failed',e); }
   try{ loadDecisions(); }catch(e){ console.warn('loadDecisions failed',e); }
+  // Default page = planner
+  nav('planner');
   // Handle OAuth redirect back to app
   var params=new URLSearchParams(window.location.search);
   if(params.get('auth_success')){showToast('✅ YouTube connected! Syncing data…');window.history.replaceState({},'','/lsm-os.html');setTimeout(syncYouTubeAnalytics,1500);}
