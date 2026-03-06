@@ -435,11 +435,11 @@ tbody tr.expanded td{background:var(--goldbg)!important}
       <button class="flt-btn on" data-rc="all" onclick="setRC('all',this)">All</button>
       <button class="flt-btn" data-rc="High-Energy" onclick="setRC('High-Energy',this)">⚡ High Energy</button>
       <button class="flt-btn" data-rc="Healing" onclick="setRC('Healing',this)">🌿 Healing</button>
+      <button class="flt-btn" data-rc="Healing 1 Hour" onclick="setRC('Healing 1 Hour',this)">🧘 1-Hour</button>
       <span style="color:var(--border2);margin:0 .25rem">|</span>
       <button class="flt-btn on" id="rcEraAll" onclick="setRCEra('all',this)">All eras</button>
       <button class="flt-btn" id="rcEraNew" onclick="setRCEra('new',this)">After Oct '25</button>
       <button class="flt-btn" id="rcEraOld" onclick="setRCEra('old',this)">Before Oct '25</button>
-      <button class="flt-btn" data-rc="Healing 1 Hour" onclick="setRC('Healing 1 Hour',this)">🧘 1-Hour</button>
     </div>
   </div>
   <div id="repostList"></div>
@@ -1744,13 +1744,29 @@ var DECISIONS = [];
 
 function prefill48h(id){
   document.getElementById('m-id').value=id;
+  // Clear all fields first
+  ['m-ctr','m-avd','m-avg','m-views','m-imp','m-browse','m-subs','m-notes'].forEach(function(fid){
+    var el=document.getElementById(fid); if(el) el.value='';
+  });
+  // Set the dropdown
+  var sel=document.getElementById('m-video-select');
+  if(sel) sel.value=id;
   var v=VIDEOS.find(function(x){return x.id===id;});
   if(v){
-    if(v.ctr)document.getElementById('m-ctr').value=v.ctr;
-    if(v.avd_sec)document.getElementById('m-avd').value=v.avd_sec;
-    if(v.avgpct)document.getElementById('m-avg').value=v.avgpct;
-    if(v.views)document.getElementById('m-views').value=v.views;
-    if(v.notes)document.getElementById('m-notes').value=v.notes;
+    // Prefill from YouTube API data (all available fields)
+    var avdEl=document.getElementById('m-avd');
+    if(v.avd_sec && avdEl){
+      var mins=Math.floor(v.avd_sec/60);
+      var secs=v.avd_sec%60;
+      avdEl.value=mins+':'+(secs<10?'0':'')+secs;
+    }
+    if(v.ctr) document.getElementById('m-ctr').value=v.ctr;
+    if(v.avgpct) document.getElementById('m-avg').value=v.avgpct;
+    if(v.views) document.getElementById('m-views').value=v.views;
+    if(v.imp48) document.getElementById('m-imp').value=v.imp48;
+    if(v.browse) document.getElementById('m-browse').value=v.browse;
+    if(v.subs48) document.getElementById('m-subs').value=v.subs48;
+    if(v.notes) document.getElementById('m-notes').value=v.notes;
   }
   showModal('modal48h');
 }
