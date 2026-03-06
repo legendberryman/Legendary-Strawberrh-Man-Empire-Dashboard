@@ -102,7 +102,7 @@ export default async function handler(req, res) {
 
     // ── Check cache (valid for 6 hours) ───────────────────────────────────
     if (!forceRefresh) {
-      const { data: cached } = await supabase.from('config').select('value').eq('key', 'youtube_video_cache_v4').single();
+      const { data: cached } = await supabase.from('config').select('value').eq('key', 'youtube_video_cache_v5').single();
       if (cached) {
         try {
           const cache = JSON.parse(cached.value);
@@ -125,10 +125,33 @@ export default async function handler(req, res) {
     const allVideos = await getVideoList(accessToken);
     const detailsMap = await enrichWithDetails(allVideos, accessToken);
 
-    // Filter shorts
+    // Get Shorts IDs via UUSH playlist (most reliable method — no duration guessing)
+    const shortsIds = new Set();
+    try {
+      const chRes2 = await fetch('https://www.googleapis.com/youtube/v3/channels?part=contentDetails&mine=true', { headers: { Authorization: `Bearer ${accessToken}` } });
+      const chData2 = await chRes2.json();
+      const channelId = chData2.items?.[0]?.id;
+      if (channelId) {
+        const uushId = channelId.replace(/^UC/, 'UUSH');
+        let sPageToken = null;
+        do {
+          const sUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uushId}&maxResults=50${sPageToken ? '&pageToken='+sPageToken : ''}`;
+          const sR = await fetch(sUrl, { headers: { Authorization: `Bearer ${accessToken}` } });
+          const sD = await sR.json();
+          for (const item of (sD.items||[])) {
+            const vid = item.snippet?.resourceId?.videoId;
+            if (vid) shortsIds.add(vid);
+          }
+          sPageToken = sD.nextPageToken || null;
+        } while (sPageToken);
+        console.log(`UUSH Shorts found: ${shortsIds.size}`);
+      }
+    } catch(e) { console.warn('UUSH shorts fetch failed:', e.message); }
+
+    // Filter: remove Shorts (UUSH) + hashtag fallback
     const longform = allVideos.filter(v => {
+      if (shortsIds.has(v.id)) return false;
       const title = (v.title||'').toLowerCase();
-      const dur = detailsMap[v.id]?.dur || 0;
       return !title.includes('#shorts') && !title.includes('#short');
     });
 
@@ -174,7 +197,7 @@ export default async function handler(req, res) {
 
     // Save to cache
     await supabase.from('config').upsert(
-      { key: 'youtube_video_cache_v4', value: JSON.stringify({ videos: results, timestamp: Date.now() }) },
+      { key: 'youtube_video_cache_v5', value: JSON.stringify({ videos: results, timestamp: Date.now() }) },
       { onConflict: 'key' }
     );
 
@@ -184,7 +207,7 @@ export default async function handler(req, res) {
     console.error('YouTube API error:', e);
     // Try to serve stale cache on error
     try {
-      const { data: cached } = await supabase.from('config').select('value').eq('key', 'youtube_video_cache_v4').single();
+      const { data: cached } = await supabase.from('config').select('value').eq('key', 'youtube_video_cache_v5').single();
       if (cached) {
         const cache = JSON.parse(cached.value);
         return res.status(200).json({ videos: cache.videos, period: 'all time', cached: true, stale: true });
