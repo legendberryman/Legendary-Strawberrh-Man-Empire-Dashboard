@@ -2293,7 +2293,7 @@ async function forceYTRefresh() {
         seenIds.add(row.id);
         return true;
       }).map(function(row) {
-        var v = { id:row.id, title:row.title, file:row.file||row.title, thumbnail:row.thumbnail||('https://i.ytimg.com/vi/'+row.id+'/mqdefault.jpg'), cat:guessCategory(row.title,row.dur), posted:row.posted, days:row.days, dur:row.dur||0, ctr:row.ctr||0, views:row.views||0, avd_sec:row.avd_sec||0, avgpct:row.avgpct||0, format:(row.dur||0)>3000?'Static':'Edited', era:row.era||'serious', decision:'Monitor', notes:'' };
+        var v = { id:row.id, title:row.title, file:row.file||row.title, thumbnail:row.thumbnail||('https://i.ytimg.com/vi/'+row.id+'/mqdefault.jpg'), cat:guessCategory(row.title,row.dur), posted:row.posted, days:row.days, dur:row.dur||0, ctr:row.ctr||0, views:row.views||0, avd_sec:row.avd_sec||0, avgpct:row.avgpct||0, format:(row.dur||0)>3000?'Static':'Edited', era:row.era||(row.posted&&row.posted>='2025-10-01'?'serious':'casual'), decision:'Monitor', notes:'' };
         v.score = calcScore(v); v.decision = autoDecision(v); return v;
       });
       updateYTStatus('✅ YouTube live · ' + VIDEOS.length + ' videos · just refreshed');
@@ -2350,7 +2350,7 @@ async function syncYouTubeAnalytics() {
           avd_sec: row.avd_sec || 0,
           avgpct: row.avgpct || 0,
           format: (row.dur || 0) > 3000 ? 'Static' : 'Edited',
-          era: row.era || 'serious',
+          era: row.era || (row.posted && row.posted >= '2025-10-01' ? 'serious' : 'casual'),
           decision: 'Monitor',
           notes: '',
         };
