@@ -129,7 +129,7 @@ export default async function handler(req, res) {
     const longform = allVideos.filter(v => {
       const title = (v.title||'').toLowerCase();
       const dur = detailsMap[v.id]?.dur || 0;
-      return !title.includes('#shorts') && !title.includes('#short') && !/\bshort\b/i.test(title) && dur >= 60;
+      return !title.includes('#shorts') && !title.includes('#short');
     });
 
     // Analytics for ALL longform videos — batches of 10 parallel
