@@ -464,7 +464,6 @@ tbody tr.expanded td{background:var(--goldbg)!important}
     <button class="flt-btn" id="tcStageRepost" onclick="setTCStage('Repost Candidate',this)" title="Ready to repost">🔁 Repost</button>
     <button class="flt-btn" id="tcStageMonitor" onclick="setTCStage('Monitor',this)" title="Monitoring performance">👁 Monitor</button>
     <button class="flt-btn" id="tcStageThumb" onclick="setTCStage('Change Thumbnail',this)" title="Needs thumbnail update">🖼 Fix Thumb</button>
-    <button class="flt-btn" id="tcBreakout" onclick="setTCBreakout(this)" title="Breakout videos — over 10,000 views">🚀 Breakout</button>
     <div style="display:flex;gap:.35rem;align-items:center;margin-left:.35rem">
       <span style="font-size:.68rem;color:var(--text3)">Era:</span>
       <button class="flt-btn on" id="tcEraAll" onclick="setTCEra('all',this)">All</button>
@@ -804,7 +803,7 @@ document.querySelectorAll('.nav-item').forEach(function(ni){
 // ═══ DATA ════════════════════════════════════════════════════════════════
 var TODAY=new Date();
 var blDays=30;
-var rcFilter='all', rcEraFilter='all', titleEraFilter='all', tcFilter='all', tlFilter='all', tcBreakoutFilter=false;
+var rcFilter='all', rcEraFilter='all', titleEraFilter='all', tcFilter='all', tlFilter='all';
 var UNDO_STACK=[];
 
 var VIDEOS=[];
@@ -1148,7 +1147,6 @@ function renderRepost(){
 }
 
 // ═══ TRACKER ══════════════════════════════════════════════════════════
-function setTCBreakout(btn){tcBreakoutFilter=!tcBreakoutFilter;btn.classList.toggle('on',tcBreakoutFilter);renderTracker();}
 function setTC(c,btn){tcFilter=c;document.querySelectorAll('[data-tc]').forEach(function(b){b.classList.toggle('on',b.dataset.tc===c);});renderTracker();}
 
 var trackerSort='score', trackerSortDir='desc', tcStageFilter='all', tcEraFilter='all';
@@ -1180,11 +1178,11 @@ function renderTracker(){
   var search=(document.getElementById('trackSearch')||{value:''}).value.toLowerCase();
   var sort=trackerSort+'-'+trackerSortDir;
   var list=VIDEOS.filter(function(v){
-    if(v.era==='archive') return false;
+    if(v.era==="archive") return false;
+    if((v.ctr||0)===0 && (v.avd_sec||0)===0 && (v.views||0)===0) return false;
     if(tcFilter!=='all'&&v.cat!==tcFilter)return false;
     if(tcStageFilter!=='all'&&v.decision!==tcStageFilter)return false;
     if(tcEraFilter!=='all'){var vp=getPosted(v);var isNew=!vp||vp>='2025-10-01';if(tcEraFilter==='new'&&!isNew)return false;if(tcEraFilter==='old'&&isNew)return false;}
-    if(tcBreakoutFilter&&(v.views||0)<10000)return false;
     if(search&&!v.title.toLowerCase().includes(search))return false;
     return true;
   }).map(function(v){return Object.assign({},v,{s:calcScore(v)});});
