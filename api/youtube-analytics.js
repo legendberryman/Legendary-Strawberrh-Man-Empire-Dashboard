@@ -108,13 +108,7 @@ export default async function handler(req, res) {
           const cache = JSON.parse(cached.value);
           const ageHours = (Date.now() - cache.timestamp) / 3600000;
           if (ageHours < 6) {
-            // Validate cache has real analytics — if >90% have 0 CTR, it's bad cache
-            const zeroCtr = cache.videos.filter(v => v.ctr === 0).length;
-            const badCache = zeroCtr > cache.videos.length * 0.9;
-            if (!badCache) {
-              return res.status(200).json({ videos: cache.videos, period: 'all time', cached: true, cacheAge: Math.round(ageHours*10)/10 });
-            }
-            // Fall through to fresh fetch if bad cache
+            return res.status(200).json({ videos: cache.videos, period: 'all time', cached: true, cacheAge: Math.round(ageHours*10)/10 });
           }
         } catch(e) {}
       }
