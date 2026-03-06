@@ -129,7 +129,7 @@ export default async function handler(req, res) {
     const longform = allVideos.filter(v => {
       const title = (v.title||'').toLowerCase();
       const dur = detailsMap[v.id]?.dur || 0;
-      return !title.includes('#shorts') && !title.includes('#short') && dur >= 60;
+      return !title.includes('#shorts') && !title.includes('#short') && !/\bshort\b/i.test(title) && dur >= 60;
     });
 
     // Analytics for ALL longform videos — batches of 10 parallel
@@ -147,8 +147,6 @@ export default async function handler(req, res) {
           }
           if (d.rows?.[0]) {
             const row = d.rows[0];
-            // metrics order: views(0), estimatedMinutesWatched(1), averageViewDuration(2),
-            // averageViewPercentage(3), subscribersGained(4), impressions(5), impressionClickThroughRate(6)
             analyticsMap[video.id] = {
               avd_sec: Math.round(row[2]||0),
               avgpct: parseFloat((row[3]||0).toFixed(2)),
