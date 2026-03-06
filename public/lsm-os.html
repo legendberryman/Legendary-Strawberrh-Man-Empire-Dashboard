@@ -919,7 +919,7 @@ document.addEventListener('keydown',function(e){if((e.metaKey||e.ctrlKey)&&e.key
 function reRender(){
   renderHome();
   var ap=document.querySelector('[id^="page-"]:not([style*="none"])');
-  if(ap){var pid=ap.id.replace('page-','');if(pid!=='home'){var fns={repost:renderRepost,tracker:renderTracker,titles:renderTitles,queue:renderQueue,filming:renderFilming,editing:renderEdit,instruments:renderInstr};if(fns[pid])fns[pid]();}}
+  if(ap){var pid=ap.id.replace('page-','');if(pid!=='home'){var fns={repost:renderRepost,tracker:renderTracker,titles:renderTitles,queue:renderQueue,filming:renderFilming,editing:renderEdit,instruments:renderInstr,planner:renderPlanner};if(fns[pid])fns[pid]();}}
 }
 
 // ═══ SCORING ════════════════════════════════════════════════════════════
@@ -2308,7 +2308,7 @@ async function syncYouTubeAnalytics() {
   updateYTStatus('⏳ Syncing YouTube…');
   try {
     var controller = new AbortController();
-    var timeout = setTimeout(function(){ controller.abort(); }, 25000);
+    var timeout = setTimeout(function(){ controller.abort(); }, 55000);
     var res = await fetch('/api/youtube-analytics?days=3650', { signal: controller.signal });
     clearTimeout(timeout);
     var data = await res.json();
