@@ -75,14 +75,13 @@ async function enrichWithDetails(videos, accessToken) {
   const detailsMap = {};
   for (let i = 0; i < videos.length; i += 50) {
     const ids = videos.slice(i, i+50).map(v => v.id).join(',');
-    const r = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=contentDetails,statistics,fileDetails,status&id=${ids}`, { headers: { Authorization: `Bearer ${accessToken}` } });
+    const r = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=contentDetails,statistics,fileDetails&id=${ids}`, { headers: { Authorization: `Bearer ${accessToken}` } });
     const d = await r.json();
     for (const item of (d.items||[])) {
       detailsMap[item.id] = {
         dur: parseDuration(item.contentDetails?.duration),
         views: parseInt(item.statistics?.viewCount||0),
         file: item.fileDetails?.fileName || null,
-        privacyStatus: item.status?.privacyStatus || 'public',
       };
     }
   }
@@ -103,7 +102,7 @@ export default async function handler(req, res) {
 
     // ── Check cache (valid for 6 hours) ───────────────────────────────────
     if (!forceRefresh) {
-      const { data: cached } = await supabase.from('config').select('value').eq('key', 'youtube_video_cache_v5').single();
+      const { data: cached } = await supabase.from('config').select('value').eq('key', 'youtube_video_cache_v6').single();
       if (cached) {
         try {
           const cache = JSON.parse(cached.value);
@@ -143,11 +142,9 @@ export default async function handler(req, res) {
       }
     } catch(e) { console.warn('UUSH shorts fetch failed:', e.message); }
 
-    // Filter: remove Shorts (UUSH) + hashtag fallback + private/unlisted
+    // Filter: remove Shorts (UUSH) + hashtag fallback
     const longform = allVideos.filter(v => {
       if (shortsIds.has(v.id)) return false;
-      const privacy = detailsMap[v.id]?.privacyStatus;
-      if (privacy && privacy !== 'public') return false;
       const title = (v.title||'').toLowerCase();
       return !title.includes('#shorts') && !title.includes('#short');
     });
@@ -159,7 +156,7 @@ export default async function handler(req, res) {
       const batch = longform.slice(i, i+10);
       await Promise.all(batch.map(async (video) => {
         try {
-          const url = `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel==MINE&startDate=2020-01-01&endDate=${endDate}&metrics=views,estimatedMinutesWatched,averageViewDuration,averageViewPercentage,subscribersGained,impressions,impressionClickThroughRate&filters=video==${video.id}&dimensions=video&maxResults=1`;
+          const url = `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel==MINE&startDate=2020-01-01&endDate=${endDate}&metrics=views,estimatedMinutesWatched,averageViewDuration,averageViewPercentage,subscribersGained,impressions,impressionClickThroughRate&filters=video==${video.id}&maxResults=1`;
           const r = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
           const d = await r.json();
           if (d.error) {
@@ -194,7 +191,7 @@ export default async function handler(req, res) {
 
     // Save to cache
     await supabase.from('config').upsert(
-      { key: 'youtube_video_cache_v5', value: JSON.stringify({ videos: results, timestamp: Date.now() }) },
+      { key: 'youtube_video_cache_v6', value: JSON.stringify({ videos: results, timestamp: Date.now() }) },
       { onConflict: 'key' }
     );
 
@@ -204,7 +201,7 @@ export default async function handler(req, res) {
     console.error('YouTube API error:', e);
     // Try to serve stale cache on error
     try {
-      const { data: cached } = await supabase.from('config').select('value').eq('key', 'youtube_video_cache_v5').single();
+      const { data: cached } = await supabase.from('config').select('value').eq('key', 'youtube_video_cache_v6').single();
       if (cached) {
         const cache = JSON.parse(cached.value);
         return res.status(200).json({ videos: cache.videos, period: 'all time', cached: true, stale: true });
