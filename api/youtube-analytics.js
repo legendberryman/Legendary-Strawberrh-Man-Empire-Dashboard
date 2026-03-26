@@ -7,7 +7,7 @@ function getAuthUrl() {
     client_id: process.env.YOUTUBE_CLIENT_ID,
     redirect_uri: 'https://legendary-strawberrh-man-empire-das.vercel.app/api/auth/callback',
     response_type: 'code',
-    scope: 'https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/yt-analytics.readonly',
+    scope: 'https://www.googleapis.com/auth/youtube https://www.googleapis.com/auth/yt-analytics.readonly',
     access_type: 'offline',
     prompt: 'consent',
   });
