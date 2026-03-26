@@ -2324,7 +2324,7 @@ async function forceYTRefresh() {
         seenIds.add(row.id);
         return true;
       }).map(function(row) {
-        var v = { id:row.id, title:row.title, file:row.file||row.title, thumbnail:row.thumbnail||('https://i.ytimg.com/vi/'+row.id+'/mqdefault.jpg'), cat:guessCategory(row.title,row.dur), posted:row.posted, days:row.days, dur:row.dur||0, ctr:row.ctr||0, views:row.views||0, avd_sec:row.avd_sec||0, avgpct:row.avgpct||0, format:(row.dur||0)>3000?'Static':'Edited', era:row.era||(row.posted&&row.posted>='2025-10-01'?'serious':'casual'), decision:'Monitor', notes:'' };
+        var v = { id:row.id, title:row.title, file:row.file||row.title, thumbnail:row.thumbnail||('https://i.ytimg.com/vi/'+row.id+'/mqdefault.jpg'), cat:guessCategory(row.title,row.dur,row.file||''), posted:row.posted, days:row.days, dur:row.dur||0, ctr:row.ctr||0, views:row.views||0, avd_sec:row.avd_sec||0, avgpct:row.avgpct||0, format:(row.dur||0)>3000?'Static':'Edited', era:row.era||(row.posted&&row.posted>='2025-10-01'?'serious':'casual'), decision:'Monitor', notes:'' };
         v.score = calcScore(v); v.decision = autoDecision(v); return v;
       });
       updateYTStatus('✅ YouTube live · ' + VIDEOS.length + ' videos · just refreshed');
@@ -2372,7 +2372,7 @@ async function syncYouTubeAnalytics() {
           title: row.title,
           file: row.file || row.title,
           thumbnail: 'https://i.ytimg.com/vi/' + row.id + '/mqdefault.jpg',
-          cat: guessCategory(row.title, row.dur),
+          cat: guessCategory(row.title, row.dur, row.file||''),
           posted: row.posted,
           days: row.days,
           dur: row.dur || 0,
@@ -2412,10 +2412,10 @@ async function syncYouTubeAnalytics() {
 // Guess video category from title and duration
 function guessCategory(title, dur) {
   var t = (title || '').toLowerCase();
-  if (dur > 1800) return 'Healing 1 Hour';
-  if (t.includes('calm') || t.includes('heal') || t.includes('sleep') ||
-      t.includes('meditat') || t.includes('relax') || t.includes('stress') ||
-      t.includes('hz') || t.includes('frequency')) return 'Healing';
+  var f = (arguments[2] || '').toLowerCase(); // filename if passed
+  var src = f || t;
+  if (src.includes('loop') || src.includes('1hr') || src.includes('1 hour') || dur >= 3000) return 'Healing 1 Hour';
+  if (src.includes('healing')) return 'Healing';
   return 'High-Energy';
 }
 
