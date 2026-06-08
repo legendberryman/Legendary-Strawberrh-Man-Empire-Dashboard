@@ -1091,7 +1091,10 @@ function renderPicks(){
     return '<span style="background:rgba(255,255,255,.04);color:'+c+';padding:.15rem .5rem;border-radius:4px;font-size:.65rem;font-weight:600">'+t+'</span>';
   };
 
-  var html = '<table style="width:100%;border-collapse:collapse"><thead><tr style="background:var(--s1);font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:.5px"><th style="padding:.5rem;text-align:center;width:36px">Pick</th><th style="padding:.5rem;text-align:left;width:36px">#</th><th style="padding:.5rem;text-align:right;width:60px">Views</th><th style="padding:.5rem;text-align:left;width:88px">Posted</th><th style="padding:.5rem;text-align:left;width:110px">Type</th><th style="padding:.5rem;text-align:left">Song · Source</th><th style="padding:.5rem;text-align:left">Post</th></tr></thead><tbody>';
+  // Card grid: 30 cards per platform, each card shows the post preview at
+  // visible size (lazy-loaded iframe for FB/IG/YT) + confirm controls below.
+  var cardWrap = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem">';
+  var html = cardWrap;
   rows.forEach(function(r){
     var checked = !!PICKS_CONFIRMED[r.content_item_id];
     var songLabel;
@@ -1099,32 +1102,84 @@ function renderPicks(){
       songLabel = '<span style="color:var(--text3);font-style:italic">needs ID</span>';
     } else {
       var song = r.song ? '<strong>'+escHtml(r.song)+'</strong>' : '';
-      var src = r.source_filename ? '<span style="color:var(--text3);font-size:.7rem;margin-left:.4rem">'+escHtml(r.source_filename)+'</span>' : '';
+      var src = r.source_filename ? '<div style="color:var(--text3);font-size:.7rem;margin-top:.2rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escHtml(r.source_filename)+'</div>' : '';
       songLabel = (song||'') + (src||'');
       if(!songLabel) songLabel = '<span style="color:var(--text3);font-style:italic">needs ID</span>';
     }
-    var thumb = thumbFor(r.url);
-    var postCell = '';
-    if(thumb){
-      postCell = '<a href="'+escHtml(r.url||'#')+'" target="_blank" style="display:flex;align-items:center;gap:.5rem;text-decoration:none;color:var(--text2)"><img src="'+thumb+'" style="width:80px;height:45px;object-fit:cover;border-radius:4px;background:var(--s2)" loading="lazy"/><span style="font-size:.7rem;color:var(--blue);text-decoration:underline">open</span></a>';
-    } else if(r.url){
-      postCell = '<a href="'+escHtml(r.url)+'" target="_blank" style="font-size:.7rem;color:var(--blue);text-decoration:underline">open ↗</a>';
-    } else {
-      postCell = '<span style="color:var(--text3)">—</span>';
+
+    // Preview slot: declarative URL + platform, lazy-loaded by IntersectionObserver below
+    var previewKind, previewSrc;
+    if(r.platform === 'YT Short'){
+      var m = (r.url||'').match(/\/shorts\/([A-Za-z0-9_-]{6,})/) || (r.url||'').match(/[?&]v=([A-Za-z0-9_-]{6,})/);
+      if(m){
+        previewKind = 'yt';
+        previewSrc = 'https://www.youtube.com/embed/'+m[1]+'?autoplay=0&playsinline=1';
+      }
+    } else if(r.platform === 'Instagram' && r.url){
+      previewKind = 'ig';
+      previewSrc = r.url.replace(/\/$/,'') + '/embed/captioned/';
+    } else if(r.platform === 'Facebook' && r.url){
+      previewKind = 'fb';
+      previewSrc = 'https://www.facebook.com/plugins/post.php?href='+encodeURIComponent(r.url)+'&show_text=false&width=300';
     }
-    var solid = r.match_solid ? '' : ' title="Match not solid — verify before posting"';
-    html += '<tr style="border-bottom:1px solid var(--border)"'+solid+'>'
-         + '<td style="padding:.5rem;text-align:center"><input type="checkbox" data-cid="'+r.content_item_id+'" '+(checked?'checked':'')+' onchange="togglePick(this,'+r.content_item_id+',\''+r.platform+'\')" style="cursor:pointer;width:18px;height:18px;accent-color:var(--gold)"/></td>'
-         + '<td style="padding:.5rem;color:var(--text3);font-weight:700">'+r.rank+'</td>'
-         + '<td style="padding:.5rem;text-align:right;font-weight:700">'+fmtV(r.views)+'</td>'
-         + '<td style="padding:.5rem;color:var(--text2);font-size:.72rem">'+(r.posted||'—')+'</td>'
-         + '<td style="padding:.5rem">'+typeBadge(r.type)+'</td>'
-         + '<td style="padding:.5rem">'+songLabel+'</td>'
-         + '<td style="padding:.5rem">'+postCell+'</td>'
-         + '</tr>';
+
+    var previewSlot;
+    if(previewSrc){
+      // data-preview-src triggers lazy iframe injection when the card scrolls into view
+      previewSlot = '<div class="pick-preview" data-preview-src="'+escHtml(previewSrc)+'" data-preview-kind="'+previewKind+'" '
+                  + 'style="aspect-ratio:9/16;max-height:380px;background:#000;border-radius:6px;overflow:hidden;position:relative">'
+                  +   '<div class="pick-skeleton" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:.7rem">loading preview…</div>'
+                  + '</div>';
+    } else if(r.url){
+      previewSlot = '<a href="'+escHtml(r.url)+'" target="_blank" style="aspect-ratio:9/16;max-height:380px;background:var(--s2);border:1px dashed var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--blue);font-size:.78rem;text-decoration:none">open ↗</a>';
+    } else {
+      previewSlot = '<div style="aspect-ratio:9/16;max-height:380px;background:var(--s2);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:.78rem">no preview</div>';
+    }
+
+    var solidTip = r.match_solid ? '' : ' title="Match not solid — verify before posting"';
+    var pickedStyle = checked ? 'background:rgba(74,222,128,.08);border-color:var(--green)' : 'background:var(--s2);border-color:var(--border)';
+
+    html += '<div class="pick-card" data-cid="'+r.content_item_id+'" style="border:1px solid;border-radius:10px;padding:.75rem;display:flex;flex-direction:column;gap:.6rem;'+pickedStyle+'"'+solidTip+'>'
+         +   previewSlot
+         +   '<div style="display:flex;align-items:center;gap:.5rem;font-size:.75rem">'
+         +     '<span style="color:var(--text3);font-weight:700">#'+r.rank+'</span>'
+         +     '<span style="font-weight:700;color:var(--gold2)">'+fmtV(r.views)+' views</span>'
+         +     '<span style="color:var(--text3);margin-left:auto">'+(r.posted||'')+'</span>'
+         +   '</div>'
+         +   '<div>'+typeBadge(r.type)+'</div>'
+         +   '<div style="font-size:.78rem;min-height:1.2rem;overflow:hidden">'+songLabel+'</div>'
+         +   '<label style="display:flex;align-items:center;gap:.5rem;padding:.4rem;background:var(--s1);border-radius:6px;cursor:pointer;font-size:.78rem;font-weight:600">'
+         +     '<input type="checkbox" '+(checked?'checked':'')+' onchange="togglePick(this,'+r.content_item_id+',\''+r.platform+'\')" style="width:18px;height:18px;accent-color:var(--gold);cursor:pointer">'
+         +     '<span>'+(checked?'Confirmed for repost':'Confirm this for repost')+'</span>'
+         +   '</label>'
+         +   (r.url ? '<a href="'+escHtml(r.url)+'" target="_blank" style="font-size:.7rem;color:var(--text3);text-decoration:none">↗ open in '+r.platform+'</a>' : '')
+         + '</div>';
   });
-  html += '</tbody></table>';
+  html += '</div>';
   document.getElementById('picksTable').innerHTML = html;
+
+  // Lazy-load iframe previews when the card scrolls near the viewport.
+  // Keeps initial render snappy with 30 cards.
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      var slot = e.target;
+      if(slot.dataset.loaded === '1') return;
+      slot.dataset.loaded = '1';
+      var ifr = document.createElement('iframe');
+      ifr.src = slot.dataset.previewSrc;
+      ifr.loading = 'lazy';
+      ifr.style.cssText = 'width:100%;height:100%;border:none;background:#000';
+      ifr.setAttribute('allow','autoplay; encrypted-media; picture-in-picture');
+      ifr.setAttribute('scrolling','no');
+      ifr.setAttribute('allowfullscreen','');
+      var skel = slot.querySelector('.pick-skeleton');
+      if(skel) skel.remove();
+      slot.appendChild(ifr);
+      io.unobserve(slot);
+    });
+  }, { rootMargin: '200px' });
+  document.querySelectorAll('.pick-preview').forEach(function(s){ io.observe(s); });
 }
 
 async function togglePick(checkbox, contentItemId, platform){
