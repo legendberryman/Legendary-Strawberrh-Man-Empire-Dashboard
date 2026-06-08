@@ -338,6 +338,7 @@ tbody tr.expanded td{background:var(--goldbg)!important}
 
   <div class="sb-section">
     <div class="sb-section-label">YouTube</div>
+    <div class="nav-item" onclick="nav('picks')" data-page="picks"><span class="icon">🔥</span>Repost Picks (Top 30)<span class="nav-badge nb-gold" id="nb-picks">–</span></div>
     <div class="nav-item" onclick="nav('repost')" data-page="repost"><span class="icon">♻️</span>Repost Queue<span class="nav-badge nb-gold" id="nb-repost">–</span></div>
     <div class="nav-item" onclick="nav('tracker')" data-page="tracker"><span class="icon">📊</span>Video Tracker<span class="nav-badge nb-red" id="nb-tracker">–</span></div>
     <div class="nav-item" onclick="nav('decisions')" data-page="decisions"><span class="icon">🎯</span>Decisions Log<span class="nav-badge nb-blue" id="nb-decisions">0</span></div>
@@ -407,6 +408,24 @@ tbody tr.expanded td{background:var(--goldbg)!important}
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
     <div class="card"><div class="card-label">⚡ Needs Attention</div><div id="homeNeeds"></div></div>
     <div class="card"><div class="card-label">🏆 Top 5 All-Time Scores</div><div id="homeTop5"></div></div>
+  </div>
+</div>
+
+<!-- ════════ REPOST PICKS (Top 30 to Confirm) ════════ -->
+<div class="page-content" id="page-picks" style="display:none">
+  <div style="background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);border-radius:8px;padding:.75rem 1rem;margin-bottom:1rem;font-size:.82rem;color:var(--text2)">
+    <strong style="color:var(--red)">Selection only.</strong> This page lets you pick winners to repost. It does <strong>not</strong> publish. The publish path is being rewired separately.
+  </div>
+  <div style="display:flex;gap:.5rem;margin-bottom:1rem;align-items:center;flex-wrap:wrap">
+    <button class="btn btn-gold btn-sm picks-tab on" data-plat="Instagram"   onclick="picksTab('Instagram',this)">📸 Instagram</button>
+    <button class="btn btn-outline btn-sm picks-tab" data-plat="Facebook"    onclick="picksTab('Facebook',this)">👥 Facebook</button>
+    <button class="btn btn-outline btn-sm picks-tab" data-plat="YT Short"    onclick="picksTab('YT Short',this)">▶️ YouTube Shorts</button>
+    <div style="flex:1"></div>
+    <span style="font-size:.72rem;color:var(--text3)" id="picksConfirmedCount">0 confirmed</span>
+    <button class="btn btn-outline btn-sm" onclick="loadPicks(true)">↻ Refresh</button>
+  </div>
+  <div id="picksTable" style="overflow:auto">
+    <div style="color:var(--text3);padding:2rem;text-align:center">Loading…</div>
   </div>
 </div>
 
@@ -997,11 +1016,148 @@ function runway(){
 function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';setTimeout(function(){t.style.opacity='0';t.style.transform='translateX(-50%) translateY(10px)';},2500);}
 
 // ═══ NAV ═════════════════════════════════════════════════════════════════
-var PAGE_TITLES={home:'Command Center',repost:'Repost Queue',tracker:'Video Tracker',decisions:'Decisions Log',planner:'Monthly Planner',titles:'Title Lab',queue:'Content Queue',filming:'Filming Planner',editing:'Edit Queue',instruments:'Instruments — Lydia',sales:'Sales — Shopify',ads:'Campaigns — Gal',vertical:'Vertical Content',chat:'Ask Claude',guide:'Decision Guide',integrations:'Integrations & API'};
-var RENDERS={repost:renderRepost,tracker:renderTracker,decisions:renderDecisions,planner:function(){
+var PAGE_TITLES={home:'Command Center',picks:'Repost Picks (Top 30)',repost:'Repost Queue',tracker:'Video Tracker',decisions:'Decisions Log',planner:'Monthly Planner',titles:'Title Lab',queue:'Content Queue',filming:'Filming Planner',editing:'Edit Queue',instruments:'Instruments — Lydia',sales:'Sales — Shopify',ads:'Campaigns — Gal',vertical:'Vertical Content',chat:'Ask Claude',guide:'Decision Guide',integrations:'Integrations & API'};
+var RENDERS={picks:renderPicks,repost:renderRepost,tracker:renderTracker,decisions:renderDecisions,planner:function(){
   var n=new Date(); plannerDate=new Date(n.getFullYear(),n.getMonth(),1);
   requestAnimationFrame(function(){ requestAnimationFrame(renderPlanner); });
 },titles:renderTitles,queue:renderQueue,filming:renderFilming,editing:renderEdit,instruments:renderInstr,vertical:renderVertical,integrations:renderIntegrations};
+
+// ═══ REPOST PICKS ═══════════════════════════════════════════════════════════
+var PICKS_DATA = {Instagram:[], Facebook:[], 'YT Short':[]};
+var PICKS_CONFIRMED = {};      // content_item_id → true
+var PICKS_PLATFORM = 'Instagram';
+var PICKS_LOADED = false;
+
+async function loadPicks(force){
+  if(PICKS_LOADED && !force) { renderPicks(); return; }
+  try{
+    var picksRes = await fetch('/api/data?table=v_repost_picks&order=platform.asc,rank.asc&limit=200');
+    var picks = await picksRes.json();
+    if(!Array.isArray(picks)) throw new Error(picks && picks.message || 'bad response');
+    PICKS_DATA = {Instagram:[], Facebook:[], 'YT Short':[]};
+    picks.forEach(function(p){ if(PICKS_DATA[p.platform]) PICKS_DATA[p.platform].push(p); });
+
+    var confRes = await fetch('/api/data?table=repost_confirmations&order=content_item_id.asc&limit=500');
+    var confs = await confRes.json();
+    PICKS_CONFIRMED = {};
+    if(Array.isArray(confs)){
+      confs.forEach(function(c){ if(c.confirmed) PICKS_CONFIRMED[c.content_item_id] = true; });
+    }
+    PICKS_LOADED = true;
+    renderPicks();
+  }catch(e){
+    document.getElementById('picksTable').innerHTML = '<div style="color:var(--red);padding:2rem;text-align:center">Failed to load: '+(e.message||e)+'</div>';
+  }
+}
+
+function picksTab(plat, btnEl){
+  PICKS_PLATFORM = plat;
+  document.querySelectorAll('.picks-tab').forEach(function(b){
+    b.classList.remove('on','btn-gold'); b.classList.add('btn-outline');
+  });
+  btnEl.classList.remove('btn-outline'); btnEl.classList.add('on','btn-gold');
+  renderPicks();
+}
+
+function renderPicks(){
+  if(!PICKS_LOADED){ loadPicks(false); return; }
+  var rows = PICKS_DATA[PICKS_PLATFORM] || [];
+  var total = Object.keys(PICKS_CONFIRMED).length;
+  document.getElementById('picksConfirmedCount').textContent = total + ' confirmed';
+  var nb = document.getElementById('nb-picks');
+  if(nb) nb.textContent = total || '–';
+
+  if(!rows.length){
+    document.getElementById('picksTable').innerHTML = '<div style="color:var(--text3);padding:2rem;text-align:center">No picks for '+PICKS_PLATFORM+'.</div>';
+    return;
+  }
+
+  var thumbFor = function(url){
+    if(!url) return '';
+    // YT IDs end /shorts/<ID> or watch?v=<ID>
+    var m = url.match(/\/shorts\/([A-Za-z0-9_-]{6,})/) || url.match(/[?&]v=([A-Za-z0-9_-]{6,})/);
+    if(m) return 'https://i.ytimg.com/vi/'+m[1]+'/mqdefault.jpg';
+    return '';
+  };
+
+  var fmtV = function(n){ if(n>=1e6) return (n/1e6).toFixed(1)+'M'; if(n>=1e3) return Math.round(n/1e3)+'k'; return String(n||0); };
+  var typeBadge = function(t){
+    if(!t || t==='needs_id') return '<span style="background:var(--s3);color:var(--text3);padding:.15rem .5rem;border-radius:4px;font-size:.65rem">needs ID</span>';
+    var c = (t.toLowerCase().indexOf('heal')>=0) ? 'var(--heal)' :
+            (t.toLowerCase().indexOf('reaction')>=0) ? 'var(--blue)' :
+            (t.toLowerCase().indexOf('reel')>=0) ? 'var(--gold)' :
+            (t.toLowerCase().indexOf('he')>=0 || t.toLowerCase().indexOf('energy')>=0) ? 'var(--energy)' :
+            'var(--text2)';
+    return '<span style="background:rgba(255,255,255,.04);color:'+c+';padding:.15rem .5rem;border-radius:4px;font-size:.65rem;font-weight:600">'+t+'</span>';
+  };
+
+  var html = '<table style="width:100%;border-collapse:collapse"><thead><tr style="background:var(--s1);font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:.5px"><th style="padding:.5rem;text-align:center;width:36px">Pick</th><th style="padding:.5rem;text-align:left;width:36px">#</th><th style="padding:.5rem;text-align:right;width:60px">Views</th><th style="padding:.5rem;text-align:left;width:88px">Posted</th><th style="padding:.5rem;text-align:left;width:110px">Type</th><th style="padding:.5rem;text-align:left">Song · Source</th><th style="padding:.5rem;text-align:left">Post</th></tr></thead><tbody>';
+  rows.forEach(function(r){
+    var checked = !!PICKS_CONFIRMED[r.content_item_id];
+    var songLabel;
+    if(r.type==='needs_id' || (!r.song && !r.source_filename)){
+      songLabel = '<span style="color:var(--text3);font-style:italic">needs ID</span>';
+    } else {
+      var song = r.song ? '<strong>'+escHtml(r.song)+'</strong>' : '';
+      var src = r.source_filename ? '<span style="color:var(--text3);font-size:.7rem;margin-left:.4rem">'+escHtml(r.source_filename)+'</span>' : '';
+      songLabel = (song||'') + (src||'');
+      if(!songLabel) songLabel = '<span style="color:var(--text3);font-style:italic">needs ID</span>';
+    }
+    var thumb = thumbFor(r.url);
+    var postCell = '';
+    if(thumb){
+      postCell = '<a href="'+escHtml(r.url||'#')+'" target="_blank" style="display:flex;align-items:center;gap:.5rem;text-decoration:none;color:var(--text2)"><img src="'+thumb+'" style="width:80px;height:45px;object-fit:cover;border-radius:4px;background:var(--s2)" loading="lazy"/><span style="font-size:.7rem;color:var(--blue);text-decoration:underline">open</span></a>';
+    } else if(r.url){
+      postCell = '<a href="'+escHtml(r.url)+'" target="_blank" style="font-size:.7rem;color:var(--blue);text-decoration:underline">open ↗</a>';
+    } else {
+      postCell = '<span style="color:var(--text3)">—</span>';
+    }
+    var solid = r.match_solid ? '' : ' title="Match not solid — verify before posting"';
+    html += '<tr style="border-bottom:1px solid var(--border)"'+solid+'>'
+         + '<td style="padding:.5rem;text-align:center"><input type="checkbox" data-cid="'+r.content_item_id+'" '+(checked?'checked':'')+' onchange="togglePick(this,'+r.content_item_id+',\''+r.platform+'\')" style="cursor:pointer;width:18px;height:18px;accent-color:var(--gold)"/></td>'
+         + '<td style="padding:.5rem;color:var(--text3);font-weight:700">'+r.rank+'</td>'
+         + '<td style="padding:.5rem;text-align:right;font-weight:700">'+fmtV(r.views)+'</td>'
+         + '<td style="padding:.5rem;color:var(--text2);font-size:.72rem">'+(r.posted||'—')+'</td>'
+         + '<td style="padding:.5rem">'+typeBadge(r.type)+'</td>'
+         + '<td style="padding:.5rem">'+songLabel+'</td>'
+         + '<td style="padding:.5rem">'+postCell+'</td>'
+         + '</tr>';
+  });
+  html += '</tbody></table>';
+  document.getElementById('picksTable').innerHTML = html;
+}
+
+async function togglePick(checkbox, contentItemId, platform){
+  var checked = checkbox.checked;
+  checkbox.disabled = true;
+  try{
+    if(checked){
+      var r = await fetch('/api/repost-confirm', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({content_item_id: contentItemId, platform: platform})
+      });
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      PICKS_CONFIRMED[contentItemId] = true;
+    } else {
+      var r2 = await fetch('/api/repost-confirm?content_item_id='+contentItemId, {method:'DELETE'});
+      if(!r2.ok) throw new Error('HTTP '+r2.status);
+      delete PICKS_CONFIRMED[contentItemId];
+    }
+    var total = Object.keys(PICKS_CONFIRMED).length;
+    document.getElementById('picksConfirmedCount').textContent = total + ' confirmed';
+    var nb = document.getElementById('nb-picks'); if(nb) nb.textContent = total || '–';
+  } catch(e){
+    checkbox.checked = !checked;  // revert
+    alert('Save failed: '+(e.message||e));
+  } finally {
+    checkbox.disabled = false;
+  }
+}
+
+function escHtml(s){
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
 function nav(page){
   document.querySelectorAll('[id^="page-"]').forEach(function(p){p.style.display='none';});
